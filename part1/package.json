@@ -1,0 +1,16 @@
+{
+  "name": "part1",
+  "version": "1.0.0",
+  "description": "In this part, we will be creating the basic framework that we will use to build our application. There are hundreds of 'bootstrap' React projects that you can download and start using immediately to create an application. The purpose of this tutorial is to understand how to build and configure one yourself.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "html-webpack-plugin": "^2.24.1",
+    "webpack": "^2.1.0-beta.28"
+  }
+}
