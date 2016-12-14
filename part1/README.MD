@@ -3,9 +3,10 @@ In this part, we will be creating the basic framework that we will use to build 
 hundreds of 'bootstrap' React projects that you can download and start using immediately to create an application. The purpose
 of this tutorial is to understand how to build and configure one yourself.
 
-We will be using NPM for this project to manage our project dependencies. If you haven't already set up NPM, go [here](http://blog.npmjs.org/post/85484771375/how-to-install-npm) for installation instructions.
+We will be using NPM for this project to manage our project dependencies. If you haven't already set up NPM, go [here](http://blog.npmjs.org/post/85484771375/how-to-install-npm) for installation instructions. You will end up installing Node as well, which we will use later in the tutorial to run our development server. Note that our server configuration and webpack configuration are in ES5, but can be updated to use ES6 if desired.
 
 Now, create a directory for your project to live in, and let's get started.
+
 ## Milestone 1: Creating index.html
 In the root of your application, create a file called 'index.html'. Within this file, copy and paste the following code:
 
@@ -128,3 +129,102 @@ Let's recap:
 If you're super impatient, you can host the contents of the build folder in whatever server you choose and see the app working! But hold on! In the next section, we're going to create a server that will automatically host these files for us as a part of the build!
 
 ## Milestone 4: Setting up the development server
+Let's create the development server to host the files that Webpack generates. We have two options here:
+1. Use [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html)
+2. Create our own dev-server using Express.js
+
+I prefer the second option simply because we get more control over the server. So let's create and set up a server to host our application.
+
+Let's install the dependencies we will need for the server. For our sever, we want to enable a feature called 'hot reloading'. This will automatically show updates in our browser without having to rebuild our code, saving us development time. We will need to install three modules for this to work:
+
+1. Express, for running our dev server
+2. webpack-dev-middleware, dependency for hot reloading
+3. webpack-hot-middleware, dependency for hot reloading
+4. connect-history-api-fallback, for helping server resolve routes
+
+To install these packages, run:
+```
+npm install --save-dev express webpack-dev-middleware webpack-hot-middleware connect-history-api-fallback
+```
+
+Create a file called 'devServer.js' in the root of the application. Here's the code for the server:
+
+```
+const webpack = require('webpack');
+const express = require('express');
+const path = require('path');
+const historyApiFallback = require('connect-history-api-fallback');
+
+const app = express();
+const devMiddleware = require('webpack-dev-middleware');
+const hotMiddleware = require('webpack-hot-middleware');
+
+const webpackConfig = require('./webpack.config');
+const compiler = webpack(webpackConfig);
+
+const serverConfig = {
+    hot: true, // to enable hot loading
+    publicPath: webpackConfig.output.publicPath //where to server our assets from
+};
+
+app.use(
+    historyApiFallback() //route requests through index.html
+);
+
+//Use previously defined middleware
+app.use(devMiddleware(compiler, serverConfig));
+app.use(hotMiddleware(compiler));
+
+app.listen(8001, 'localhost');
+
+```
+Most of this config is generated from the readme files of the middleware's Github readme files. The middleware is plugging itself between the server and the build, and listening for file changes. When it hears a file change, it updates the file and in turn updates the code in the browser without requiring the user to refresh the page.
+
+Note that we're using 'historyApiFallback' because of the nature of single page applications. If you go to 'localhost:8000/somewhere' on your browser, a request to the server is made, and the server looks for this file. Because we are writing a single page application, all of the routing will be done client side. historyApiFallback makes it so that these requests will be processed through the routing on the client side rather than on the server.
+
+Before we continuet, we need to make two small changes in the webpack.config.js file. Change
+```
+app: [
+   path.join(__dirname, './src')
+]
+```
+
+to:
+```
+app: [
+    'webpack-hot-middleware/client?path=/__webpack_hmr',
+    path.join(__dirname, './src')
+]
+```
+
+This connects the server to receive notifications when the bundle rebuilds and updates our client bundle to reflect the changes.
+
+Next, make sure your plugins array looks like this:
+
+```
+    plugins: [
+        new webpack.optimize.OccurrenceOrderPlugin(),
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NoErrorsPlugin(),
+        new HtmlWebpackPlugin({
+            template: path.join(__dirname, './index.html'),
+            filename: 'index.html',
+            inject: 'body'
+        })
+    ]
+```
+
+According to the webpack-hot-middleware documentation: "OccurrenceOrderPlugin ensures consistent build hashes, hot module replacement is somewhat self-explanatory, no errors is used to handle errors more cleanly."
+
+To start the server, run the following command in the root of the project
+```
+node ./devServer.js
+```
+
+And go to 'localhost:8001' and you'll see an alert window, signifying that our app is hosted and running.
+
+Note that, though we're now set up for hot reloading, we'll need more configuration for it to work. We'll save that for a little later in the tutorial.
+
+Now that our dev server is up and running, let's start writing React in ES6!
+
+## Milestone 5: Babel and React setup
