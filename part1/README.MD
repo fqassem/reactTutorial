@@ -228,3 +228,60 @@ Note that, though we're now set up for hot reloading, we'll need more configurat
 Now that our dev server is up and running, let's start writing React in ES6!
 
 ## Milestone 5: Babel and React setup
+Let's create our first React component using ES6 classes. While it's possible to write React without using ES6, the syntax is pretty clunky and hard to read. Before we start, let's install the dependencies we need for React using NPM.
+
+```
+npm install --save react
+npm install --save react-dom
+```
+
+'react' is the React library. 'react-dom' is what React needs to attach itself to the DOM. Remember that `<div id="root"></div>` in our index.html file? That's where ReactDOM will attach itself, render, and update.
+
+Open up index.js and clear the file. Let's create our application entry point:
+
+```
+import React from 'react';
+import { render } from 'react-dom';
+
+class Main extends React.Component {
+    render() {
+        return (
+            <h1>Hello, world!</h1>
+        );
+    }
+}
+render(<Main/>, document.getElementById('root'));
+```
+
+Using ES6 module `import` syntax, we import React and 'render' and create a simple 'Main' component for our application. Then we call render and attach the Main component to the DOM at the div with id 'root'. Notice in the 'render' function we are writing what is called JSX. JSX is a language that allows us to write HTML within our Javascript. There are some quirks with JSX syntax, but they are outside the scope of this tutorial.
+
+Now, let's try running our development server to build and host the application:
+
+`node ./devServer.js`
+
+We get an error that says "Module Parse Failed". This is because JSX needs to be compiled down into Javascript during a build process - it's not natively understood by browsers. That's why we get this error.
+
+So, we need something that can allow us to write JSX and output JavaScript. For now, s a quick exercise, let's replace the JSX in our render() with a pure JavaScript call to `React.createElement()` just to get our example working. Note that we're not required to use JSX to write React. It just makes our render() function cleaner and more familiar.
+
+Replace `<h1>Hello, world!</h1>` with `React.createElement("span", null, "1")`. Then replace
+
+```
+render(<Main/>, document.getElementById('root'));
+```
+
+with
+
+```
+render(React.createElement(Main, null, null), document.getElementById('root'));
+```
+and run the application again:
+
+`node ./devServer.js`
+
+If we go to 'localhost:8001' in Chrome, we'll see 'hello, world!' output onto the screen! Cool! Note that nothing was done to our Javascript code. When the browser processes it, it is still in ES6!
+
+This example works in Chrome because Chrome understands ES6 syntax. If we tried running this application as it is in Internet Explorer 11, it would fail because IE 11 does not understand ES6.
+
+How can we make it so we write ES6 code and have it run on all browsers, not just the latest and greatest, shiny ones? How can we write JSX instead of making calls to React.createElement()?
+
+Babel is a library that will allow us to transpile our ES6/7 code we write into ES5, which is the latest standard that all browsers support.
