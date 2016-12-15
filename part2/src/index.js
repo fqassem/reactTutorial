@@ -1,10 +1,13 @@
 import React from 'react';
+import { Router, browserHistory } from 'react-router';
 import { render } from 'react-dom';
+
+import routes from './pages/routes';
 
 class Main extends React.Component {
     render() {
         return (
-            <h1>Hello, world!</h1>
+            <Router history={browserHistory} routes={routes} />
         );
     }
 }
