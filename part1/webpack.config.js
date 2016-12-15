@@ -5,7 +5,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 export default {
     entry: {
         app: [
-            'webpack-hot-middleware/client?path=/__webpack_hmr',
+            'webpack-hot-middleware/client',
             path.join(__dirname, './src')
         ]
     },
