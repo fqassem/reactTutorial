@@ -1,13 +1,14 @@
-const webpack = require('webpack');
-const express = require('express');
-const path = require('path');
-const historyApiFallback = require('connect-history-api-fallback');
+import webpack from 'webpack';// webpack = require('webpack');
+import express from 'express';
+import path from 'path';
+import historyApiFallback from 'connect-history-api-fallback';
+
+import devMiddleware from 'webpack-dev-middleware';
+import hotMiddleware from 'webpack-hot-middleware';
+
+import webpackConfig from './webpack.config';
 
 const app = express();
-const devMiddleware = require('webpack-dev-middleware');
-const hotMiddleware = require('webpack-hot-middleware');
-
-const webpackConfig = require('./webpack.config');
 const compiler = webpack(webpackConfig);
 
 const serverConfig = {
@@ -16,10 +17,10 @@ const serverConfig = {
 };
 
 app.use(
-    historyApiFallback({ //route requests through index.html
-        verbose: false
-    })
+    historyApiFallback() //route requests through index.html
 );
+
+//Use previously defined middleware
 app.use(devMiddleware(compiler, serverConfig));
 app.use(hotMiddleware(compiler));
 

@@ -1,8 +1,8 @@
-const webpack = require('webpack');
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+import webpack from 'webpack';
+import path from 'path';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
 
-module.exports = {
+export default {
     entry: {
         app: [
             'webpack-hot-middleware/client?path=/__webpack_hmr',
@@ -11,7 +11,6 @@ module.exports = {
     },
     output: {
         filename: '[name].[hash].js',
-        path: path.join(__dirname, './build'),
         publicPath: '/'
     },
     plugins: [
@@ -33,4 +32,4 @@ module.exports = {
             }
         ]
     }
-}
+};

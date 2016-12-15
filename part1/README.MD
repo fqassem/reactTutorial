@@ -225,6 +225,8 @@ And go to 'localhost:8001' and you'll see an alert window, signifying that our a
 
 Note that, though we're now set up for hot reloading, we'll need more configuration for it to work. We'll save that for a little later in the tutorial.
 
+A useful side-effect of using Webpack-Dev-Middleware is that all the files outputted by Webpack during the build are no longer  written to disk. Instead, they are maintained in memory. That means we can get rid of our 'build' folder by running `rm -rf ./build` in our project root. Also, because we no longer have a folder to output to, we can modify our webpack.config.js file and remove the `path` line in the `output` section.
+
 Now that our dev server is up and running, let's start writing React in ES6!
 
 ## Milestone 5: Babel and React setup
@@ -338,6 +340,99 @@ This tells Babel to use the presets we've installed while building the app. The 
 }
 ```
 
-Now, run the project and visit 'localhost:8001' and see that our app is running correctly! If you open up the built JavaScript file in the build folder, you will see that it no longer contains any ES6 syntax. Also notice that we don't see any errors about parsing JSX because Babel knows about JSX and compiled it down to JavaScript! 
+Now, run the project and visit 'localhost:8001' and see that our app is running correctly! If you open up the built JavaScript file in the build folder, you will see that it no longer contains any ES6 syntax. Also notice that we don't see any errors about parsing JSX because Babel knows about JSX and compiled it down to JavaScript!
 
 Now, we have a framework in which we can write React in ES6!
+
+## Milestone 6: Writing our configuration in ES6
+Notice all of our configuration is currently in ES5. If we want to write it in ES6, we can simply install  'babel-register' as a devDependency in our project:
+
+npm install --save-dev babel-register
+
+Babel-Register will transpile our configuration files from ES6 to ES5 so we can have a single language in our code base. Now, our build command becomes:
+
+node -r babel-register ./devServer.js
+
+'-r' tells Node to use the 'babel-register' package during the build. Now, if we change our build files to use ES6 syntax, everything will work as expected. Here are the ES6 version of webpack.config.js:
+
+```
+import webpack from 'webpack';
+import path from 'path';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+
+export default {
+    entry: {
+        app: [
+            'webpack-hot-middleware/client?path=/__webpack_hmr',
+            path.join(__dirname, './src')
+        ]
+    },
+    output: {
+        filename: '[name].[hash].js',
+        publicPath: '/'
+    },
+    plugins: [
+        new webpack.optimize.OccurrenceOrderPlugin(),
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NoErrorsPlugin(),
+        new HtmlWebpackPlugin({
+            template: path.join(__dirname, './index.html'),
+            filename: 'index.html',
+            inject: 'body'
+        })
+    ],
+    module: {
+        rules: [
+            {
+                test: /\.(js)$/,
+                include: /src/,
+                loader: 'babel-loader'
+            }
+        ]
+    }
+};
+```
+
+and of devServer.js:
+
+```
+import webpack from 'webpack';// webpack = require('webpack');
+import express from 'express';
+import path from 'path';
+import historyApiFallback from 'connect-history-api-fallback';
+
+import devMiddleware from 'webpack-dev-middleware';
+import hotMiddleware from 'webpack-hot-middleware';
+
+import webpackConfig from './webpack.config';
+
+const app = express();
+const compiler = webpack(webpackConfig);
+
+const serverConfig = {
+    hot: true, // to enable hot loading
+    publicPath: webpackConfig.output.publicPath //where to server our assets from
+};
+
+app.use(
+    historyApiFallback() //route requests through index.html
+);
+
+//Use previously defined middleware
+app.use(devMiddleware(compiler, serverConfig));
+app.use(hotMiddleware(compiler));
+
+app.listen(8001, 'localhost');
+```
+
+Finally, instead of typing `node -r babel-register ./devServer.js` every time we want to build and run our project, let's create a shortcut for it in package.json:
+
+```
+...
+    scripts: {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node -r babel-register ./devServer.js"
+    }
+```
+
+And now we can run `npm run start` instead!
