@@ -23,5 +23,14 @@ module.exports = {
             filename: 'index.html',
             inject: 'body'
         })
-    ]
+    ],
+    module: {
+        rules: [
+            {
+                test: /\.(js)$/,
+                include: /src/,
+                loader: 'babel-loader'
+            }
+        ]
+    }
 }

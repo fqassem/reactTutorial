@@ -235,7 +235,7 @@ npm install --save react
 npm install --save react-dom
 ```
 
-'react' is the React library. 'react-dom' is what React needs to attach itself to the DOM. Remember that `<div id="root"></div>` in our index.html file? That's where ReactDOM will attach itself, render, and update.
+'react' is the React library. 'react-dom' is what React needs to attach itself to the DOM. Note that we're installing these not as 'devDependencies', but as regular 'dependencies' using the '--save' flag. This is because React and ReactDom are required on the browser to run our application.
 
 Open up index.js and clear the file. Let's create our application entry point:
 
@@ -253,17 +253,17 @@ class Main extends React.Component {
 render(<Main/>, document.getElementById('root'));
 ```
 
-Using ES6 module `import` syntax, we import React and 'render' and create a simple 'Main' component for our application. Then we call render and attach the Main component to the DOM at the div with id 'root'. Notice in the 'render' function we are writing what is called JSX. JSX is a language that allows us to write HTML within our Javascript. There are some quirks with JSX syntax, but they are outside the scope of this tutorial.
+Using ES6 module `import` syntax, we import React and 'render' and create a simple 'Main' component for our application. Then we call render and attach the Main component to the DOM at the div with id 'root'. Remember the `<div id="root"></div>` in our index.html file? That's where ReactDOM will attach itself, render, and update. Notice in the 'render' function we are writing what is called JSX. JSX is a language that allows us to write HTML within our Javascript. There are some quirks with JSX syntax, but they are outside the scope of this tutorial.
 
 Now, let's try running our development server to build and host the application:
 
 `node ./devServer.js`
 
-We get an error that says "Module Parse Failed". This is because JSX needs to be compiled down into Javascript during a build process - it's not natively understood by browsers. That's why we get this error.
+We get an error that says "Module Parse Failed". This is because JSX needs to be compiled down into Javascript during a build process - it's not natively understood by browsers.
 
-So, we need something that can allow us to write JSX and output JavaScript. For now, s a quick exercise, let's replace the JSX in our render() with a pure JavaScript call to `React.createElement()` just to get our example working. Note that we're not required to use JSX to write React. It just makes our render() function cleaner and more familiar.
+So, we need something that can allow us to write JSX and output JavaScript. For now, as a quick exercise, let's replace the JSX in our render() with a pure JavaScript call to `React.createElement()` just to get our example working. Note that we're not required to use JSX to write React. It just makes our render() function cleaner and more familiar.
 
-Replace `<h1>Hello, world!</h1>` with `React.createElement("span", null, "1")`. Then replace
+Replace `<h1>Hello, world!</h1>` with `React.createElement("span", null, "Hello, world!")`. Then replace
 
 ```
 render(<Main/>, document.getElementById('root'));
@@ -278,10 +278,66 @@ and run the application again:
 
 `node ./devServer.js`
 
-If we go to 'localhost:8001' in Chrome, we'll see 'hello, world!' output onto the screen! Cool! Note that nothing was done to our Javascript code. When the browser processes it, it is still in ES6!
+If we go to 'localhost:8001' in Chrome, we'll see 'hello, world!' output onto the screen! Cool!
 
 This example works in Chrome because Chrome understands ES6 syntax. If we tried running this application as it is in Internet Explorer 11, it would fail because IE 11 does not understand ES6.
 
 How can we make it so we write ES6 code and have it run on all browsers, not just the latest and greatest, shiny ones? How can we write JSX instead of making calls to React.createElement()?
 
-Babel is a library that will allow us to transpile our ES6/7 code we write into ES5, which is the latest standard that all browsers support.
+Babel is a library that will allow us to transpile our ES6/7 code we write into ES5, which is the latest standard that all browsers support. It requires a bit of setup, but it is well worth the investment.
+
+Revert the changes we did to our index.js file. Make sure it looks like this:
+
+```
+import React from 'react';
+import { render } from 'react-dom';
+
+class Main extends React.Component {
+    render() {
+        return (
+            <h1>Hello, world!</h1>
+        );
+    }
+}
+render(<Main/>, document.getElementById('root'));
+```
+
+Now, let's start by installing Babel:
+
+```
+npm install --save-dev babel-core babel-loader
+```
+
+'babel-core' is the heart of Babel. 'babel-loader' is a 'loader' we will configure Webpack to use in order to load files for processing by Babel. 'Loaders' are a Webpack concept that we'll see more of in other sections of our tutorial.
+
+By default, Babel is pretty stupid. It doesn’t know anything about ES6 or React. It requires us to download ‘presets’ that it uses to understand how to transpile the ES6 and React code we’re going to write. We need to install the following:
+
+npm install —save-dev babel-preset-react
+npm install —save-dev babel-preset-latest //contains knowledge of ES6 and later version of ES so we can use ES7 features too!
+
+'babel-preset-react' contains knowledge of JSX. 'babel-preset-latest' contains knowledge of ES6 and ES7. Next, we need to create a configuration for Babel to read these presets. In the root of the app, create a file called '.babelrc' with the following contents:
+```
+{
+	  "presets": ["latest", "react"]
+}
+```
+This tells Babel to use the presets we've installed while building the app. The last thing we need to do is configure Webpack to use Babel process our Javascript files. In 'webpack.config.js', create a new section in the config that looks like this:
+
+```
+{
+    plugins: [...],
+    module: {
+        rules: [
+            {
+                test: /\.(js)$/,
+                include: /src/,
+                loader: 'babel-loader'
+            }
+        ]
+    }
+}
+```
+
+Now, run the project and visit 'localhost:8001' and see that our app is running correctly! If you open up the built JavaScript file in the build folder, you will see that it no longer contains any ES6 syntax. Also notice that we don't see any errors about parsing JSX because Babel knows about JSX and compiled it down to JavaScript! 
+
+Now, we have a framework in which we can write React in ES6!
