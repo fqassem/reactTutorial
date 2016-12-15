@@ -27,10 +27,10 @@ Throughout this tutorial, we will be creating a modern, single-page, progressive
 Setting up NPM, Webpack, Babel, React, and Express.js development server
 
 ## Part 2
-Adding ESLint, Redux, and Redux-Saga to the project
+Adding ESLint, Routing, Hot-Loading, and Production builds
 
 ## Part 3
-Adding CSS support, routing, and testing setup
+Adding CSS support, State Management, and testing
 
 ## Part 4
 Adding API calls for sign-in and authentication/authorization

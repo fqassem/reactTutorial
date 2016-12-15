@@ -1,10 +1,10 @@
-# Part 2: ESLint, Routing, Hot-Loading, and State Management
+# Part 2: ESLint, Routing, Hot-Loading, and Production builds
 Now that we have a good basic framework for writing applications, let's add on to it. In this part, we will be adding:
 
 * ESLint, for enforcing code-style and catching bugs
 * Routing using React-Router
 * Hot-Loading for faster development
-* State Management using Redux
+* Getting our app ready for production by modifying the build
 
 Let's begin!
 
@@ -319,7 +319,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 }
 ```
 
-This simply requires all of the routes we might load in our dynamic routing so a server request is no longer needed to grab the routes. What this basically means is that lazy-loading routes will only work in production. That's not a huge deal, but we should be sure that every time we add a new route, we should add it both to this code block and the code block that gets exported at the bottom of *routes.js*. Not a big deal - it should be fixed soon!
+This simply requires all of the routes we might load in our dynamic routing so a server request is no longer needed to grab the routes. What this basically means is that lazy-loading routes will only work in production, not in development. That's not a huge deal, but we should be sure that every time we add a new route, we should add it both to this code block and the code block that gets exported at the bottom of *routes.js*. Not a big deal - it should be fixed soon!
 
 Now, run `npm run start` and open our app in a browser. Make a change in *ContactUs.js* or *Home.js* and you should see it reflected automatically in the browser after you save the file!
 
