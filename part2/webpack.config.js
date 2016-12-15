@@ -5,7 +5,8 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 export default {
     entry: {
         app: [
-            'webpack-hot-middleware/client?path=/__webpack_hmr',
+            'react-hot-loader/patch',
+            'webpack-hot-middleware/client',
             path.join(__dirname, './src')
         ]
     },
@@ -14,6 +15,11 @@ export default {
         publicPath: '/'
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: JSON.stringify('development')
+            }
+        }),
         new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),
@@ -34,7 +40,7 @@ export default {
             {
                 test: /\.(js)$/,
                 include: /src/,
-                loader: 'babel-loader'
+                loaders: 'babel-loader'
             }
         ]
     }

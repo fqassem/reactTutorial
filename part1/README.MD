@@ -142,11 +142,12 @@ Let's install the dependencies we will need for the server. For our sever, we wa
 1. Express, for running our dev server
 2. webpack-dev-middleware, dependency for hot reloading
 3. webpack-hot-middleware, dependency for hot reloading
-4. connect-history-api-fallback, for helping server resolve routes
+4. react-hot-loader, used to 'load' our JavaScript for hot loading
+5. connect-history-api-fallback, for helping server resolve routes
 
 To install these packages, run:
 ```
-npm install --save-dev express webpack-dev-middleware webpack-hot-middleware connect-history-api-fallback
+npm install --save-dev express webpack-dev-middleware webpack-hot-middleware react-hot-loader@3.0.0-beta.6 connect-history-api-fallback
 ```
 
 Create a file called *devServer.js* in the root of the application. Here's the code for the server:
@@ -193,8 +194,10 @@ app: [
 ```
 
 to:
+
 ```
 app: [
+    'react-hot-loader/patch',
     'webpack-hot-middleware/client',
     path.join(__dirname, './src')
 ]
@@ -206,6 +209,11 @@ Next, make sure your `"plugins"` array looks like this:
 
 ```
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: JSON.stringify('development')
+            }
+        }),
         new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),
@@ -217,7 +225,9 @@ Next, make sure your `"plugins"` array looks like this:
     ]
 ```
 
-According to the **webpack-hot-middleware** documentation: "OccurrenceOrderPlugin ensures consistent build hashes, hot module replacement is somewhat self-explanatory, no errors is used to handle errors more cleanly."
+DefinePlugin is where we can define global constants within the application. We define our app to be in 'development' here so we can turn off/on certain features in the code based on our environment.
+
+OccurrenceOrderPlugin ensures consistent build hashes, HotModuleReplacementPlugin is necessary for HMR to work, and NoErrorsPlugin is used to handle build errors more cleanly. These are all recommended by the **webpack-hot-middleware** documentation.
 
 To start the server, run the following command in the root of the project
 ```
@@ -326,11 +336,21 @@ npm install —save-dev babel-preset-latest //contains knowledge of ES6 and late
 **babel-preset-react** contains knowledge of JSX. **babel-preset-latest** contains knowledge of ES6 and ES7. Next, we need to create a configuration for Babel to read these presets. In the root of the app, create a file called *.babelrc* with the following contents:
 ```
 {
-	  "presets": ["latest", "react"]
+    "presets": ["latest", "react"],
+    "env": {
+        "development": {
+            "plugins": [
+                "react-hot-loader/babel"
+            ]
+        }
+     }
 }
+
 ```
 
-This tells Babel to use the presets we've installed when Webpack builds the app. The last thing we need to do is configure Webpack to use Babel process our Javascript files. In *webpack.config.js*, create a new section in the config that looks like this:
+This tells Babel to use the presets we've installed when Webpack builds the app. It also tells Babel that when we are in the development environment to use "react-hot-loader/babel" for processing our files during hot module reloading.
+
+The last thing we need to do is configure Webpack to use Babel process our Javascript files. In *webpack.config.js*, create a new section in the config that looks like this:
 
 ```
 {
