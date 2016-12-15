@@ -1,14 +1,23 @@
 import React from 'react';
-import { Router, browserHistory } from 'react-router';
 import { render } from 'react-dom';
+import { AppContainer } from 'react-hot-loader';
 
 import routes from './pages/routes';
+import Main from './Main';
 
-class Main extends React.Component {
-    render() {
-        return (
-            <Router history={browserHistory} routes={routes} />
+render(<AppContainer>
+            <Main routes={routes}/>
+        </AppContainer>,
+        document.getElementById('root'));
+
+if(module.hot) {
+    module.hot.accept('./pages/routes', () => {
+        const updatedRoutes = require('./pages/routes').default;
+        render(
+            <AppContainer>
+                <Main routes={updatedRoutes} />
+            </AppContainer>,
+            document.getElementById('root')
         );
-    }
+    });
 }
-render(<Main/>, document.getElementById('root'));

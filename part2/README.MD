@@ -84,6 +84,7 @@ You might end up with errors if you save your *.eslintrc* file and run `npm run 
         "max-len": [1, 140],
         "arrow-body-style": [0],
         "spaced-comment": [0],
+        "global-require": [0],
         "import/no-extraneous-dependencies": [0],
         "react/forbid-prop-types": [0],
         "react/jsx-indent": [0],
@@ -237,4 +238,89 @@ class Main extends React.Component {
 render(<Main/>, document.getElementById('root'));
 ```
 
-We've imported Router and browserHistory, and we're now rendering 'Router'. 'Router' will use 'routes.js' to configure the routing of the application and load the necessary component based on the current route.
+We've imported Router and browserHistory, and we're now rendering 'Router'. 'Router' will use 'routes.js' to configure the routing of the application and load the necessary component based on the current route. Run `npm run start`, open it in Chrome, and as you navigate, you can see the routes are lazy-loading!
+
+## Milestone 3: Hot-loading
+In part 1, we configured our server to be able to Hot Reload our application code without us having to rebuild or refresh. We need to add a little extra configuration for this to work, so let's do it now.
+
+We have 3 modules that we installed earlier that work together to allow the app to do Hot Reloading:
+
+1. webpack-dev-middleware
+2. webpack-hot-middleware
+3. react-hot-loader
+
+We set all of these up in part one. The last thing we have to do in our application is configure the modules to be able to reload themselves after they've been updated. Let's do this now.
+
+The first step is to separate out the Main component of the app into its own file rather than having it live in index.js. Create a *Main.js* file in the src folder and pull out the Main class and its dependencies, excluding 'routes.js'. After we're done, *index.js* should look like this:
+
+```
+import React from 'react';
+import { render } from 'react-dom';
+
+import routes from './pages/routes';
+import Main from './Main';
+
+render(<Main routes={routes}/>,
+        document.getElementById('root'));
+```
+
+and *Main.js* should look like this:
+
+```
+import React from 'react';
+import { Router, browserHistory } from 'react-router';
+
+class Main extends React.Component {
+    render() {
+        return (
+            <Router history={browserHistory} routes={this.props.routes} />
+        );
+    }
+}
+Main.propTypes = {
+    routes: React.PropTypes.node.isRequired
+};
+export default Main;
+```
+
+Note that we'll be passing in the routes via props now rather than importing them. Next, we need to modify *index.js* to Hot Reload our application. We need to include a dependency on 'AppContainer' in the 'react-hot-loader' module. It's simply a wrapper we need to include so that Hot Reloading works correctly and preserves our application's state. We need to wrap our 'Main' like so:
+
+```
+render(<AppContainer>
+            <Main routes={routes}/>
+       </AppContainer>,
+        document.getElementById('root'));
+```
+
+Now the AppContainer is set up we need to add the following:
+
+```
+if(process.env.NODE_ENV === 'development' && module.hot) {
+    module.hot.accept('./pages/routes', () => {
+        const updatedRoutes = require('./pages/routes').default;
+        render(
+            <AppContainer>
+                <Main routes={updatedRoutes} />
+            </AppContainer>,
+            document.getElementById('root')
+        );
+    });
+}
+```
+
+And with that, we're almost done. This block of code is responsible for reloading our application code when a change is made.
+
+Finally, we need to make a small fix for Webpack 2 and Hot Module reloading to play nice. Open up *routes.js*. Notice that our dynamic routes are all using System.import. Sadly, dynamic routing doesn't work fully with Hot Module Reloading yet, so we need to make a small change. Add the following to the top of our *routes.js* file:
+
+```
+if(process.env.NODE_ENV === 'development' && module.hot) {
+    require('./Home');
+    require('./ContactUs');
+}
+```
+
+This simply requires all of the routes we might load in our dynamic routing so a server request is no longer needed to grab the routes. What this basically means is that lazy-loading routes will only work in production. That's not a huge deal, but we should be sure that every time we add a new route, we should add it both to this code block and the code block that gets exported at the bottom of *routes.js*. Not a big deal - it should be fixed soon!
+
+Now, run `npm run start` and open our app in a browser. Make a change in *ContactUs.js* or *Home.js* and you should see it reflected automatically in the browser after you save the file!
+
+## Milestone 4: Splitting the build

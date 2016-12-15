@@ -1,5 +1,10 @@
 import Container from './Container';
 
+if(process.env.NODE_ENV === 'development' && module.hot) {
+    require('./Home');
+    require('./ContactUs');
+}
+
 function errorLoading(error) {
     throw new Error(`Dynamic page loading failed: ${error}`);
 }
