@@ -166,7 +166,7 @@ const compiler = webpack(webpackConfig);
 
 const serverConfig = {
     hot: true, // to enable hot loading
-    publicPath: webpackConfig.output.publicPath //where to server our assets from
+    publicPath: webpackConfig.output.publicPath //where to serve our assets from
 };
 
 app.use(
@@ -424,7 +424,7 @@ const compiler = webpack(webpackConfig);
 
 const serverConfig = {
     hot: true, // to enable hot loading
-    publicPath: webpackConfig.output.publicPath //where to server our assets from
+    publicPath: webpackConfig.output.publicPath //where to serve our assets from
 };
 
 app.use(

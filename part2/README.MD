@@ -52,7 +52,7 @@ Now, let's run `npm run start`. Notice that our build complains about 'No ESLint
 }
 ```
 
-This tells ESLint that global ‘browser’ variables should not raise red flags. In `"parserOptions"`, we are telling ESLint that we will be using ES6 and ES6 modules (source files that use ‘import’ and ‘export’) and that we will use JSX. Because we are using ES6 modules and ES6 modules are in strict mode by default, we set `"impliedStrict"` to true so that any "use strict" declarations in our code are caught.
+This tells ESLint that global ‘browser’ variables like 'window' and 'document' should not raise red flags. In `"parserOptions"`, we are telling ESLint that we will be using ES6 and ES6 modules (source files that use ‘import’ and ‘export’) and that we will use JSX. Because we are using ES6 modules and ES6 modules are in strict mode by default, we set `"impliedStrict"` to true so that any "use strict" declarations in our code are caught.
 
 Finally let’s set up ESLint to run automatically on our files within our environment. Pick the environment you're using and follow the instructions to install the ESLint plugin:
 
@@ -98,3 +98,5 @@ You might end up with errors if you save your *.eslintrc* file and run `npm run 
 ```
 
 While this doesn't matter too much for now, it will be useful to decide on a standard configuration for your team to use to enforce a certain code style. Note that your build will fail if your code style isn't following the config you've defined!
+
+## Milestone 2: Routing with React-Router
