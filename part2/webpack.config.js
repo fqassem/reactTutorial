@@ -12,6 +12,7 @@ export default {
     },
     output: {
         filename: '[name].[hash].js',
+        path: path.join(__dirname, './dev'),
         publicPath: '/'
     },
     plugins: [

@@ -147,7 +147,7 @@ To set up our sever, we need:
 1. Express, a Node.js based framework for running our dev server
 2. webpack-dev-middleware, dependency for hot reloading
 3. webpack-hot-middleware, dependency for hot reloading
-4. react-hot-loader 3, used to 'load' our JavaScript for hot loading
+4. react-hot-loader 3, used to hot load our React components and preserve app state
 5. connect-history-api-fallback, for helping the server resolve routes
 
 To install these packages, run:
@@ -243,7 +243,7 @@ We are passing in the NODE_ENV environment variable in the command line. This wi
 
 Note that, though we're now set up for hot reloading, we'll need more configuration for it to work correctly. We'll save that for a little later in the tutorial. You may see an error in the console saying Hot Module Reloading won't work. You can safely ignore that for now.
 
-A useful side-effect of using Webpack-Dev-Middleware is that all the files outputted by Webpack during the build are no longer written to disk. Instead, they are maintained in memory. That means we can get rid of our 'build' folder by running `rm -rf ./build` in our project root. Also, because we no longer have a folder we need output to, we can modify our *webpack.config.js* file and remove the `path` line in the `output` section.
+A useful side-effect of using Webpack-Dev-Middleware is that all the files outputted by Webpack during the build are no longer written to disk. Instead, they are maintained in memory. That means we no longer need our *build* directory to server the app, but let's keep the configuration for it. That way, if we ever need to simply build our app (not just serve it), it has somewhere to go. Let's instead change the name of the directory from 'build' to 'dev' so that, in the future, it will be obvious what this directory contains.
 
 Now that our dev server is up and running, let's start writing React in ES6!
 
@@ -413,6 +413,7 @@ export default {
     },
     output: {
         filename: '[name].[hash].js',
+        path: path.join(__dirname, './dev'),
         publicPath: '/'
     },
     plugins: [
