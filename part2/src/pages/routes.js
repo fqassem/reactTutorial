@@ -14,9 +14,9 @@ function loadRoute(cb) {
 }
 
 export default {
-    path: '/', // at index '/', the <Core /> component will be loaded
+    path: '/',
     component: Container,
-    indexRoute: { // but we also want our indexRoute to load <Home />
+    indexRoute: {
         getComponent(location, cb) {
             System.import('./Home')
             .then(loadRoute(cb))

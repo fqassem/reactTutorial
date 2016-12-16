@@ -1,10 +1,9 @@
-# Part 2: ESLint, Routing, Hot-Loading, and Production builds
+# Part 2: ESLint, Routing, and Hot-Loading
 Now that we have a good basic framework for writing applications, let's add on to it. In this part, we will be adding:
 
 * ESLint, for enforcing code-style and catching bugs
 * Routing using React-Router
 * Hot-Loading for faster development
-* Getting our app ready for production by modifying the build
 
 Let's begin!
 
@@ -34,14 +33,14 @@ Now that we have the loader for ESLint and the core installed, let’s tell Webp
     },
 ```
 
-This tells Webpack to run our '.js' files in the /src/ folder through ESLint before the other loaders are run (using 'enforce: pre'). Note that this differs a bit from Webpack 1 syntax where ‘preloaders’ was a separate section entirely.
+This tells Webpack to run our '.js' files in the /src/ folder through ESLint before the other loaders are run (using `enforce: 'pre'`). Note that this differs a bit from Webpack 1 syntax where ‘preloaders’ was a separate section entirely.
 
-Now, let's run `npm run start`. Notice that our build complains about 'No ESLint configuration found.'. This is because ESLint looks for a configuration named *.eslintrc*, which we haven't defined yet. Let's create one now:
+Now, let's run `npm run start`. Notice that our build complains about 'No ESLint configuration found.'. This is because ESLint looks for a configuration named *.eslintrc*, which we haven't defined yet. Let's create one now in the root of our app now=:
 
 ```
 {
     "env": { "browser": true },
-     "parserOptions": {
+    "parserOptions": {
         "ecmaVersion": 6,
         "sourceType": "module",
         "ecmaFeatures": {
@@ -54,7 +53,7 @@ Now, let's run `npm run start`. Notice that our build complains about 'No ESLint
 
 This tells ESLint that global ‘browser’ variables like 'window' and 'document' should not raise red flags. In `"parserOptions"`, we are telling ESLint that we will be using ES6 and ES6 modules (source files that use ‘import’ and ‘export’) and that we will use JSX. Because we are using ES6 modules and ES6 modules are in strict mode by default, we set `"impliedStrict"` to true so that any "use strict" declarations in our code are caught.
 
-Finally let’s set up ESLint to run automatically on our files within our environment. Pick the environment you're using and follow the instructions to install the ESLint plugin:
+Let’s set up ESLint to run automatically on our files within our environment, not just during our build. Pick the environment you're using and follow the instructions to install the ESLint plugin:
 
 * [IntelliJ](https://plugins.jetbrains.com/plugin/7494)
 * [Atom](https://atom.io/packages/eslint)
@@ -67,7 +66,7 @@ npm install --save-dev eslint-config-airbnb eslint-plugin-jsx-a11y@2.2.3 eslint-
 
 Now, add `"extends": "airbnb"` to your config. This tells ESLint we want to use the AirBnb code style config we just installed.
 
-You might end up with errors if you save your *.eslintrc* file and run `npm run start`. Depending on how you want your code style, you can turn off, turn on, or modify certain rules in *.eslintrc*. For a good explanation of how this works, visit [here](http://eslint.org/docs/user-guide/configuring#configuring-rules). I've added and modified the following rules in my *.eslintrc* file to fit my code style:
+You might end up with errors if you save your *.eslintrc* file and run `npm run start`. Depending on how you want your code styled, you can turn off, turn on, or modify certain rules in *.eslintrc*. For a good explanation of how this works, visit [here](http://eslint.org/docs/user-guide/configuring#configuring-rules). I've added and modified the following rules in my *.eslintrc* file to fit my code style:
 
 ```
     ...,
@@ -109,9 +108,9 @@ Let’s start by installing react-router v3:
 npm install --save react-router
 ```
 
-Be sure you’ve installed v3 by looking at your package.json file.
+Be sure you’ve installed v3 by looking at your package.json file. Because React-Router is required by the code we run on the browser, we install it as a 'dependency'.
 
-Let’s also create some files that represent pages within our application. This will help showcase the incremental loading of our app. Create a *pages* directory within *src*. This directory will hold the pages of our website that a user can navigate to. Add the following files:
+Let’s also create some files that represent pages within our application. This will help showcase routing, as well as incremental loading of our app. Create a *pages* directory within *src*. This directory will hold the pages of our website that a user can navigate to. Add the following files:
 
 ### Container.js
 ```
@@ -185,9 +184,9 @@ function loadRoute(cb) {
 }
 
 export default {
-    path: '/', // at index '/', the <Core /> component will be loaded
+    path: '/',
     component: Container,
-    indexRoute: { // but we also want our indexRoute to load <Home />
+    indexRoute: {
         getComponent(location, cb) {
             System.import('./Home')
             .then(loadRoute(cb))
@@ -215,9 +214,9 @@ export default {
 };
 ```
 
-How does this work? During the build of the app, Webpack is smart enough to take calls to 'System.import' and bundles its contents separately from the main application code. When React-router takes the path from the URL, it calls ‘getComponent’, which attempts to grab the source for the component by calling 'System.import'. Now, 'System.import' makes a request to the server to retrieve the bundle for this specific component and then loads the route and displays it. Basically, use this 'System.import' boiler-plate to generate dynamic routes within your application.
+How does this work? During the build of the app, Webpack is smart enough to take calls to 'System.import' and bundles those contents separately from the main application code. When React-Router takes the path from the URL, it calls ‘getComponent’, which attempts to grab the source for the component by calling 'System.import'. Now, 'System.import' makes a request to the server to retrieve the bundle for this specific component and then loads the route and displays it. Basically, use this 'getComponent' and 'System.import' boiler-plate to generate dynamic routes that are lazy-loaded within your application.
 
-Note that *Container* is our root component, which renders `this.props.children`. `this.props.children` will be replaced with whatever page component the current route of the app is at. Basically, 'Container' will wrap all of the other pages in the application. Because we have defined the nav bar in 'Container', it will be present in all of the other 'childRoutes' of the application. Note that our 'indexRoute', or default route, is set to 'Home'. Any routes that aren't resolved by the router will be sent to 'Home'.
+Note that *Container* is our root component, which renders `this.props.children`. `this.props.children` will be replaced with whatever page component the current route of the app is at. Basically, 'Container' will wrap all of the other pages in the application. Because we have defined the nav bar in 'Container', it will be present in all of the other 'childRoutes' of the application. Note that our 'indexRoute', or default route, is set to 'Home'. Any routes that aren't resolved by the router will be sent to 'Home', which is what the childRoute with path '*' does.
 
 Finally, React-Router needs to know to use this routes definition. Modify *src/index.js* to look like this:
 
@@ -238,7 +237,7 @@ class Main extends React.Component {
 render(<Main/>, document.getElementById('root'));
 ```
 
-We've imported Router and browserHistory, and we're now rendering 'Router'. 'Router' will use 'routes.js' to configure the routing of the application and load the necessary component based on the current route. Run `npm run start`, open it in Chrome, and as you navigate, you can see the routes are lazy-loading!
+We've imported 'Router' and 'browserHistory' from React-Router, and we're now rendering 'Router' instead of `<h1>Hello, world!</h1>`. 'Router' will use 'routes.js' to configure the routing of the application and load the necessary component based on the current route. Run `npm run start`, open 'localhost:8001' in Chrome and open up the dev-tools. As you navigate, you can see the routes are lazy-loading!
 
 ## Milestone 3: Hot-loading
 In part 1, we configured our server to be able to Hot Reload our application code without us having to rebuild or refresh. We need to add a little extra configuration for this to work, so let's do it now.
@@ -251,7 +250,7 @@ We have 3 modules that we installed earlier that work together to allow the app 
 
 We set all of these up in part one. The last thing we have to do in our application is configure the modules to be able to reload themselves after they've been updated. Let's do this now.
 
-The first step is to separate out the Main component of the app into its own file rather than having it live in index.js. Create a *Main.js* file in the src folder and pull out the Main class and its dependencies, excluding 'routes.js'. After we're done, *index.js* should look like this:
+The first step is to separate out the Main component of the app into its own file rather than having it live in *index.js*. Create a *Main.js* file in the *src* folder and pull out the Main class and its dependencies, excluding 'routes.js'. After we're done, *index.js* should look like this:
 
 ```
 import React from 'react';
@@ -283,7 +282,7 @@ Main.propTypes = {
 export default Main;
 ```
 
-Note that we'll be passing in the routes via props now rather than importing them. Next, we need to modify *index.js* to Hot Reload our application. We need to include a dependency on 'AppContainer' in the 'react-hot-loader' module. It's simply a wrapper we need to include so that Hot Reloading works correctly and preserves our application's state. We need to wrap our 'Main' like so:
+Note that we'll be passing in the routes via props now rather than importing them. Next, we need to modify *index.js* to Hot Reload our application. We need to include a dependency on 'AppContainer' in the 'react-hot-loader' module. AppContainer is simply a wrapper provided by React-Hot-Loader that we need to include so that Hot Reloading works correctly and preserves our application's current state. We need to wrap our 'Main' like so:
 
 ```
 render(<AppContainer>
@@ -292,7 +291,7 @@ render(<AppContainer>
         document.getElementById('root'));
 ```
 
-Now the AppContainer is set up we need to add the following:
+Now the AppContainer is set up, we need to add the following:
 
 ```
 if(process.env.NODE_ENV === 'development' && module.hot) {
@@ -308,7 +307,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 }
 ```
 
-And with that, we're almost done. This block of code is responsible for reloading our application code when a change is made.
+And with that, we're almost done. This block of code is responsible for reloading our application code when a change is made. While this boilerplate may seem excessive compared to using 'webpack-dev-server', it's very powerful in allowing us to define the server and how updates are made.
 
 Finally, we need to make a small fix for Webpack 2 and Hot Module reloading to play nice. Open up *routes.js*. Notice that our dynamic routes are all using System.import. Sadly, dynamic routing doesn't work fully with Hot Module Reloading yet, so we need to make a small change. Add the following to the top of our *routes.js* file:
 
@@ -322,5 +321,3 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 This simply requires all of the routes we might load in our dynamic routing so a server request is no longer needed to grab the routes. What this basically means is that lazy-loading routes will only work in production, not in development. That's not a huge deal, but we should be sure that every time we add a new route, we should add it both to this code block and the code block that gets exported at the bottom of *routes.js*. Not a big deal - it should be fixed soon!
 
 Now, run `npm run start` and open our app in a browser. Make a change in *ContactUs.js* or *Home.js* and you should see it reflected automatically in the browser after you save the file!
-
-## Milestone 4: Splitting the build

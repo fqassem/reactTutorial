@@ -30,7 +30,7 @@ Setting up NPM, Webpack, Babel, React, and Express.js development server
 Adding ESLint, Routing, and Hot-Loading
 
 ## Part 3
-Adding Production build and State Management
+Adding production build and Testing
 
 ## Part 4
-Adding CSS support and testing
+Adding State Management and CSS support

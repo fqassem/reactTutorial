@@ -10,7 +10,7 @@ render(<AppContainer>
         </AppContainer>,
         document.getElementById('root'));
 
-if(module.hot) {
+if(process.env.NODE_ENV === 'development' && module.hot) {
     module.hot.accept('./pages/routes', () => {
         const updatedRoutes = require('./pages/routes').default;
         render(

@@ -16,7 +16,7 @@ export default {
     },
     plugins: [
         new webpack.EnvironmentPlugin([
-            'NODE_ENV',
+            'NODE_ENV'
         ]),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),

@@ -81,7 +81,8 @@ module.exports = {
     },
     output: {        
         path: path.join(__dirname, './build'),
-        filename: '[name].[hash].js'
+        filename: '[name].[hash].js',
+        publicPath: '/'
     },
     plugins: [
         new HtmlWebpackPlugin({
@@ -97,7 +98,7 @@ We are including the HtmlWebpackPlugin, and 'path' in our config. 'path' is a No
 
 `"entry"` is where we define the 'bundles' we want our project’s build to create after Webpack does transpilation, dependency resolution, and tree-shaking. Right now we only have one bundle named `app` that is defined by our app's main entry point: `src/index.js`. We haven't yet created this file, but we will soon!
 
-`"output"` defines how the generated 'bundles' will be named and where they will end up. Here we are telling Webpack to put these bundles into a *build* directory. These files will be named with the provided bundle name ("[name]", taken from the key in the `"entry"` config) and a hash that Webpack generates to help with caching. In our case, the output bundle will be named: *app.[generated_hash].js*
+`"output"` defines how the generated 'bundles' will be named and where they will end up. Here we are telling Webpack to put these bundles into a *build* directory. These files will be named with the provided bundle name ("[name]", taken from the key in the `"entry"` config) and a hash that Webpack generates to help with caching. In our case, the output bundle will be named: *app.[generated_hash].js*. 'publicPath' is a bit confusing, but it's where where the server will resolve the location of our output files. 'publicPath' can be a bit complicated to set up if you're using a CDN or hosting files elsewhere, but our config should suffice for now. If you're curious, see this [link](https://github.com/webpack/docs/wiki/configuration#outputpublicpath) for more info.
 
 `"plugins"` defines Webpack plugins that affect the build process. Common plugins defined here include minification plugins, dedupe plugins, and HTML generation plugins, among others. For now, we are creating a development-only build, so we have no need for minification or deduping yet.
 
@@ -170,7 +171,6 @@ const webpackConfig = require('./webpack.config');
 const compiler = webpack(webpackConfig); //run the webpack build
 
 const serverConfig = {
-    hot: true, // to enable hot loading
     publicPath: webpackConfig.output.publicPath //where to serve our assets from
 };
 
@@ -216,7 +216,7 @@ Next, make sure your `"plugins"` array looks like this:
 ```
     plugins: [
         new webpack.EnvironmentPlugin([
-            'NODE_ENV',
+            'NODE_ENV'
         ]),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),
@@ -417,7 +417,7 @@ export default {
     },
     plugins: [
         new webpack.EnvironmentPlugin([
-            'NODE_ENV',
+            'NODE_ENV'
         ]),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),
@@ -456,7 +456,6 @@ const app = express();
 const compiler = webpack(webpackConfig); // run Webpack
 
 const serverConfig = {
-    hot: true, // to enable hot loading
     publicPath: webpackConfig.output.publicPath //where to serve our assets from
 };
 

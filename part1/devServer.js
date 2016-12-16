@@ -12,7 +12,6 @@ const app = express();
 const compiler = webpack(webpackConfig); // run the webpack build
 
 const serverConfig = {
-    hot: true, // to enable hot loading
     publicPath: webpackConfig.output.publicPath //where to serve our assets from
 };
 
