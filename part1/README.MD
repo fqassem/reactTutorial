@@ -326,7 +326,7 @@ Now, let's start by installing Babel:
 npm install --save-dev babel-core babel-loader
 ```
 
-**babel-core** is the heart of Babel. **babel-loader** is a 'loader' we will use to configure Webpack to use in order to load files for processing by Babel. 'Loaders' are a Webpack concept that we'll see more of in other sections of our tutorial, but they essentially tell Webpack to use a certain library (or libraries) to process files during the build.
+**babel-core** is the core Babel compiler. **babel-loader** is a 'loader' we will use to configure Webpack to use in order to load files for processing by Babel. 'Loaders' are a Webpack concept that we'll see more of in other sections of our tutorial, but they essentially tell Webpack to use a certain library (or libraries) to process files during the build.
 
 By default, Babel is pretty stupid. It doesn’t know anything about ES6 or React. It requires us to download ‘presets’ that it uses to understand how to transpile the ES6 and React/JSX code we’re going to write. We need to install the following:
 
@@ -374,7 +374,7 @@ Now, run the project and visit 'localhost:8001' and see that our app is running 
 Now, we have a framework in which we can write React in ES6!
 
 ## Milestone 6 (Bonus): Writing our configuration in ES6
-Notice all of our configuration is currently in ES5. If we want to write it in ES6, we can simply install **babel-register** as a devDependency in our project:
+Notice all of our configuration is currently in ES5. If we want to write it in ES6, we can simply install **babel-register** as a devDependency in our project. babel-register basically replaces how Node loads in our files to run on the server. If the file isn't part of *node-modules* and is not part of the Node core, babel-register will compile it with Babel.
 
 ```
 npm install --save-dev babel-register
