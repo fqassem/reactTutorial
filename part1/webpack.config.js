@@ -7,7 +7,7 @@ export default {
         app: [
             'react-hot-loader/patch',
             'webpack-hot-middleware/client',
-            path.join(__dirname, './src')
+            path.join(__dirname, './src/index.js')
         ]
     },
     output: {
@@ -15,12 +15,9 @@ export default {
         publicPath: '/'
     },
     plugins: [
-        new webpack.DefinePlugin({
-            'process.env': {
-                NODE_ENV: JSON.stringify('development')
-            }
-        }),
-        new webpack.optimize.OccurrenceOrderPlugin(),
+        new webpack.EnvironmentPlugin([
+            'NODE_ENV',
+        ]),
         new webpack.HotModuleReplacementPlugin(),
         new webpack.NoErrorsPlugin(),
         new HtmlWebpackPlugin({

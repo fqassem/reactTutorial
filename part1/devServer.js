@@ -9,7 +9,7 @@ import hotMiddleware from 'webpack-hot-middleware';
 import webpackConfig from './webpack.config';
 
 const app = express();
-const compiler = webpack(webpackConfig);
+const compiler = webpack(webpackConfig); // run the webpack build
 
 const serverConfig = {
     hot: true, // to enable hot loading

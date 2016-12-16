@@ -27,10 +27,10 @@ Throughout this tutorial, we will be creating a modern, single-page, progressive
 Setting up NPM, Webpack, Babel, React, and Express.js development server
 
 ## Part 2
-Adding ESLint, Routing, Hot-Loading, and Production builds
+Adding ESLint, Routing, and Hot-Loading
 
 ## Part 3
-Adding CSS support, State Management, and testing
+Adding Production build and State Management
 
 ## Part 4
-Adding API calls for sign-in and authentication/authorization
+Adding CSS support and testing
