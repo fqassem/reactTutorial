@@ -26,13 +26,13 @@ Throughout this tutorial, we will be creating a modern, single-page, progressive
 * Service Workers - update our application and cache in the background for faster page loads
 
 # Tutorial summary (subject to change)
-## Part 1
+## [Part 1](https://github.com/precorFadiQassem/reactTutorial/tree/master/part1)
 Setting up NPM, Webpack, Babel, React, and Express.js development server
 
-## Part 2
+## [Part 2](https://github.com/precorFadiQassem/reactTutorial/tree/master/part2)
 ESLint, Routing, and Hot-Loading
 
-## Part 3
+## [Part 3](https://github.com/precorFadiQassem/reactTutorial/tree/master/part3)
 Production build and testing
 
 ## Part 4
