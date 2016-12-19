@@ -21,6 +21,9 @@ export default webpackMerge(baseConfig, {
         path: path.join(__dirname, '../dev')
     },
     plugins: [
+        new webpack.LoaderOptionsPlugin({
+            debug: true
+        }),
         new webpack.HotModuleReplacementPlugin()
     ]
 });

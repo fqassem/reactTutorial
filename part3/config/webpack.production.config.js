@@ -38,12 +38,12 @@ export default webpackMerge(baseConfig, {
                 comments: false
             }
         }),
-        new InlineManifestWebpackPlugin({
-            name: 'webpackManifest'
-        }),
         new webpack.optimize.CommonsChunkPlugin({
             name: ['vendor', 'manifest'],
             minChunks: Infinity
+        }),
+        new InlineManifestWebpackPlugin({
+            name: 'webpackManifest'
         })
     ]
 });
