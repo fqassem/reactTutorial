@@ -2,22 +2,22 @@
 Throughout this tutorial, we will be creating a modern, single-page, progressive web-application. Each 'part' of the project is self-contained inside its own folder with its own index.html, package.json, and source files. Subsequent parts will iterate on each other. This tutorial will utilize the following libraries and features:
 
 ## Libraries
-* Webpack 2 - build tool
-* Babel - transpiler to support ES6+
-* React - component-based view library
-* Redux - predictable state management
-* Redux-Saga - side-effect modeling middleware
-* React-Router - app routing
-* SASS - easier CSS
-* Express.js - Node.js development server for hosting application
-* ESLint - better JavaScript linting for consistent code style
+* [Webpack 2](https://webpack.js.org/) - build tool
+* [Babel](https://babeljs.io/) - transpiler to support ES6+
+* [React](https://facebook.github.io/react/) - component-based view library
+* [React-Router](https://github.com/ReactTraining/react-router) - app routing
+* [Redux](http://redux.js.org/) - predictable state management
+* [Redux-Saga](https://github.com/yelouafi/redux-saga) - side-effect modeling middleware
+* [SASS](http://sass-lang.com/) - easier CSS
+* [Express.js](http://expressjs.com/) - Node.js-based development server for hosting applications
+* [ESLint](http://eslint.org/) - better JavaScript linting for consistent code style
 
 ## Features
 * Testing
-    * Karma - test runner
-    * Mocha - test framework
-    * Chai - test assertions
-    * Sinon - creating test mocks, spies, stubs
+    * [Karma](https://karma-runner.github.io/1.0/index.html) - test runner
+    * [Mocha](https://mochajs.org/) - test framework
+    * [Chai](http://chaijs.com/) - test assertions
+    * [Sinon](http://sinonjs.org/) - creating test mocks, spies, stubs
 * Hot Module Reloading - immediately show code changes on browser
 * Code-splitting (lazy-loading routes) - for smaller initial page load
 * Service Workers - updates our application in the background
