@@ -33,7 +33,7 @@ Setting up NPM, Webpack, Babel, React, and Express.js development server
 ESLint, Routing, and Hot-Loading
 
 ## [Part 3](https://github.com/precorFadiQassem/reactTutorial/tree/master/part3)
-Production build and testing
+Testing and production build
 
 ## Part 4
 Redux state management and Redux Saga side-effect modeling

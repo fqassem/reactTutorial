@@ -1,9 +1,11 @@
 # Part 3: Production Build and Testing
-So far, we've defined a project build that should only be used in development. Let's create a usable production build that minifies our code and excludes any unnecessary libraries, such as Hot-Reloading. Let's also modify our dev server so it can be used for both development and production!
+Let's add a testing framework to our application so we can be sure our code is solid when it gets deployed to production!
 
-Next, let's add a testing framework to our application so we can be sure our code is solid when it gets deplolyed to production!
+So far, we've defined a project build that should only be used in development. After we've set up testing, let's create a usable production build that minifies our code and excludes any unnecessary libraries, such as Hot-Reloading.
 
-## Milestone 1: Splitting the build
+## Milestone 1: Testing
+
+## Milestone 2: Production build
 So far, we've had only one config file for our build - the development build. Let's modify our config to support production as well! Let's also split out our framework code from our application code during the build. We do this in order to cache the framework code on the client's browser so we don't have to pull it in every time they visit our app! This will lead to a significantly smaller download for our users on subsequent loads of our website.
 
 Let's organize our configs inside a 'config' folder. In the root of our app, create a *config* folder and create three files:
@@ -202,8 +204,29 @@ To save time in the future, create a shortcut for this in *package.json*:
 ```
     scripts: {
         ...,
-        "build:prod": "rm -rf ./dist && NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
+        "build:prod": "NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
     },
 ```
 
 Now you can just run `npm run build:prod` instead!
+
+Look inside the *dist* folder and see what we have so far:
+
+* *0.[hash].chunk.js*, containing our *Home.js* code (separated out because it's a dynamic route using System.import)
+* *1.[hash].chunk.js*, containing our *ContactUs.js* code (another dynamic route extracted into it's own chunk/bundle)
+* *app.[hash].js*, containing the rest of the app code we wrote ourselves
+* *index.html*, containing the inlined Webpack manifest and script tags
+* *manifest.[hash].js*, our manifest that gets inlined into *index.html*
+* *vendor.[hash].js*, our framework code
+
+Let's test that our caching works as expected. Make a small change to the text in the render function in *ContactUs.js* and run the build again. Open the *dist* folder and notice none of the JavaScript files were changed. Only two new files were created - a new *manifest.[hash].js* and another *1.[hash].chunk.js* file (with a new hash) containing the updated code with the changes we made for *ContactUs.js*. After we ran the build, *index.html* was updated with the new manifest, and only the bundle that contains the change we made was created. All the other files were isolated because we are using *chunkHash* rather than *hash*! Our caching is now working as we expect it to!
+
+Let's do some clean-up now that we know everything is working correctly. Lets delete our old *webpack.config.js* file. Next, let's modify our build script a little:
+
+```
+    scripts: {
+        ...,
+        "build:prod": "rm -rf ./dist; NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
+    },
+```
+This blows out the old *dist* directory in order to keep its size small and containing only the files it needs. Now our caching works correctly!

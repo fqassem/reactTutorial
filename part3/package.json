@@ -6,8 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "NODE_ENV=development node -r babel-register ./devServer.js",
-    "build:dev": "rm -rf ./dev && NODE_ENV=development node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.development.config.js",
-    "build:prod": "rm -rf ./dist && NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
+    "build:prod": "rm -rf ./dist; NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
   },
   "keywords": [],
   "author": "",
