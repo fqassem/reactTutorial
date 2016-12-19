@@ -1,12 +1,12 @@
 import React from 'react';
 
-class ContactUs extends React.Component {
+class SignIn extends React.Component {
     render() {
         return (
             <div>
-                <h1>Contact Us</h1>
+                <h1>Sign In</h1>
             </div>
         );
     }
 }
-export default ContactUs;
+export default SignIn;

@@ -2,7 +2,7 @@ import Container from './Container';
 
 if(process.env.NODE_ENV === 'development' && module.hot) {
     require('./Home');
-    require('./ContactUs');
+    require('./SignIn');
 }
 
 function errorLoading(error) {
@@ -25,9 +25,9 @@ export default {
     },
     childRoutes: [
         {
-            path: 'contactUs',
+            path: 'signIn',
             getComponent(location, cb) {
-                System.import('./ContactUs')
+                System.import('./SignIn')
                 .then(loadRoute(cb, false))
                 .catch(errorLoading);
             }

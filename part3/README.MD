@@ -213,13 +213,13 @@ Now you can just run `npm run build:prod` instead!
 Look inside the *dist* folder and see what we have so far:
 
 * *0.[hash].chunk.js*, containing our *Home.js* code (separated out because it's a dynamic route using System.import)
-* *1.[hash].chunk.js*, containing our *ContactUs.js* code (another dynamic route extracted into it's own chunk/bundle)
+* *1.[hash].chunk.js*, containing our *SignIn.js* code (another dynamic route extracted into it's own chunk/bundle)
 * *app.[hash].js*, containing the rest of the app code we wrote ourselves
 * *index.html*, containing the inlined Webpack manifest and script tags
 * *manifest.[hash].js*, our manifest that gets inlined into *index.html*
 * *vendor.[hash].js*, our framework code
 
-Let's test that our caching works as expected. Make a small change to the text in the render function in *ContactUs.js* and run the build again. Open the *dist* folder and notice none of the JavaScript files were changed. Only two new files were created - a new *manifest.[hash].js* and another *1.[hash].chunk.js* file (with a new hash) containing the updated code with the changes we made for *ContactUs.js*. After we ran the build, *index.html* was updated with the new manifest, and only the bundle that contains the change we made was created. All the other files were isolated because we are using *chunkHash* rather than *hash*! Our caching is now working as we expect it to!
+Let's test that our caching works as expected. Make a small change to the text in the render function in *SignIn.js* and run the build again. Open the *dist* folder and notice none of the JavaScript files were changed. Only two new files were created - a new *manifest.[hash].js* and another *1.[hash].chunk.js* file (with a new hash) containing the updated code with the changes we made for *SignIn.js*. After we ran the build, *index.html* was updated with the new manifest, and only the bundle that contains the change we made was created. All the other files were isolated because we are using *chunkHash* rather than *hash*! Our caching is now working as we expect it to!
 
 Let's do some clean-up now that we know everything is working correctly. Lets delete our old *webpack.config.js* file. Next, let's modify our build script a little:
 

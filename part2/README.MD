@@ -110,7 +110,7 @@ npm install --save react-router
 
 Be sure you’ve installed v3 by looking at your package.json file. Because React-Router is required by the code we run on the browser, we install it as a 'dependency'.
 
-Let’s also create some files that represent pages within our application. This will help showcase routing, as well as incremental loading of our app. Create a *pages* directory within *src*. This directory will hold the pages of our website that a user can navigate to. Add the following files:
+Let’s also create some files that represent pages within our application. This will help showcase routing, as well as incremental loading of our app. It will also be the start of our simple progressive web-app. Create a *pages* directory within *src*. This directory will hold the pages of our website that a user can navigate to. Add the following files:
 
 ### Container.js
 ```
@@ -124,7 +124,7 @@ class Container extends React.Component {
                 <nav>
                     <ul>
                         <li><Link to="/">Home</Link></li>
-                        <li><Link to="/contactUs">Contact Us</Link></li>
+                        <li><Link to="/signIn">Sign In</Link></li>
                     </ul>
                 </nav>
                 {this.props.children}
@@ -154,23 +154,23 @@ class Home extends React.Component {
 export default Home;
 ```
 
-### ContactUs.js
+### SignIn.js
 ```
 import React from 'react';
 
-class ContactUs extends React.Component {
+class SignIn extends React.Component {
     render() {
         return (
             <div>
-                <h1>Contact Us</h1>
+                <h1>Sign In</h1>
             </div>
         );
     }
 }
-export default ContactUs;
+export default SignIn;
 ```
 
-*Home.js* and *ContactUs.js* are very simple, self-explanatory pages. *Container.js*, however, is a bit more complicated. It contains the nav-bar of the application, which contains **react-router** Links for navigation. Container is also responsible for showing the component associated with the current route. How does React-Router know to associate routes with specific components? It doesn’t yet, so let’s add this configuration. Within the *pages* directory, create a *routes.js* file. *routes.js* will contain some boiler-plate for our application to load routes dynamically:
+*Home.js* and *SignIn.js* are very simple, self-explanatory pages. *Container.js*, however, is a bit more complicated. It contains the nav-bar of the application, which contains **react-router** Links for navigation. Container is also responsible for showing the component associated with the current route. How does React-Router know to associate routes with specific components? It doesn’t yet, so let’s add this configuration. Within the *pages* directory, create a *routes.js* file. *routes.js* will contain some boiler-plate for our application to load routes dynamically:
 
 ```
 import Container from './Container';
@@ -195,9 +195,9 @@ export default {
     },
     childRoutes: [
         {
-            path: 'contactUs',
+            path: 'signIn',
             getComponent(location, cb) {
-                System.import('./ContactUs')
+                System.import('./SignIn')
                 .then(loadRoute(cb, false))
                 .catch(errorLoading);
             }
@@ -314,10 +314,10 @@ Finally, we need to make a small fix for Webpack 2 and Hot Module reloading to p
 ```
 if(process.env.NODE_ENV === 'development' && module.hot) {
     require('./Home');
-    require('./ContactUs');
+    require('./SignIn');
 }
 ```
 
 This simply requires all of the routes we might load dynamically so a server request is no longer needed to grab them. What this basically means is that lazy-loading routes will only work in production, not in development. In development, those files will be packaged up with the rest of the app code. That's not a huge deal, but we should be sure that every time we add a new route, we should add it both to this code block and the code block that gets exported at the bottom of *routes.js*. Not a big deal - it should be fixed soon!
 
-Now, run `npm run start` and open our app in a browser. Make a change in *ContactUs.js* or *Home.js* and you should see it reflected automatically in the browser after you save the file!
+Now, run `npm run start` and open our app in a browser. Make a change in *SignIn.js* or *Home.js* and you should see it reflected automatically in the browser after you save the file!

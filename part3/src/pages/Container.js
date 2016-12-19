@@ -8,7 +8,7 @@ class Container extends React.Component {
                 <nav>
                     <ul>
                         <li><Link to="/">Home</Link></li>
-                        <li><Link to="/contactUs">Contact Us</Link></li>
+                        <li><Link to="/signIn">Sign In</Link></li>
                     </ul>
                 </nav>
                 {this.props.children}
