@@ -1,5 +1,5 @@
 # React Tutorial
-Throughout this tutorial, we will be creating a modern, single-page, progressive web-application. Each 'part' of the project is self-contained inside its own folder with its own index.html, package.json, and source files. Subsequent parts will iterate on each other. This tutorial will utilize the following libraries and features:
+Throughout this tutorial, we will be creating a modern, single-page, progressive web-application framework and sample app. Each 'part' of the project is self-contained inside its own folder with its own *index.html*, *package.json*, and source files. Subsequent parts will iterate on each other. This tutorial will utilize the following libraries and features:
 
 ## Libraries
 * [Webpack 2](https://webpack.js.org/) - build tool
@@ -11,26 +11,35 @@ Throughout this tutorial, we will be creating a modern, single-page, progressive
 * [SASS](http://sass-lang.com/) - easier CSS
 * [Express.js](http://expressjs.com/) - Node.js-based development server for hosting applications
 * [ESLint](http://eslint.org/) - better JavaScript linting for consistent code style
-
-## Features
-* Testing
-    * [Karma](https://karma-runner.github.io/1.0/index.html) - test runner
+* Testing using:
+    * [Karma](https://karma-runner.github.io/1.0/index.html) - runs tests in a real browser environment
     * [Mocha](https://mochajs.org/) - test framework
     * [Chai](http://chaijs.com/) - test assertions
     * [Sinon](http://sinonjs.org/) - creating test mocks, spies, stubs
-* Hot Module Reloading - immediately show code changes on browser
-* Code-splitting (lazy-loading routes) - for smaller initial page load
-* Service Workers - updates our application in the background
+
+## Features
+* Hot Module Reloading - immediately show code changes on the browser using:
+    * [Webpack-Dev-Middleware](https://github.com/webpack/webpack-dev-middleware) - Watches source changes and serves most up-to-date bundle to our server
+    * [Webpack-Hot-Middleware](https://github.com/glenjamin/webpack-hot-middleware) - Enables hot reloading on our Express Server
+    * [React-Hot-Loader 3](https://github.com/gaearon/react-hot-loader/tree/next) - Preserves state for hot-reloaded React componenents
+* Code-splitting (lazy-loading routes) for smaller initial page load
+* Service Workers - update our application and cache in the background for faster page loads
 
 # Tutorial summary (subject to change)
 ## Part 1
 Setting up NPM, Webpack, Babel, React, and Express.js development server
 
 ## Part 2
-Adding ESLint, Routing, and Hot-Loading
+ESLint, Routing, and Hot-Loading
 
 ## Part 3
-Adding production build and Testing
+Production build and testing
 
 ## Part 4
-Adding State Management and CSS support
+Redux state management and Redux Saga side-effect modeling
+
+## Part 5
+CSS support
+
+## Part 6
+Sample progressive application walk-through
