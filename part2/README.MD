@@ -53,6 +53,18 @@ Now, let's run `npm run start`. Notice that our build complains about 'No ESLint
 
 This tells ESLint that global ‘browser’ variables like `window` and `document` are expected and should not raise red flags. In `"parserOptions"`, we are telling ESLint that we will be using ES6 and ES6 modules (source files that use `import` and `export`). We also tell it that we will use JSX in our code so that it doesn't complain. Because we are using ES6 modules and ES6 modules are in strict mode by default, we set `"impliedStrict"` to true so that any "use strict" declarations in our code are caught.
 
+By default, ESLint uses a parser called 'Espree'. While this parser is useful for most general cases, it won't support all of the advanced syntax or experimental features that Babel knows about and uses to transpile our code. To get ESLint and Babel to play nice, let's use the **Babel-ESLint** parser instead of the default provided by ESLint.
+
+```
+npm install --save-dev babel-eslint
+```
+
+Now, in your *.eslintrc* file, add the following line to tell ESLint we want to use Babel-ESLint as our parser:
+
+```
+    "parser": "babel-eslint"
+```
+
 Let’s set up ESLint to run automatically on our files within our environment, not just during our build. Pick the environment you're using and follow the instructions to install the ESLint plugin:
 
 * [IntelliJ](https://plugins.jetbrains.com/plugin/7494)
