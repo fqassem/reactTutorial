@@ -100,6 +100,8 @@ We are including the HtmlWebpackPlugin, and 'path' in our config. 'path' is a No
 
 `"output"` defines how the generated 'bundles' will be named and where they will end up. Here we are telling Webpack to put these bundles into a *build* directory. These files will be named with the provided bundle name ("[name]", taken from the key in the `"entry"` config) and a hash that Webpack generates to help with caching. In our case, the output bundle will be named: *app.[generated_hash].js*. 'publicPath' is a bit confusing, but it's where where the server will resolve the location of our output files. 'publicPath' can be a bit complicated to set up if you're using a CDN or hosting files elsewhere, but our config should suffice for now. If you're curious, see this [link](https://github.com/webpack/docs/wiki/configuration#outputpublicpath) for more info.
 
+Side note: `[]` in Webpack configs are placeholder strings. `[name]` returns an `entry` name. `[hash]` returns the hash of the build. `[path]` returns an `entry` path. `[chunkHash]` returns a hash for a specfic 'chunk' or 'bundle' of code.
+
 `"plugins"` defines Webpack plugins that affect the build process. Common plugins defined here include minification plugins, dedupe plugins, and HTML generation plugins, among others. For now, we are creating a development-only build, so we have no need for minification or deduping yet.
 
 We are using the HtmlWebpackPlugin. This plugin modifies the HTML we wrote to dynamically include the Javascript files we generated from the Webpack build! The configuration basically says to ‘inject’ the generated script files after the ‘body’ tag of the supplied ‘index.html’ template file. If you wanted, you could have HtmlWebpackPlugin generate an 'index.html' file from scratch!
