@@ -5,7 +5,6 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 export default {
     entry: {
         app: [
-            'react-hot-loader/patch',
             'webpack-hot-middleware/client',
             path.join(__dirname, './src/index.js')
         ]
