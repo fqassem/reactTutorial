@@ -260,7 +260,7 @@ We have 3 modules that we installed earlier that work together to allow the app 
 2. webpack-hot-middleware
 3. react-hot-loader
 
-We set all of these up in part one. The last thing we have to do in our application is configure the modules to be able to reload themselves after they've been updated. Let's do this now.
+The last thing we have to do in our application is configure the modules to be able to reload themselves after they've been updated. Let's do this now.
 
 The first step is to separate out the Main component of the app into its own file rather than having it live in *index.js*. Create a *Main.js* file in the *src* folder and pull out the Main class and its dependencies, excluding 'routes.js'. After we're done, *index.js* should look like this:
 
@@ -321,7 +321,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 
 This block of code is responsible for reloading our application code when a change is made. In part 1, if we tried to make a change to the app, we would get a warning in the console saying "This module doesn't know how to reload itself". That's because we didn't include this section of code! 
 
-Now, let's add the last configuration we need for hot reloading to work correctly. We need to add 'react-hot-loader' as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components.
+Now, let's add the last configuration we need for hot reloading to work correctly and play nice with the internal state of our React components. We need to add 'react-hot-loader' as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components.
 ```
 entry: {
         app: [
@@ -347,7 +347,7 @@ Next, we need to modify our *.babelrc* so Babel knows about react-hot-loader:
 }
 ```
 
-Not a lot of explanation is done as to why and how this configuration works, but it's necessary for hot-reloading to work with React components. See [here](https://github.com/gaearon/react-hot-loader/blob/next/docs/README.md#migrating-from-create-react-app) for the original set up instructions.
+Not a lot of explanation is done as to why and how this configuration works, but it's necessary for hot-reloading to preserve the state of React components. See [here](https://github.com/gaearon/react-hot-loader/blob/next/docs/README.md#migrating-from-create-react-app) for the original set up instructions.
 
 Finally, we need to make a small fix for Webpack 2 and Hot Module reloading to play nice. Open up *routes.js*. Notice that our dynamic routes are all using System.import. Sadly, dynamic routing doesn't work fully with Hot Module Reloading yet, so we need to add the following to the top of our *routes.js* file:
 
