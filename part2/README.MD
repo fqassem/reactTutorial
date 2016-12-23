@@ -145,7 +145,7 @@ class Container extends React.Component {
     }
 }
 Container.propTypes = {
-    children: React.PropTypes.node
+    children: React.PropTypes.object.isRequired
 };
 export default Container;
 ```
@@ -294,7 +294,7 @@ Main.propTypes = {
 export default Main;
 ```
 
-Note that we'll be passing in the routes via props now rather than importing them. Next, we need to modify *index.js* to Hot Reload our application. We need to include a dependency on 'AppContainer' from the 'react-hot-loader' module. *AppContainer* is simply a wrapper provided by React-Hot-Loader that we need to include so that Hot Reloading works correctly and preserves our application's current state. We need to wrap our 'Main' like so:
+Note that we'll be passing in the routes via props now rather than importing them. Next, we need to modify *index.js* to Hot Reload our application. We need to include a dependency on 'AppContainer' from the 'react-hot-loader' module. *AppContainer* is simply a wrapper provided by React-Hot-Loader that we need to include so that Hot Reloading preserves our application's current state. We need to wrap our 'Main' like so:
 
 ```
 render(<AppContainer>
@@ -319,7 +319,35 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 }
 ```
 
-And with that, we're almost done. This block of code is responsible for reloading our application code when a change is made. While this boilerplate may seem excessive compared to using 'webpack-dev-server', it's very powerful in allowing us to define the server and how updates are made.
+This block of code is responsible for reloading our application code when a change is made. In part 1, if we tried to make a change to the app, we would get a warning in the console saying "This module doesn't know how to reload itself". That's because we didn't include this section of code! 
+
+Now, let's add the last configuration we need for hot reloading to work correctly. We need to add 'react-hot-loader' as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components.
+```
+entry: {
+        app: [
+            'react-hot-loader/patch',
+            'webpack-hot-middleware/client',
+            path.join(__dirname, './src/index.js')
+        ]
+    },
+```
+
+Next, we need to modify our *.babelrc* so Babel knows about react-hot-loader:
+
+```
+{
+    "presets": ["latest", "react"],
+    "env": {
+        "development": {
+            "plugins": [
+                "react-hot-loader/babel"
+            ]
+        }
+     }
+}
+```
+
+Not a lot of explanation is done as to why and how this configuration works, but it's necessary for hot-reloading to work with React components. See [here](https://github.com/gaearon/react-hot-loader/blob/next/docs/README.md#migrating-from-create-react-app) for the original set up instructions.
 
 Finally, we need to make a small fix for Webpack 2 and Hot Module reloading to play nice. Open up *routes.js*. Notice that our dynamic routes are all using System.import. Sadly, dynamic routing doesn't work fully with Hot Module Reloading yet, so we need to add the following to the top of our *routes.js* file:
 
