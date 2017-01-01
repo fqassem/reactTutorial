@@ -25,7 +25,7 @@ This tutorial will utilize the following libraries and features:
 * Hot Module Reloading - immediately show code changes on the browser using:
     * [Webpack-Dev-Middleware](https://github.com/webpack/webpack-dev-middleware) - Watches source changes and serves most up-to-date bundle to our server
     * [Webpack-Hot-Middleware](https://github.com/glenjamin/webpack-hot-middleware) - Enables hot reloading on our Express Server
-    * [React-Hot-Loader 3](https://github.com/gaearon/react-hot-loader/tree/next) - Preserves state for hot-reloaded React componenents
+    * [React-Hot-Loader 3](https://github.com/gaearon/react-hot-loader/tree/next) - Preserves state for hot-reloaded React components
 * Code-splitting (lazy-loading routes) for smaller initial page load
 * Service Workers - update our application and cache in the background for faster page loads
 
@@ -47,3 +47,6 @@ CSS support
 
 ## Part 6
 Sample progressive application walk-through
+
+#Useful Links
+https://medium.com/@addyosmani/progressive-web-apps-with-react-js-part-i-introduction-50679aef2b12#.nnp1mnt10
