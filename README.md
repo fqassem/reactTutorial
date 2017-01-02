@@ -11,7 +11,6 @@ This tutorial will utilize the following libraries and features:
 * [React](https://facebook.github.io/react/) - component-based view library
 * [React-Router](https://github.com/ReactTraining/react-router) - app routing
 * [Redux](http://redux.js.org/) - predictable state management
-* [Redux-Saga](https://github.com/yelouafi/redux-saga) - side-effect modeling middleware
 * [SASS](http://sass-lang.com/) - easier CSS
 * [Express.js](http://expressjs.com/) - Node.js-based development server for hosting applications
 * [ESLint](http://eslint.org/) - better JavaScript linting for consistent code style
@@ -40,7 +39,7 @@ ESLint, Routing, and Hot-Loading
 Testing and production build
 
 ## Part 4
-Redux state management and Redux Saga side-effect modeling
+Redux state management, authentication, and forms
 
 ## Part 5
 CSS support

@@ -3,9 +3,9 @@ In this part, we will focus on adding state management and the reasons for doing
 
 ## Milestone 1: State Management with Redux
 ### Setting up the store
-The bigger a React application gets, the harder it becomes to deal reason about state. It's definitely possible to write React applications by just using `React.setState` calls. However, the bigger your application gets, the more difficult it becomes to share state between components.
+The bigger a React application gets, the harder it becomes to deal reason about state. It's definitely possible to write React applications by just using `React.setState` calls. However, the bigger your application gets, the more difficult it becomes to share state between components. This is especially true if the components attempting to share state don't have a parent-child relationship.
 
-There are quite a few libraries that allow you to manage state more efficiently in JavaScript. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is based on 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. One of the biggest drawbacks of Redux is the amount of boiler-plate you have to write. There are libraries to aid with this, but we will be using plain Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, but mostly how to set it up and use it in our app.
+There are quite a few libraries that allow you to manage state more efficiently. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is based on 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. Redux is extremely powerful, but it comes at the cost of writing a bit of boilerplate code. There are libraries to help alleviate this problem, but we'll stick to using plain old Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, so we won't be going into depth about all of its features.
 
 Let's install and setup Redux in our application.
 
@@ -52,40 +52,37 @@ Now, let's create the store and pass it in. Open *index.js* and import 'createSt
 Our *index.js* should look like this now:
 
 ```
+```
+
+Run `npm run start` and notice that we get no errors. We have a store set up now! Before we continue, we need a little bit more setup.  In order to write clean, asynchronous actions in Redux, we will need middleware called 'Redux-Thunk'. To read more about the reasoning behind it, check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/). To summarize, writing asynchronous actions while obeying the laws of 'pure' functions can get ugly. The 'redux-thunk' middleware makes it slightly less ugly. Simple!
+
+Let's install and set it up:
+
+```
+npm install --save redux-thunk
+```
+
+Now, open up *src/index.js*. We'll need `applyMiddleware` from Redux, which tells the Redux store we'll be using some middleware that we'll pass in as parameters.  We also need to import 'thunk' from Redux-Thunk, which is our middleware. Finally, we'll need to tell the store we're using the middleware. Our *src/index.js* should now look like this:
+
+```
 import React from 'react';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
-import { createStore } from 'redux';
+import { createStore, applyMiddleware } from 'redux'; //import applyMiddleware library function
+import thunk from 'redux-thunk'; //thunk middleware
 
 import routes from './pages/routes';
 import Main from './Main';
 
+const store = createStore(() => {}, applyMiddleware(thunk)); //pass in 'applyMiddleware' with 'thunk' to the store
 const rootElement = document.getElementById('root');
-const store = createStore(rootReducer);
-
-render(<AppContainer>
-            <Main routes={routes} store={store}/>
-        </AppContainer>,
-        rootElement);
-
-if(process.env.NODE_ENV === 'development' && module.hot) {
-    module.hot.accept('./pages/routes', () => {
-        const updatedRoutes = require('./pages/routes').default;
-
-        render(
-            <AppContainer>
-                <Main routes={updatedRoutes} />
-            </AppContainer>,
-            rootElement
-        );
-    });
-}
+...
 ```
 
-Run `npm run start` and notice that we get no errors. We have a store set up now!
+Now, we have our middleware set up, and we can create asynchronous actions!
 
 ### Actions, Reducers, and State Shape
-Now that we have a store set up, we need our store to do something useful! First, let's think about what we want our store to keep track of.
+Now that we have a store and middleware set up, we need our store to do something useful! First, let's think about what we want our store to keep track of.
 
 Let's think about the website we want to create. It shouldn't be too complex. At minimum, we'd like the following features:
 
@@ -123,15 +120,13 @@ Also note that we are calling some files *index.js*. *index.js* is a special fil
 import stuff from './redux/user/index.js'
 ```
 
-you can shorten the path to just './redux/user'. It's a useful shorthand that we can use elsewhere.
+you can shorten the path to just `'./redux/user'`. It's a very useful shorthand!
 
-Let's define each of these files, starting with the *user* folder
+Let's define each of these files, starting with the *InitialUserState*
 
 #### src/state/user/InitialUserState.js
 ```
 export default {
-    isFetching: false,
-    error: null,
     id: null,
     firstName: '',
     lastName: '',
@@ -139,12 +134,75 @@ export default {
     role: 'GUEST'
 };
 ```
-
-While most of the fields are self-explanatory, notice that we added 'isFetching' and 'error'. Because our user data is coming from a backend somewhere, it's possible that we might get an error while retrieving the data. Because sign-in, sign-out, and registration are asynchronous, we will use these two fields to keep track of
+A default user should have no id, blank strings for their data, and a role of 'GUEST'.
 
 #### src/state/user/index.js
+```
+import InitialUserState from './InitialUserState';
 
+//Action constants
+export const SET_USER_DATA = 'SET_USER_DATA';
 
+//Actions
+export const setUserData = (userData) => {
+    return { type: SET_USER_DATA, userData };
+};
+
+export const signIn = (credentials) => {
+    return (dispatch) => {
+        return new Promise(
+            (resolve, reject) => {
+                setTimeout(() => {
+                    if(credentials.username !== 'fail') {
+                        dispatch(setUserData({}));
+                        resolve();
+                    } else {
+                        reject(Error('Bad Creds'));
+                    }
+                }, 2000);
+            }
+        );
+    };
+};
+
+//Reducer
+export default (state = InitialUserState, action) => {
+    switch(action.type) {
+        case SET_USER_DATA: {
+            const userData = action.userData;
+            return Object.assign({}, state, { ...userData });
+        }
+        default:
+            return state;
+    }
+};
+```
+
+We define two actions: `setUserData`, a pure Redux action creator, and `signIn`, an asynchronous 'thunk' action. `signIn` is currently a placeholder until we plug in an actual backend, but it will behave similarly to a 'fetch' or 'XMLHttpRequest'. Unless the username we sign in with is 'fail', the hard-coded user data will be added to the state by the reducer, the promise will be resolved, and the user will be signed-in.
+
+Now that we have our user reducer and initial state defined, let's define our root reducer. In the *state* folder, create a file called *index.js*:
+
+```
+import { combineReducers } from 'redux';
+import user from './user';
+
+export default combineReducers({
+    user
+});
+```
+
+As we define more reducers, we'll add them to this file. Finally, let's add this root reducer to our main *index.js* in the root of our application (where we create our store):
+
+```
+import rootReducer from './state'; //import the root reducer
+import thunk from 'redux-thunk'; //thunk middleware
+
+import routes from './pages/routes';
+import Main from './Main';
+
+const store = createStore(rootReducer, applyMiddleware(thunk)); //pass in 'applyMiddleware' with 'thunk' to the store
+const rootElement = document.getElementById('root');
+```
 
 Notice that we're using arrow functions in our ES6 classes to automatically bind `this` to our class methods. This is still an experimental feature and Babel will need to know how to transpile it. If you don't want to do any configuration changes, you can simply use the old syntax of binding the class functions in the constructor and instead use the old function declaration. If you want to use this syntax, you'll need to install the **babel-transform-class-properties** plugin:
 
@@ -161,7 +219,10 @@ and modify our *.babelrc* to use this plugin during transpilation by adding it t
 
 ```
 
-Another cool feature this plugin allows is declaring static class properties! We won't do that for now, but it's defintely a useful feature.
+Another cool feature this plugin allows is declaring static class properties! We won't do that for now, but it's definitely a useful feature.
+
+
+
 
 One last thing to note: much like our routes, our reducers don't hot reload automatically either. To fix this, we need to open up *src/index.js* and add the following to the `if` block:
 
