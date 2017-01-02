@@ -1,37 +1,41 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import { signInRequested } from '../state/user';
+import { browserHistory } from 'react-router';
+import { signIn } from '../state/user';
 import SignInForm from '../forms/SignInForm';
 
 class SignIn extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            isFetching: false,
+            error: null
+        };
+    }
+
     onSignIn = (username, password) => {
-        this.props.onSignInRequested(username, password);
+        const credentials = { username, password };
+
+        this.setState({ isFetching: true, error: null });
+        this.props.signIn(credentials)
+            .then(() => this.setState({ isFetching: false }))
+            .then(() => browserHistory.push('/'))
+            .catch(error => this.setState({ isFetching: false, error }));
     }
 
     render() {
+        const { isFetching, error } = this.state;
         return (
             <div>
                 <h1>Sign In</h1>
-                <SignInForm onSignIn={this.onSignIn} isFetching={this.props.isFetching} />
+                <SignInForm onSignIn={this.onSignIn} isFetching={isFetching} error={error}/>
             </div>
         );
     }
 }
 SignIn.propTypes = {
-    onSignInRequested: React.PropTypes.func.isRequired,
-    isFetching: React.PropTypes.bool
+    signIn: React.PropTypes.func.isRequired
 };
-const mapStateToProps = (state) => {
-    return {
-        isFetching: state.user.isFetching
-    };
-};
-const mapDispatchToProps = (dispatch) => {
-    return {
-        onSignInRequested: (username, password) => {
-            dispatch(signInRequested(username, password));
-        }
-    };
-};
-export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
+export default connect(null, { signIn })(SignIn);

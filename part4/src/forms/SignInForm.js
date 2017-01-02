@@ -5,26 +5,20 @@ class SignInForm extends React.Component {
         super(props);
         this.state = {
             username: '',
-            password: '',
-            usernameError: false,
-            passwordError: false,
-            submitError: false
+            password: ''
         };
     }
 
     onSignIn = (event) => {
-        const { username, password, usernameError, passwordError } = this.state;
+        const { username, password } = this.state;
         event.preventDefault();
 
-        //if(!usernameError && !passwordError) {
-            this.props.onSignIn(username, password);
-        //}
+        this.props.onSignIn(username, password); //call the passed in onSignIn function
     }
 
     handleUsernameChange = (event) => {
         const newUsername = event.target.value;
         this.setState({
-            usernameError: newUsername.length === 0,
             username: newUsername
         });
     }
@@ -32,27 +26,25 @@ class SignInForm extends React.Component {
     handlePasswordChange = (event) => {
         const newPassword = event.target.value;
         this.setState({
-            passwordError: newPassword.length === 0,
             password: newPassword
         });
     }
 
     render() {
-        const { username, password, usernameError, passwordError, submitError, isFetching } = this.state;
+        const { username, password } = this.state;
+        const { isFetching, error } = this.props;
         return (
             <form onSubmit={this.onSignIn}>
                 { isFetching && <div>Loading gif</div> }
-                { submitError && <div>Your username or password was invalid</div> }
+                { error && <div>{error.message}</div> }
                 <div>
                     <label>Username</label>
                     <input type="text" placeholder="Username" name="username"
                       onChange={this.handleUsernameChange} value={username}/>
-                    { usernameError && <div>Your username should not be blank </div> }
 
                     <label>Password</label>
                     <input type="password" placeholder="Password" name="password"
                       onChange={this.handlePasswordChange} value={password}/>
-                    { passwordError && <div>Your password should not be blank</div> }
 
                     <button type="submit">Sign In</button>
                 </div>
@@ -61,6 +53,8 @@ class SignInForm extends React.Component {
     }
 }
 SignInForm.propTypes = {
-    onSignIn: React.PropTypes.func.isRequired
+    onSignIn: React.PropTypes.func.isRequired,
+    isFetching: React.PropTypes.bool,
+    error: React.PropTypes.object
 };
 export default SignInForm;

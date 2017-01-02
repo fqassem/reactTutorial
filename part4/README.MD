@@ -178,7 +178,7 @@ export default (state = InitialUserState, action) => {
 };
 ```
 
-We define two actions: `setUserData`, a pure Redux action creator, and `signIn`, an asynchronous 'thunk' action. `signIn` is currently a placeholder until we plug in an actual backend, but it will behave similarly to a 'fetch' or 'XMLHttpRequest'. Unless the username we sign in with is 'fail', the hard-coded user data will be added to the state by the reducer, the promise will be resolved, and the user will be signed-in.
+To get us started, let's create the sign-in functionality. We define two actions: `setUserData`, a pure Redux action creator, and `signIn`, an asynchronous 'thunk' action. `signIn` is currently a placeholder until we plug in an actual backend, but it will behave similarly to a 'fetch' or 'XMLHttpRequest'. Unless the username we sign in with is 'fail', the hard-coded user data will be added to the state by the reducer, the promise will be resolved, and the user will be signed-in.
 
 Now that we have our user reducer and initial state defined, let's define our root reducer. In the *state* folder, create a file called *index.js*:
 
@@ -203,6 +203,136 @@ import Main from './Main';
 const store = createStore(rootReducer, applyMiddleware(thunk)); //pass in 'applyMiddleware' with 'thunk' to the store
 const rootElement = document.getElementById('root');
 ```
+
+Now, we've got our reducer hooked up to our store. If we run our application, nothing useful will happen because we're not calling our `signIn` function any where! Let's fix that in the next section.
+
+### Adding sign-in form
+We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our signIn state management, let's create a 'sign-in' form. Let's create a new folder that houses the forms we're goign to create. In the root of our application, create a *src/forms* folder. Within this folder, create a *SignInForm.js* file:
+
+```
+import React from 'react';
+
+class SignInForm extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            username: '',
+            password: ''
+        };
+    }
+
+    onSignIn = (event) => {
+        const { username, password } = this.state;
+        event.preventDefault();
+
+        this.props.onSignIn(username, password); //call the passed in onSignIn function
+    }
+
+    handleUsernameChange = (event) => {
+        const newUsername = event.target.value;
+        this.setState({
+            username: newUsername
+        });
+    }
+
+    handlePasswordChange = (event) => {
+        const newPassword = event.target.value;
+        this.setState({
+            password: newPassword
+        });
+    }
+
+    render() {
+        const { username, password } = this.state;
+        const { isFetching, error } = this.props;
+        return (
+            <form onSubmit={this.onSignIn}>
+                { isFetching && <div>Loading gif</div> }
+                { error && <div>{error.message}</div> }
+                <div>
+                    <label>Username</label>
+                    <input type="text" placeholder="Username" name="username"
+                      onChange={this.handleUsernameChange} value={username}/>
+
+                    <label>Password</label>
+                    <input type="password" placeholder="Password" name="password"
+                      onChange={this.handlePasswordChange} value={password}/>
+
+                    <button type="submit">Sign In</button>
+                </div>
+            </form>
+        );
+    }
+}
+SignInForm.propTypes = {
+    onSignIn: React.PropTypes.func.isRequired,
+    isFetching: React.PropTypes.bool.isRequired,
+    error: React.PropTypes.object.isRequired
+};
+export default SignInForm;
+```
+
+This is a fairly barebones form. It accepts three props:
+
+* onSignIn - the function we want to be called when the form's 'signIn' button is pressed
+* isFetching - a boolean that tells us if we should show a loading spinner so the user knows something is going on
+* error - if an error occurs or if the user fails to sign in, we'll use this property to show the error to the user
+
+We don't check username or password length, but that should be fairly trivial to implement on your own. We kept the state in this component to a bare minimum so it can be reused if we need to place it in case multiple places in the application.
+
+Now that we've created our form, let's add it to our *pages/SignIn.js* page:
+```
+import React from 'react';
+import { connect } from 'react-redux';
+
+import { browserHistory } from 'react-router';
+import { signIn } from '../state/user';
+import SignInForm from '../forms/SignInForm';
+
+class SignIn extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            isFetching: false,
+            error: null
+        };
+    }
+
+    onSignIn = (username, password) => {
+        const credentials = { username, password };
+
+        this.setState({ isFetching: true, error: null });
+        this.props.signIn(credentials)
+            .then(() => this.setState({ isFetching: false }))
+            .then(() => browserHistory.push('/'))
+            .catch(error => this.setState({ isFetching: false, error }));
+    }
+
+    render() {
+        const { isFetching, error } = this.state;
+        return (
+            <div>
+                <h1>Sign In</h1>
+                <SignInForm onSignIn={this.onSignIn} isFetching={isFetching} error={error}/>
+            </div>
+        );
+    }
+}
+SignIn.propTypes = {
+    signIn: React.PropTypes.func.isRequired
+};
+export default connect(null, { signIn })(SignIn);
+```
+
+The `onSignIn` function is the heart of this page. When it's called, we set `isFetching` to true and remove any errors that were present. Then we call the `signIn` Redux thunk action we defined earlier. If it completes successfully, we set `isFetching` to false and we redirect the user to the home page. If an error occurs during the `signIn` call, we capture it.
+
+In the `render` function, we define our *SignInForm* and pass in the props it cares about.
+
+### Adding 'hidden' content
+
+
+
 
 Notice that we're using arrow functions in our ES6 classes to automatically bind `this` to our class methods. This is still an experimental feature and Babel will need to know how to transpile it. If you don't want to do any configuration changes, you can simply use the old syntax of binding the class functions in the constructor and instead use the old function declaration. If you want to use this syntax, you'll need to install the **babel-transform-class-properties** plugin:
 
