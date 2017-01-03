@@ -14,7 +14,14 @@ export const signIn = (credentials) => {
             (resolve, reject) => {
                 setTimeout(() => {
                     if(credentials.username !== 'fail') {
-                        dispatch(setUserData({ id: 1, firstName: 'Tom', lastName: 'Jones', username: 'tomjones', role: 'MEMBER' }));
+                        dispatch(setUserData({
+                            id: 1,
+                            firstName: 'Tom',
+                            lastName: 'Jones',
+                            username: 'tomjones',
+                            email: 'tomjones@gmail.com',
+                            role: 'MEMBER'
+                        }));
                         resolve();
                     } else {
                         reject(Error('Bad Creds'));

@@ -136,11 +136,11 @@ These are pretty standard features for any website. These features are essential
 
 ```
 {
-    user: { id, username, firstName, lastName, role }
+    user: { id, username, firstName, lastName, email, role }
 }
 ```
 
-`user` is our user's state. Initially when a user comes to our website, they will not be logged in. An first-time, unauthenticated user will have no id, firstName, lastName, or username! If the user is not logged in, let's give them a role of 'GUEST'. If they are logged in, the 'user' state should be populated with an `id`, `firstName`, `lastName`, `userName`, and `role` from the backend. A user's role will affect the parts of the website that they can access. In our example website, only an authenticated user can access content other than the log-in page. An authenticated user will have the role of 'MEMBER'.
+`user` is our user's state. Initially when a user comes to our website, they will not be logged in. An first-time, unauthenticated user will have no id, firstName, lastName, or username! If the user is not logged in, let's give them a role of 'GUEST'. If they are logged in, the 'user' state should be populated with an `id`, `firstName`, `lastName`, `userName`, `email`, and `role` from the backend. A user's role will affect the parts of the website that they can access. In our example website, only an authenticated user can access content other than the log-in page. An authenticated user will have the role of 'MEMBER'.
 
 A user will also be interacting with a sign-in form. Should we store the state of the form in Redux? Does the rest of the application need access to the form state? Will other parts of the application affect the state of this form? Will the state of the form need to be kept after the component is unmounted from the DOM? If the answer to these questions is no, we can get away with just using `React.setState()` for component-level state. There are pros and cons for keeping all of your state in Redux. The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll keep component-level state and application-level state separate.
 
@@ -171,10 +171,11 @@ export default {
     firstName: null,
     lastName: null,
     username: null,
+    email: null,
     role: 'GUEST'
 };
 ```
-A default user should have no id, firstName, lastName, userName. They should also have a role of 'GUEST', signifying they are not signed in.
+A default user should have no id, firstName, lastName, userName, or email. They should also have a role of 'GUEST', signifying they are not signed in.
 
 #### src/state/user/index.js
 ```
@@ -194,7 +195,14 @@ export const signIn = (credentials) => {
             (resolve, reject) => {
                 setTimeout(() => {
                     if(credentials.username !== 'fail') {
-                        dispatch(setUserData({ id: 1, firstName: 'Tom', lastName: 'Jones', username: 'tomjones', role: 'MEMBER' }));
+                        dispatch(setUserData({
+                            id: 1,
+                            firstName: 'Tom',
+                            lastName: 'Jones',
+                            username: 'tomjones',
+                            email: 'tomjones@gmail.com',
+                            role: 'MEMBER'
+                        }));
                         resolve();
                     } else {
                         reject(Error('Username or password was invalid'));
