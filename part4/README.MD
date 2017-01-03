@@ -140,7 +140,7 @@ These are pretty standard features for any website. These features are essential
 }
 ```
 
-`user` is our user's state. Initially when a user comes to our website, they will not be logged in. An first-time, unauthenticated user will have no id, firstName, lastName, or username! If the user is not logged in, let's give them a role of 'GUEST'. If they are logged in, the 'user' state should be populated with an `id`, `firstName`, `lastName`, `userName`, and `role` from the backend. A user's role will affect the parts of the website that they can access. In our example website, only an authenticated user can access content other than the log-in page.
+`user` is our user's state. Initially when a user comes to our website, they will not be logged in. An first-time, unauthenticated user will have no id, firstName, lastName, or username! If the user is not logged in, let's give them a role of 'GUEST'. If they are logged in, the 'user' state should be populated with an `id`, `firstName`, `lastName`, `userName`, and `role` from the backend. A user's role will affect the parts of the website that they can access. In our example website, only an authenticated user can access content other than the log-in page. An authenticated user will have the role of 'MEMBER'.
 
 A user will also be interacting with a sign-in form. Should we store the state of the form in Redux? Does the rest of the application need access to the form state? Will other parts of the application affect the state of this form? Will the state of the form need to be kept after the component is unmounted from the DOM? If the answer to these questions is no, we can get away with just using `React.setState()` for component-level state. There are pros and cons for keeping all of your state in Redux. The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll keep component-level state and application-level state separate.
 
@@ -194,7 +194,7 @@ export const signIn = (credentials) => {
             (resolve, reject) => {
                 setTimeout(() => {
                     if(credentials.username !== 'fail') {
-                        dispatch(setUserData({ id: 1, firstName: 'Tom', lastName: 'Jones', username: 'tomjones', role: 'USER' }));
+                        dispatch(setUserData({ id: 1, firstName: 'Tom', lastName: 'Jones', username: 'tomjones', role: 'MEMBER' }));
                         resolve();
                     } else {
                         reject(Error('Username or password was invalid'));
@@ -398,7 +398,7 @@ class Home extends React.Component {
         return (
             <div>
                 <h1>Home</h1>
-                {user.role !== 'GUEST' && <p>Welcome, {user.username}</p>}
+                {user.role === 'MEMBER' && <p>Welcome, {user.username}</p>}
             </div>
         );
     }
@@ -414,7 +414,7 @@ const mapStateToProps = (state) => {
 export default connect(mapStateToProps)(Home);
 ```
 
-If the user does not have a role of 'GUEST', they should be signed in. If that's the case, we display their username on the homepage. Easy! Note that this is not a completely fool-proof method of verifying a user is who they say they are. A malicious user could still manipulate the role they are because all of this is being stored and rendered client-side! In a later tutorial, we will add user tokens and server-side authentication so that a malicious user can access and modify only what their token allows them to.
+If the user has a role of 'MEMBER', they should be signed in currently (otherwise, they would still be a 'GUEST'). If they're a 'MEMBER', we will display their username on the homepage. Easy! Note that this is not a completely fool-proof method of verifying a user is who they say they are. A malicious user could still manipulate the role they are because all of this is being stored and rendered client-side! In a later tutorial, we will add user tokens and server-side authentication so that a malicious user can access and modify only what their token allows them to.
 
 ### Configuration updates
 Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, and Redux-Thunk to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
