@@ -39,13 +39,13 @@ ESLint, Routing, and Hot-Loading
 Testing and production build
 
 ## [Part 4](https://github.com/precorFadiQassem/reactTutorial/tree/master/part4)
-State Management with Sign-in
+State Management and Sign-in
 
 ## [Part 5](https://github.com/precorFadiQassem/reactTutorial/tree/master/part5)
-CSS support and Navigation Bar
+Authentication, Registration, and Sign-Out
 
 ## [Part 6](https://github.com/precorFadiQassem/reactTutorial/tree/master/part6)
-Authentication, Registration, and Sign-Out
+CSS support and Navigation Bar
 
 ## [Part 7](https://github.com/precorFadiQassem/reactTutorial/tree/master/part7)
 Backend Requests and Service Workers

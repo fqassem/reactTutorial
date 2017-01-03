@@ -1,22 +1,26 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { connect } from 'react-redux';
+
+import Navbar from '../components/Navbar';
 
 class Container extends React.Component {
     render() {
+        const { userRole } = this.props;
         return (
             <div>
-                <nav>
-                    <ul>
-                        <li><Link to="/">Home</Link></li>
-                        <li><Link to="/signIn">Sign In</Link></li>
-                    </ul>
-                </nav>
+                <Navbar role={userRole} onSignOut={() => alert('signing out')}/>
                 {this.props.children}
             </div>
         );
     }
 }
 Container.propTypes = {
-    children: React.PropTypes.node
+    children: React.PropTypes.node,
+    userRole: React.PropTypes.string.isRequired
 };
-export default Container;
+const mapStateToProps = (state) => {
+    return {
+        userRole: state.user.role
+    };
+};
+export default connect(mapStateToProps)(Container);
