@@ -42,7 +42,7 @@ Testing and production build
 State Management and Sign-in
 
 ## [Part 5](https://github.com/precorFadiQassem/reactTutorial/tree/master/part5)
-Authentication, Registration, and Sign-Out
+Navbar, Sign-out, Register, and Protected Routes
 
 ## [Part 6](https://github.com/precorFadiQassem/reactTutorial/tree/master/part6)
 CSS support and Navigation Bar

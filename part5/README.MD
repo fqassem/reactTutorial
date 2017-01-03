@@ -1,10 +1,10 @@
-#Part 5: Navbar, Registration, Sign-out, and Protected Routes
+#Part 5: Navbar, Sign-out, Register, and Protected Routes
 Now that we have an application with very minimum functionality, let's add some more features! We've already given the user the ability to sign-in with any username and password they choose to. Let's make this a bit more realistic by having the user register for an account and using that account to sign-in. Also, let's give the user the ability to sign out too! That way, we won't need to refresh the app if we want to start over. Let's also create a protected route, something only a signed-in user can access. We demonstrated something similar in concept the last part of the tutorial. Now, instead of simply showing something on the page if the user is signed-in, we'll use React-Router to protect a whole page from unauthorized access!
 
 Before we do any of that, let's first modify our navbar to be 'responsive'. If we are signed-in, we probably don't want the navbar to show a sign-in link. That wouldn't serve much purpose. So let's customize the navbar to show different items based on the user's role! Let's get started!
 
-#Milestone 1: Navbar
-So far, our navbar has been a simply unordered list that lives inside of *Container.js*. While this is a great place for it to exist, it's going to become bigger and more complicated. It probably makes more sense for it to live as a separate component that gets used by *Container.js* instead. Create a *components* folder in the root of our app. Next, within this folder, create a *Navbar.js* file that will contain our nav-bar component. The render function should basically be copied and pasted from the nav-bar code in *Container.js*:
+##Milestone 1: Navbar
+So far, our navbar has been a simple unordered list that lives inside of *Container.js*. While this is a great place for it to exist, it's going to become bigger and more complicated. It probably makes more sense for it to live as a separate component that gets used by *Container.js* instead. Create a *components* folder in the root of our app. Next, within this folder, create a *Navbar.js* file that will contain our nav-bar component. The render function should basically be copied and pasted from the nav-bar code in *Container.js*:
 
 ```
 import React from 'react';
@@ -131,4 +131,62 @@ export default connect(mapStateToProps)(Container);
 
 Note that, for now, we simply alert the user with a placeholder 'signing out' message. When we create the signOut functionality, we'll come back and replace our placeholder alert message! For now, it seems our navbar is finished.
 
-## Milestone 2: Registration, Sign-out, and Protected Routes
+## Milestone 2: Sign-out, Register, and Protected Routes
+
+### Sign-out
+Let's first start by adding sign-out to our application. Open up *state/user/index.js* and let's add the sign out action.
+
+```
+export const signOut = () => {
+    return (dispatch) => {
+        return new Promise(
+            (resolve, reject) => {
+                setTimeout(() => {
+                    dispatch(setUserData(InitialUserState));
+                    resolve();
+                }, 2000);
+            }
+        );
+    };
+};
+```
+
+Our sign out action is pretty simple. It simply calls `setUserData` with InitialUserState as the argument. This basically sets the user data back to what it was before the user signed in. If we stored a sign-in token, this is where we would call and invalidate it. Because we don't have a back-end setup, this should suffice for now. Finally, let's hook this action up to our 'Sign Out' link in the Navbar. Remember that we pass in this action via props, so let's open up *Container.js* and swap our placeholder alert function with a call to `signOut`. Let's also redirect the user to the home page when the signOut call succeeds:
+
+```
+import React from 'react';
+import { connect } from 'react-redux';
+import { browserHistory } from 'react-router';
+
+import { signOut } from '../state/user';
+import Navbar from '../components/Navbar';
+
+class Container extends React.Component {
+    render() {
+        const { userRole } = this.props;
+        return (
+            <div>
+                <Navbar role={userRole} onSignOut={() => this.props.signOut().then(() => browserHistory.push('/'))}/>
+                {this.props.children}
+            </div>
+        );
+    }
+}
+Container.propTypes = {
+    children: React.PropTypes.node,
+    userRole: React.PropTypes.string.isRequired,
+    signOut: React.PropTypes.func.isRequired
+};
+const mapStateToProps = (state) => {
+    return {
+        userRole: state.user.role
+    };
+};
+export default connect(mapStateToProps, { signOut })(Container);
+```
+
+Now, run the application and sign-in. When we 'sign-out', the nav-bar will show the entries for a 'GUEST' user, meaning our sign out has been successful.
+
+### Register
+
+### Protected Routes

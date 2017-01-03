@@ -25,6 +25,19 @@ export const signIn = (credentials) => {
     };
 };
 
+export const signOut = () => {
+    return (dispatch) => {
+        return new Promise(
+            (resolve) => {
+                setTimeout(() => {
+                    dispatch(setUserData(InitialUserState));
+                    resolve();
+                }, 2000);
+            }
+        );
+    };
+};
+
 //Reducer
 export default (state = InitialUserState, action) => {
     switch(action.type) {
