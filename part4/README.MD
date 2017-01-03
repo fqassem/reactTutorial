@@ -1,4 +1,4 @@
-# Part 4: State management and side-effect modeling
+# Part 4: State Management
 In this part, we will focus on adding state management and the reasons for doing so.
 
 ## Milestone 1: State Management with Redux
@@ -7,6 +7,25 @@ The bigger a React application gets, the harder it becomes to deal reason about 
 
 There are quite a few libraries that allow you to manage state more efficiently. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is based on 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. Redux is extremely powerful, but it comes at the cost of writing a bit of boilerplate code. There are libraries to help alleviate this problem, but we'll stick to using plain old Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, so we won't be going into depth about all of its features.
 
+### Side-note: Arrow Functions as class methods
+If you want to use arrow functions as class methods instead of binding in the `render` or constructor, you'll need to install the **babel-transform-class-properties** plugin. This is still an experimental feature (not yet standardized) and Babel will need to know how to transpile it with a plugin. If you don't want to do any configuration changes, you can simply use the old syntax of binding the class functions in the constructor and instead use the old function declaration. If you want to use this syntax:
+
+```
+npm install --save-dev babel-transform-class-properties
+```
+
+and modify our *.babelrc* to use this plugin during transpilation by adding it to (or creating) the 'plugins' array:
+
+```
+    ...,
+    "plugins": ["transform-class-properties"],
+    "env": ...
+
+```
+
+Another cool feature this plugin allows is declaring static class properties! We won't do that for now, but it's definitely a useful feature.
+
+### Regularly scheduled program
 Let's install and setup Redux in our application.
 
 ```
@@ -49,9 +68,37 @@ export default Main;
 
 Now, let's create the store and pass it in. Open *index.js* and import 'createStore' from 'redux'. This is the library function we will use to create our store. It accepts a rootReducer as a parameter. Because we haven't defined any reducers yet, let's simply define an empty function as a placeholder. While we're at it, let's clean the file up a bit by removing some duplication. Instead of us calling `document.getElementById('root')` multiple times in this file, let's replace it with `rootElement` constant we define at the top of the file.
 
-Our *index.js* should look like this now:
-
+So, now our *src/index.js* file looks like this:
 ```
+import React from 'react';
+import { render } from 'react-dom';
+import { AppContainer } from 'react-hot-loader';
+import { createStore } from 'redux';
+
+import routes from './pages/routes';
+import Main from './Main';
+
+const store = createStore(() => {}); //empty placeholder root reducer
+const rootElement = document.getElementById('root');
+
+render(<AppContainer>
+            <Main routes={routes} store={store}/>
+        </AppContainer>,
+        rootElement);
+
+if(process.env.NODE_ENV === 'development' && module.hot) {
+    module.hot.accept('./pages/routes', () => {
+        const updatedRoutes = require('./pages/routes').default;
+
+        render(
+            <AppContainer>
+                <Main routes={updatedRoutes} store={store}/>
+            </AppContainer>,
+            rootElement
+        );
+    });
+}
+
 ```
 
 Run `npm run start` and notice that we get no errors. We have a store set up now! Before we continue, we need a little bit more setup.  In order to write clean, asynchronous actions in Redux, we will need middleware called 'Redux-Thunk'. To read more about the reasoning behind it, check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/). To summarize, writing asynchronous actions while obeying the laws of 'pure' functions can get ugly. The 'redux-thunk' middleware makes it slightly less ugly. Simple!
@@ -128,13 +175,13 @@ Let's define each of these files, starting with the *InitialUserState*
 ```
 export default {
     id: null,
-    firstName: '',
-    lastName: '',
-    username: '',
+    firstName: null,
+    lastName: null,
+    username: null,
     role: 'GUEST'
 };
 ```
-A default user should have no id, blank strings for their data, and a role of 'GUEST'.
+A default user should have no id, firstName, lastName, userName. They should also have a role of 'GUEST', signifying they are not signed in.
 
 #### src/state/user/index.js
 ```
@@ -154,10 +201,10 @@ export const signIn = (credentials) => {
             (resolve, reject) => {
                 setTimeout(() => {
                     if(credentials.username !== 'fail') {
-                        dispatch(setUserData({}));
+                        dispatch(setUserData({ id: 1, firstName: 'Tom', lastName: 'Jones', username: 'tomjones', role: 'USER' }));
                         resolve();
                     } else {
-                        reject(Error('Bad Creds'));
+                        reject(Error('Username or password was invalid'));
                     }
                 }, 2000);
             }
@@ -170,7 +217,7 @@ export default (state = InitialUserState, action) => {
     switch(action.type) {
         case SET_USER_DATA: {
             const userData = action.userData;
-            return Object.assign({}, state, { ...userData });
+            return Object.assign({}, state, userData );
         }
         default:
             return state;
@@ -299,6 +346,12 @@ class SignIn extends React.Component {
         };
     }
 
+    componentWillMount() {
+        if(this.props.user.role !== 'GUEST') { //forward already signed-in users
+            browserHistory.push('/');
+        }
+    }
+
     onSignIn = (username, password) => {
         const credentials = { username, password };
 
@@ -320,43 +373,91 @@ class SignIn extends React.Component {
     }
 }
 SignIn.propTypes = {
-    signIn: React.PropTypes.func.isRequired
+    signIn: React.PropTypes.func.isRequired,
+    user: React.PropTypes.object
 };
-export default connect(null, { signIn })(SignIn);
+const mapStateToProps = (state) => {
+    return {
+        user: state.user
+    };
+};
+export default connect(mapStateToProps, { signIn })(SignIn);
 ```
 
-The `onSignIn` function is the heart of this page. When it's called, we set `isFetching` to true and remove any errors that were present. Then we call the `signIn` Redux thunk action we defined earlier. If it completes successfully, we set `isFetching` to false and we redirect the user to the home page. If an error occurs during the `signIn` call, we capture it.
+The `onSignIn` function is the heart of this page. When it's called, we set `isFetching` to true and remove any errors that were present. Then we call the `signIn` Redux thunk action we defined earlier. If it completes successfully, we set `isFetching` to false and we redirect the user to the home page. If an error occurs during the `signIn` call, we capture it so the form can display it.
 
 In the `render` function, we define our *SignInForm* and pass in the props it cares about.
 
+Notice that we've added a `componentWillMount`. It's purpose is to check if the user is already signed-in. If that's the case, we simply forward them to the Home page.
+
 ### Adding 'hidden' content
-
-
-
-
-Notice that we're using arrow functions in our ES6 classes to automatically bind `this` to our class methods. This is still an experimental feature and Babel will need to know how to transpile it. If you don't want to do any configuration changes, you can simply use the old syntax of binding the class functions in the constructor and instead use the old function declaration. If you want to use this syntax, you'll need to install the **babel-transform-class-properties** plugin:
+Now that we have a way to sign in, let's greet the signed-in user on the home page! Let's start with something simple to demonstrate the concept. In *Home.js* , let's connect the page to Redux and if the user is signed in, let's display their username. After connecting our component and adding the display of username (if the user is signed in), our component looks like this:
 
 ```
-npm install --save-dev babel-transform-class-properties
+import React from 'react';
+import { connect } from 'react-redux';
+
+class Home extends React.Component {
+    render() {
+        const { user } = this.props;
+        return (
+            <div>
+                <h1>Home</h1>
+                {user.role !== 'GUEST' && <p>Welcome, {user.username}</p>}
+            </div>
+        );
+    }
+}
+Home.propTypes = {
+    user: React.PropTypes.object
+};
+const mapStateToProps = (state) => {
+    return {
+        user: state.user
+    };
+};
+export default connect(mapStateToProps)(Home);
 ```
 
-and modify our *.babelrc* to use this plugin during transpilation by adding it to (or creating) the 'plugins' array:
+If the user does not have a role of 'GUEST', they should be signed in. If that's the case, we display their username on the homepage. Easy! Note that this is not a completely fool-proof method of verifying a user is who they say they are. A malicious user could still manipulate the role they are because all of this is being stored and rendered client-side! In a later tutorial, we will add user tokens and server-side authentication so that a malicious user can access and modify only what their token allows them to.
+
+### Hot-Reloading reducers
+One last thing to note: much like our routes, our reducers don't hot reload automatically either. So, if we make changes to our reducers, we won't see it reflected unless we add the following block of code our 'if development' block in *src/index.js*:
 
 ```
-    ...,
-    "plugins": ["transform-class-properties"],
-    "env": ...
+if(process.env.NODE_ENV === 'development' && module.hot) {
+    module.hot.accept('./state', () => {
+        const nextReducer = require('./state').default;
+        store.replaceReducer(nextReducer);
+    });
 
+    module.hot.accept('./pages/routes', () => {
+        ...
+    });
+}
 ```
 
-Another cool feature this plugin allows is declaring static class properties! We won't do that for now, but it's definitely a useful feature.
-
-
-
-
-One last thing to note: much like our routes, our reducers don't hot reload automatically either. To fix this, we need to open up *src/index.js* and add the following to the `if` block:
+Finally, our *src/index.js* file ends up looking like this:
 
 ```
+import React from 'react';
+import { render } from 'react-dom';
+import { AppContainer } from 'react-hot-loader';
+import { createStore, applyMiddleware } from 'redux';
+import thunk from 'redux-thunk';
+
+import rootReducer from './state';
+import routes from './pages/routes';
+import Main from './Main';
+
+const store = createStore(rootReducer, applyMiddleware(thunk));
+const rootElement = document.getElementById('root');
+
+render(<AppContainer>
+            <Main routes={routes} store={store}/>
+        </AppContainer>,
+        rootElement);
+
 if(process.env.NODE_ENV === 'development' && module.hot) {
     module.hot.accept('./state/', () => {
         const nextReducer = require('./state').default;
@@ -364,7 +465,14 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
     });
 
     module.hot.accept('./pages/routes', () => {
-        ...
+        const updatedRoutes = require('./pages/routes').default;
+
+        render(
+            <AppContainer>
+                <Main routes={updatedRoutes} store={store}/>
+            </AppContainer>,
+            rootElement
+        );
     });
 }
 ```

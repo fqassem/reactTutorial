@@ -38,14 +38,20 @@ ESLint, Routing, and Hot-Loading
 ## [Part 3](https://github.com/precorFadiQassem/reactTutorial/tree/master/part3)
 Testing and production build
 
-## Part 4
-Redux state management, authentication, and forms
+## [Part 4](https://github.com/precorFadiQassem/reactTutorial/tree/master/part4)
+State Management with Sign-in
 
-## Part 5
+## [Part 5](https://github.com/precorFadiQassem/reactTutorial/tree/master/part5)
 CSS support
 
-## Part 6
-Sample progressive application walk-through
+## [Part 6](https://github.com/precorFadiQassem/reactTutorial/tree/master/part6)
+Authentication, Registration, and Sign-Out
+
+## [Part 7](https://github.com/precorFadiQassem/reactTutorial/tree/master/part7)
+Backend Requests and Service Workers
+
+## [Part 8](https://github.com/precorFadiQassem/reactTutorial/tree/master/part8)
+Testing
 
 #Useful Links
 https://medium.com/@addyosmani/progressive-web-apps-with-react-js-part-i-introduction-50679aef2b12#.nnp1mnt10

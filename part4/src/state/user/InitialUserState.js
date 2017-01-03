@@ -1,7 +1,7 @@
 export default {
-    id: 0,
-    firstName: '',
-    lastName: '',
-    username: '',
+    id: null,
+    firstName: null,
+    lastName: null,
+    username: null,
     role: 'GUEST'
 };

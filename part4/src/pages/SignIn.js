@@ -15,6 +15,12 @@ class SignIn extends React.Component {
         };
     }
 
+    componentWillMount() {
+        if(this.props.user.role !== 'GUEST') { //forward already signed-in users
+            browserHistory.push('/');
+        }
+    }
+
     onSignIn = (username, password) => {
         const credentials = { username, password };
 
@@ -36,6 +42,12 @@ class SignIn extends React.Component {
     }
 }
 SignIn.propTypes = {
-    signIn: React.PropTypes.func.isRequired
+    signIn: React.PropTypes.func.isRequired,
+    user: React.PropTypes.object
 };
-export default connect(null, { signIn })(SignIn);
+const mapStateToProps = (state) => {
+    return {
+        user: state.user
+    };
+};
+export default connect(mapStateToProps, { signIn })(SignIn);

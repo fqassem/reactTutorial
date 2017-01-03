@@ -14,7 +14,7 @@ export const signIn = (credentials) => {
             (resolve, reject) => {
                 setTimeout(() => {
                     if(credentials.username !== 'fail') {
-                        dispatch(setUserData({}));
+                        dispatch(setUserData({ id: 1, firstName: 'Tom', lastName: 'Jones', username: 'tomjones', role: 'USER' }));
                         resolve();
                     } else {
                         reject(Error('Bad Creds'));
@@ -30,7 +30,7 @@ export default (state = InitialUserState, action) => {
     switch(action.type) {
         case SET_USER_DATA: {
             const userData = action.userData;
-            return Object.assign({}, state, { ...userData });
+            return Object.assign({}, state, userData);
         }
         default:
             return state;
