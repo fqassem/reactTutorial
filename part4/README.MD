@@ -320,6 +320,8 @@ This is a fairly barebones form. It accepts three props:
 
 We don't check username or password length, but that should be fairly trivial to implement on your own. We kept the state in this component to a bare minimum so it can be reused if we need to place it in case multiple places in the application.
 
+Also notice that we have a placeholder div that contains the words 'Loading gif' that show when `isFetching` is true. When we update our application with CSS, we'll replace with something nicer.
+
 Now that we've created our form, let's add it to our *pages/SignIn.js* page:
 ```
 import React from 'react';
