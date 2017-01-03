@@ -33,14 +33,7 @@ npm install --save redux
 npm install --save react-redux
 ```
 
-They are installed as regular 'dependency's because the browser needs them to manage our state. We also installed **React-Redux**, a library that includes useful bindings for more easily using Redux and React together. It's not necessary, but it makes using React and Redux together much nicer. Next, let's open up our *webpack.base.config.js* and add these libraries to our `vendor` entry so they're bundled with the other framework code:
-
-```
-    entry: {
-        vendor: ['react', 'react-dom', 'react-router', 'redux', 'react-redux']
-    },
-    ...
-```
+They are installed as regular 'dependency's because the browser needs them to manage our state. We also installed **React-Redux**, a library that includes useful bindings for more easily using Redux and React together. It's not necessary, but it makes using React and Redux together much nicer.
 
 Let's set up the Redux store. Open up *src/Main.js*. Let's import 'Provider' from 'react-redux' and add it to our app. 'Provider' connects our components to the Redux store. We'll only have to set it up here at the root component of our app. 'Provider' accepts a 'store' prop, which we will pass in from *index.js* much like we do for the `routes` prop. Your *Main.js* file should look like this now:
 
@@ -420,6 +413,16 @@ export default connect(mapStateToProps)(Home);
 ```
 
 If the user does not have a role of 'GUEST', they should be signed in. If that's the case, we display their username on the homepage. Easy! Note that this is not a completely fool-proof method of verifying a user is who they say they are. A malicious user could still manipulate the role they are because all of this is being stored and rendered client-side! In a later tutorial, we will add user tokens and server-side authentication so that a malicious user can access and modify only what their token allows them to.
+
+### Configuration updates
+Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, and Redux-Thunk to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
+
+```
+    entry: {
+        vendor: ['react', 'react-dom', 'react-router', 'redux', 'react-redux', 'redux-thunk']
+    },
+    ...
+```
 
 ### Hot-Reloading reducers
 One last thing to note: much like our routes, our reducers don't hot reload automatically either. So, if we make changes to our reducers, we won't see it reflected unless we add the following block of code our 'if development' block in *src/index.js*:

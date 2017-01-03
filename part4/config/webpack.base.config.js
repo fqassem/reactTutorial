@@ -4,7 +4,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 export default {
     entry: {
-        vendor: ['react', 'react-dom', 'react-router', 'redux', 'react-redux']
+        vendor: ['react', 'react-dom', 'react-router', 'redux', 'react-redux', 'redux-thunk']
     },
     output: {
         publicPath: '/'
