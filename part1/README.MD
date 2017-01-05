@@ -24,14 +24,14 @@ Two things to note:
 * We are including a meta tag for the viewport, which will tell the browser window to behave responsively when we add our CSS
 * The div with id 'root' will be where React attaches itself to the DOM
 
-Now that we've created our *index.html*, we shouldn't have to revisit it again for a while. All of the script files our application needs to load during initialization will be added to our *index.html* file during the Webpack build. That means we don't have to hardcode any static assets in the HTML!
+Now that we've created our *index.html*, we shouldn't have to revisit it again for a while. All of the script files our application needs to load during initialization will be added to our *index.html* file during the Webpack build. That means we don't have to hard-code any static assets in the HTML!
 
 ## Milestone 2: Dependency Management
 If you open this *index.html* file in your browser, you have an extremely barebones web application!
 
-Sadly, this dinky little HTML file alone won't get us too far in the world of modern web development. We're gonna need a little more to get us going. While writing plain CSS and regular old JavaScript is an option, it's much slower and error-prone than using the modern libraries and build-tools available today.
+Sadly, this dinky little HTML file alone won't get us too far in the world of modern web development. We're gonna need a little more to get us going. While writing plain CSS and regular old JavaScript is an option, it's much slower and more error-prone than using the modern libraries and build-tools available today.
 
-We could theoretically download some fancy-pants JavaScript libraries and manage them ourselves, but that's error-prone and tedious. Let's have **NPM** do it for us. NPM (Node Package Manager) has become a widely used JavaScript package management solution that we will use extensively in this project.
+We could theoretically download some fancy-pants JavaScript libraries and manage them ourselves, but that's tedious and a waste of our valuable development time. Let's have **NPM** do it for us. NPM (Node Package Manager) has become a widely used JavaScript package management solution that we will use extensively in this project.
 
 To initialize NPM in our project, run the following command:
 
@@ -45,9 +45,9 @@ Let's open this file and take a look at it. Most of the content should be self-e
 
 `"scripts"` is where we will create shortcut commands to run, build, and test the project. There's already a default, pre-generated `"test"` command in there that doesn't do anything useful. You can run these scripts with `npm run <script_name>`. So, to run the `"test"` command, we run `npm run test` in our console. We'll create some scripts throughout this tutorial.
 
-When we start installing packages, `"dependencies"` and `"devDependencies"` will appear in *package.json*. These sections contain a list a list of modules we require for our project to build and run. Note that `"devDependencies"` will not be packaged into the final production build of our project. `"devDependencies"`, as the name implies, should only contain a list of the dependencies our project needs for development, such as transpilers, loaders, and test frameworks, while `"dependencies"` should contain what is needed for your application to run in a browser, such as React. When we run `npm install`, the modules listed in these sections will end up in a *node_modules* folder that NPM automatically creates for us.
+When we start installing packages, `"dependencies"` and `"devDependencies"` will appear in *package.json*. These sections contain a list a list of modules we require for our project to build and run. Note that `"devDependencies"` will not be packaged into the final production build of our project. `"devDependencies"`, as the name implies, should only contain a list of the dependencies our project needs for development, such as transpilers, loaders, and test frameworks, while `"dependencies"` should contain libraries needed for your application to run in a browser, such as React and Redux. When we run `npm install`, the modules listed in these sections will end up in a *node_modules* folder that NPM automatically creates for us.
 
-If we run `npm install` now, nothing useful will happen. That's because we haven't specified any dependencies yet, so there's nothing for it to download. To install a dependency using NPM, we run `npm install <dependency-name> --<flag>`. We will include either a `--save` flag to save the dependency we want to install as a 'dependency' or a `--save-dev` flag to save it as a 'devDependency'. The difference between devDependencies and normal dependencies will be important when we build our project for production. Now that we have NPM set up, let's install some dependencies and create our project framework!
+If we run `npm install` now, nothing useful will happen. That's because we haven't specified any dependencies yet, so there's nothing for NPM to download. To install a dependency using NPM, we run `npm install <dependency-name> <flag>`. We will include either a `--save` flag to save the dependency we want to install as a 'dependency' or a `--save-dev` flag to save it as a 'devDependency'. The difference between devDependencies and normal dependencies will be important down the road when we build our project for production. Now that we have NPM set up, let's install some dependencies and create our project framework!
 
 ## Milestone 3: Setting up Webpack 2
 **Webpack** is what we will be using to build our project. Webpack is a module bundler that process our files, manages project dependencies, and spits out static assets. Basically, it will transform our code into a few modules that a browser can grab from a server and run. Let's install it:
@@ -58,11 +58,11 @@ npm install --save-dev webpack@beta
 
 This will install Webpack 2 and add it to our *package.json* file as a 'devDependency'. Note that we include a '--save-dev' flag because we want to install Webpack 2 and have it tracked in our package.json file. If we omitted this flag, Webpack 2 would be installed, but *package.json* would not be updated. We want it to be a 'devDependency' because Webpack is our build tool. It won't be needed on the browser to run any code, so it's not a 'dependency'. Always be sure to include a '--save' or '--save-dev' flag when you want to install an NPM package if you want it tracked in *package.json*!
 
-Note that Webpack 2 is now a *release candidate*, but the features it provides are worth the small quirks. Webpack 2 differs from Webpack 1 in a few ways. The biggest benefit is easier code-splitting (for incremental-loading/lazy-loading routes via React-Router v3/4) and smaller generated files due to the new ‘Tree Shaking’ algorithm for resolving dependencies. This helps to eliminate dead, unreachable code in our build output. See [this link](https://blog.engineyard.com/2016/tree-shaking) for more info about tree-shaking.
+Note that Webpack 2 is now a *release candidate*, but the features it provides are worth the small quirks. Webpack 2 differs from Webpack 1 in a few ways. The biggest benefit is easier code-splitting (for incremental-loading/lazy-loading routes via React-Router v3/4) and smaller generated files due to the new ‘Tree Shaking’ algorithm for resolving dependencies. This helps to eliminate dead, unreachable code in our build output. See [this link](https://blog.engineyard.com/2016/tree-shaking) for more info about this algorithm.
 
 Webpack allows us to use plugins to make the build process easier and customize it to our needs. If you think back to the HTML file we created, it doesn’t contain any script tags. This means that our app won't know about any JavaScript files it needs to run. There are two ways to solve this. One would be configure Webpack to output all of the contents of our build into a file named ‘bundle.js’ and simply hard-code a script tag referencing that file in the bottom of our *index.html*.
 
-A better way to do this is via the **HtmlWebpackPlugin**. This Webpack plugin automatically appends our script file tags to our *index.html* file so we don’t have to do it manually. What is the benefit of doing it this way? Caching! We will set up our Webpack build to append a hash to the file name of the generated JavaScript. This way, the browser knows that if the hash changed, it should download the new file. This will save a good amount of bandwidth when we split our code into modules and prevent us from having to hard-code any dependencies in *index.html*!
+A better way to do this is by using the **HtmlWebpackPlugin**. This Webpack plugin automatically appends our script file tags to our *index.html* file so we don’t have to do it manually. What is the benefit of doing it this way? Caching! We will set up our Webpack build to append a hash to the file name of the generated JavaScript bundle. This way, the browser knows that if the hash changed, it should download the newer file. Subsequent loads of our website are much faster and the user only gets new code only when they need it!
 
 Let's install the HtmlWebpackPlugin as a 'devDependency':
 
@@ -97,15 +97,15 @@ module.exports = {
 
 We are requiring Webpack, HtmlWebpackPlugin, and 'path' in our config. 'path' is a Node module that will help us resolve relative paths to files.
 
-`"entry"` is where we define the 'bundles' (or 'chunks') we want our project’s build to create after Webpack does transpilation, dependency resolution, and tree-shaking. Right now, we only have one bundle named `app` defined by our main entry point: `src/index.js`. We haven't yet created this file, but we will soon!
+`"entry"` is where we define the 'bundles' (or 'chunks') we want our build to create after Webpack does transpilation, dependency resolution, and tree-shaking. Right now, we only have one bundle named `app` defined by our main entry point: `src/index.js`. We haven't yet created this file, but we will soon!
 
-`"output"` defines how the generated 'bundles' will be named and where they will end up. Here we are telling Webpack to put these bundles into a *build* directory (using the 'path' configuration). These files will be named with the provided bundle name ("[name]", taken from the key in the `"entry"` config) and a build hash that Webpack generates to help with caching. In our case, the output bundle will be named: *app.[generated_hash].js*. 'publicPath' is a bit confusing, but it's where where the server will resolve the location of our output files. 'publicPath' can be a bit complicated to set up if you're using a CDN or hosting files elsewhere, but our config should suffice for now. If you're curious, see this [link](https://github.com/webpack/docs/wiki/configuration#outputpublicpath) for more info.
+`"output"` defines how the generated 'bundles' will be named and where they will end up. Here we are telling Webpack to put these bundles into a *build* directory (using the 'path' configuration). These files will be named with the provided bundle name ("[name]", taken from the key in the `"entry"` config) and a build hash that Webpack generates to help with caching. In our case, the output bundle will be named: *app.[generated_hash].js*. 'publicPath' is a bit confusing. It's where our (yet-to-be-set-up) development server will resolve the location of our output files. 'publicPath' can be a bit complicated to set up if you're using a CDN or hosting files elsewhere, but our config should suffice for now. If you're curious, see this [link](https://github.com/webpack/docs/wiki/configuration#outputpublicpath) for more info.
 
 Side note: `[...]` in Webpack configs are placeholder strings. `[name]` returns an `entry` name. `[hash]` returns the hash of the build. `[path]` returns an `entry` path. `[chunkHash]` returns a hash for a specfic 'chunk' or 'bundle' of code.
 
 `"plugins"` defines Webpack plugins that affect the build process. Common plugins defined here include minification plugins, dedupe plugins, and HTML generation plugins, among others. For now, we are creating a development-only build, so we have no need for minification or deduping yet.
 
-We are using HtmlWebpackPlugin in our build, so we include it in the `plugins` array. This plugin modifies the HTML we wrote to dynamically include the bundles Webpack generated after the build finished! Its configuration basically says to ‘inject’ the generated script files after the ‘body’ tag of the supplied template *index.html* file. If you wanted, you could have HtmlWebpackPlugin generate an *index.html* file completely from scratch! We instead supply it with a 'template' file it can append to. That way we get more customization of how our *index.html* file looks.
+We are using HtmlWebpackPlugin in our build, so we include it in the `plugins` array. This plugin modifies the HTML we wrote to dynamically include the bundles Webpack generated! Its configuration basically says to ‘inject’ the generated script files after the ‘body’ tag of the supplied template *index.html* file. If you wanted, you could have HtmlWebpackPlugin generate an *index.html* file completely from scratch! We instead supply it with a 'template' file (our *index.html*) it can append to. If we had a simple project, getting HtmlWebpackPlugin to generate our *index.html* would suffice. We will be adding a lot more cool, custom stuff to our *index.html* later in the tutorial, so we created our own.
 
 Now, we have a fully functioning Webpack 2 configuration. So, let's build our project. From the root of our app, run:
 
@@ -113,7 +113,9 @@ Now, we have a fully functioning Webpack 2 configuration. So, let's build our pr
 ./node_modules/.bin/webpack
 ```
 
-to have Webpack run the build. By default, it will look for the *webpack.config.js* file we just created and use that to generate the build. **Error!** Webpack should complain that it can't find the *src/* folder. That's because we haven't created it yet! Because having a build without anything to build is pointless, let's create the *src* folder to house all of our project source code. Next, in this folder, create an *index.js* file with the following contents:
+to have Webpack run the build. By default, Webpack will look for a file named *webpack.config.js*. It will use that configuration to generate the build.
+
+**Error!** Webpack should complain that it can't find the *src/* folder. That's because we haven't created it yet! Because creating a build without anything to build is essentially pointless, let's create the *src* folder to house all of our project source code. Next, in this folder, create an *index.js* file with the following contents:
 
 ```
 alert('Hi! Your app is working!');
@@ -127,9 +129,9 @@ For now, this will be a simple placeholder to show our project is working! Now, 
 
 Success! Webpack has created a *build* folder in the root of our app with two files:
 * *app.[hash].js*, just as we specified in 'entry' and 'output' in our Webpack config!
-* *index.html*, that looks like the *index.html* in our root, but with an additional script tag that includes the *app.[hash].js* file generated by Webpack (thanks to the HtmlWebpackPlugin!).
+* *index.html* - it looks like the *index.html* in our root, but with an dynamically added script tag that includes the *app.[hash].js* file generated by Webpack (thanks, HtmlWebpackPlugin!).
 
-That's exactly how we configured it to behave! Let's recap. So far:
+That's exactly how we configured Webpack to behave! Let's recap. So far:
 * We initialized our NPM package manager
 * We installed and set up our Webpack 2 build system
 * We successfully created a Webpack build that generated our final *index.html* and a JavaScript bundle
@@ -137,20 +139,20 @@ That's exactly how we configured it to behave! Let's recap. So far:
 If you're super impatient, you can host the contents of the *build* folder using a server of your choice and see the app working! But hold on! In the next section, we're going to create a server that will automatically host these files for us as a part of the build!
 
 ## Milestone 4: Setting up the development server
-Let's create the development server to host the files that Webpack generates. We have two options here:
+Let's create the development server to host the files that we generated with Webpack. We have two options here:
 
 1. Use [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html)
 2. Create our own dev-server using Express.js
 
-The first option is quicker to set up, while the second option gives more control over the server and its configuration. Let's pick option '2' and create our own dev server from scratch!
+The first option is quicker to set up, while the second option gives more control over the server and its configuration. Let's pick option '2' and create our own dev server from scratch using Express! Later in the tutorial, we'll also create some APIs hosted by Express that we can call from our application!
 
-We'll begin by installing the dependencies we will need for the server. For development, we want to enable a feature called 'hot reloading'. This feature automatically reflects any update to our code in the browser without having to restart the server or manually create a new build, saving us development time. In this section, we will set up the framework for hot reloading. Because our app is super simple, we can get away without fully configuring hot-reloading for now. We'll come back to it in a later section of the tutorial when our code becomes a bit more complex.
+We'll begin by installing the dependencies necessary for the server to run. For development, we want to enable a feature called 'hot reloading'. This feature automatically reflects any update to our code in the browser without having to restart the server or manually create a new build, saving us development time. In this section, we will set up the framework for hot reloading. Because our app is super simple, we can get away without fully configuring hot-reloading for now. We'll come back to it in a later section of the tutorial when our code becomes a bit more complex. You'll see why once we set it up!
 
-To set up our sever, we need:
+To create our sever, we need:
 
-1. Express, a Node.js based framework for running our dev server
+1. Express, a Node.js-based framework for running our dev server
 2. webpack-dev-middleware, middleware to serve our build files to the server
-3. webpack-hot-middleware, dependency for hot reloading
+3. webpack-hot-middleware, a dependency for hot reloading
 4. react-hot-loader 3, used to hot load our React components and preserve their state
 5. connect-history-api-fallback, for helping the server resolve routes
 
@@ -191,7 +193,7 @@ app.listen(8001, 'localhost');
 
 Note that the server will automatically run our Webpack build when it starts up!
 
-Note that we're using **historyApiFallback** because of the nature of single page applications. If you go to 'localhost:8001/some_route' in your browser, a request to the server is made, and the server tries to resolve this 'some_route' path you passed in to some resource. In a single page application, all these 'pages' are on the client, so the server doesn't know about them and an error is returned to the browser. In other words, all of our routing will be done client side. 'historyApiFallback' makes it so that these requests will be processed through the routing on the client side rather than on the server. It does this by routing server requests to pages through *index.html*, which will contain routing logic we need for our single page app. We will set up routing on the client in the next part of the tutorial along with hot-reloading.
+Also note that we're using **historyApiFallback** because of the nature of single page applications. If you go to 'localhost:8001/some_route' in your browser, a request to the server is made, and the server tries to resolve this 'some_route' path you passed in to a resource. In a single page application, all these resources (pages) are on the client, so the server doesn't know about them and an error is returned to the browser. In other words, all of our routing will be done client side. 'historyApiFallback' makes it so that these requests will be processed through the routing on the client side rather than on the server. It does this by routing server requests to pages through *index.html*, which will contain routing logic we need for our single page app. We will set up routing on the client in the next part of the tutorial along with hot-reloading.
 
 The middleware we're using is essentially plugging itself between the server and the build, and listening for file changes. When it hears a file change, it updates the file and in turn updates the code in the browser without requiring us to refresh the page. At least, it will when we fully configure it in the next part of the tutorial!
 
@@ -213,7 +215,7 @@ app: [
     path.join(__dirname, './src/index.js')
 ]
 ```
-This configures the server to receive notifications when the bundle rebuilds and updates our client bundle in the browser to reflect the changes.
+This configures the server to receive notifications when the application rebuilds and updates our code in the browser to reflect the changes.
 
 Next, make sure your `"plugins"` array looks like this:
 
@@ -232,22 +234,22 @@ Next, make sure your `"plugins"` array looks like this:
     ]
 ```
 
-We've added a few plugins! **EnvironmentPlugin** allows us to reference environment variables in the application. When we build our application, we will pass in a 'NODE_ENV' variable in the command-line that we will need to be able to access within the application. This variable will allow us to turn off/on certain application features. 
+We've added a few plugins to make our lives easier! **EnvironmentPlugin** allows us to reference environment variables in the application. When we build our application, we will pass in a 'NODE_ENV' variable in the command-line that we will need to access within the application. This variable will allow us to turn off/on certain application features.
 
-**HotModuleReplacementPlugin** is necessary for enabling hot module replacement (HMR, or 'hot-reloading). **NoErrorsPlugin** is used to handle build errors more cleanly. By default, Webpack will create build files if an error occured during build. NoErrorsPlugin makes it so no files are emitted if an error occured, keeping our build folder clean!
+**HotModuleReplacementPlugin** is necessary for enabling hot module replacement (HMR, or 'hot-reloading). **NoErrorsPlugin** is used to handle build errors more cleanly. By default, Webpack will still create junk build files if an error occurred during the build. NoErrorsPlugin makes it so no files are created if an error occurred, keeping our build folder clean!
 
 To start the server, run the following command in the root of the project:
 ```
 NODE_ENV=development node ./devServer.js
 ```
 
-And go to 'localhost:8001' and you'll see an alert window that we created in *src/index.js*, signifying that our app built correctly and is hosted and running. Note that we are no longer explicitly running Webpack to build the project. Webpack is run when the devServer is started up.
+Go to 'localhost:8001'. You'll see an alert window that we created in *src/index.js*, signifying that our app built correctly and is hosted and running. Note that we are no longer explicitly running Webpack to build the project. Webpack is run when the devServer is started up.
 
-We are passing in the NODE_ENV environment variable in the command line. This will allow us to toggle certain features in our application based on the environment. For now, we just have a development build, so we pass in 'development'. In the future, we will split our config for development and production builds, but for now a single development build will suffice.
+We are passing in the NODE_ENV environment variable in the command line. In the future, this will allow us to toggle certain features in our application based on the environment. For now, we just have a development build, so we pass in 'development'. Later, we will split our config for development and production builds, but for now a single development build will suffice.
 
-Note that we're not yet fully set-up for hot-reloading. If you update the code and save, you may see an warning in the console saying "The following modules couldn't be hot updated: (Full reload needed)". We'll fix this in the next section!
+Note that we're not yet fully set-up for hot-reloading. If you update the code and save, you may see an warning in the console saying `"The following modules couldn't be hot updated: (Full reload needed)"`. We'll fix this in the next section!
 
-A useful side-effect of using Webpack-Dev-Middleware on our server is that all the files outputted by Webpack during the build are no longer written to disk. Instead, they are maintained in memory. That means we no longer need our *build* directory to hold the output of our build. Instead of deleting this configuration in *webpack.config.js*, let's keep it. That way, if we ever need to simply build our app and have the files outputted to a folder, the files will have a place to live. Since we are currently working on a 'development' build, let's change the name of this `output` directory from 'build' to 'dev' in *webpack.config.js* so it will be obvious what this directory contains. Now, since we no longer need the *build* directory, go ahead and delete it: `rm -rf ./build/`
+A useful side-effect of using Webpack-Dev-Middleware on our server is that all the files outputted by Webpack during the build are no longer written to disk. Instead, they are maintained in memory. That means we no longer need our *build* directory to hold the output of our build. Instead of deleting this configuration in *webpack.config.js*, let's keep it. That way, if we ever need to simply build our app and have the files outputted to a folder, the output will have a place to live. Since we are currently working on a 'development' build, let's change the name of this `output` directory from 'build' to 'dev' in *webpack.config.js* so it's obvious what this directory contains. Now, since we no longer need the *build* directory, go ahead and delete it: `rm -rf ./build/`
 
 Now that our dev server is up and running and we have a working build, let's start writing React in ES6!
 
@@ -259,7 +261,7 @@ npm install --save react
 npm install --save react-dom
 ```
 
-'react' is the *React* core library. 'react-dom' is a dependency that React needs to attach itself to the DOM. Note that we're installing these not as 'devDependencies', but as regular 'dependencies' using the '--save' flag. This is because React and React-DOM are required on the browser to run our application.
+'react' is the *React* core library. 'react-dom' is a dependency that React needs to attach itself to the DOM. Note that we're installing these not as 'devDependency's, but as regular 'dependency's using the '--save' flag. This is because React and React-DOM are required on the browser to run our application.
 
 Open up *src/index.js* and clear the file. Let's create our application entry point:
 
@@ -277,7 +279,7 @@ class Main extends React.Component {
 render(<Main/>, document.getElementById('root'));
 ```
 
-Using the ES6 module 'import' syntax, we import React as well as React-DOM's `render` function. Next, we create a simple 'Main' component for our application. Then we call render and attach the Main component to the DOM at the div with id 'root'. Remember `<div id="root"></div>` in our index.html file? That's where React will attach itself, render, and update using ReactDOM. Notice, in the 'render' function, we are writing what is called JSX. [JSX](https://facebook.github.io/jsx/) is a language that allows us to write HTML-like syntax within our JavaScript.
+Using the ES6 module 'import' syntax, we import React as well as React-DOM's `render` function. Next, we create a simple 'Main' component for our application. Then we call render and attach the Main component to the DOM at the div with id 'root'. Remember `<div id="root"></div>` in our index.html file? That's where React will attach itself, render, and update using ReactDOM. Notice, in the `render` function, we are writing what is called JSX. [JSX](https://facebook.github.io/jsx/) is a language that allows us to write HTML-like syntax within our JavaScript.
 
 Now, let's try running our development server to build and host the application:
 
@@ -287,7 +289,7 @@ NODE_ENV=development node ./devServer.js
 
 We get an error that says "Module Parse Failed". This is because JSX needs to be compiled down into JavaScript during the build process. It's not natively understood by Webpack or browsers.
 
-So, we need something in our build to translate JSX into JavaScript! We'll get to that in a bit. For now, just to get our example working, let's replace the JSX in our render() function with a pure JavaScript call to `React.createElement()`. Note that we're not required to use JSX to write React. In fact, when we finish setting up our build, JSX will be compiled to 'React.createElement' calls. JSX is simply syntactic sugar over 'React.createElement()'. We use JSX because it just makes our render() function cleaner, easier to read, and almost 1:1 with HTML.
+So, we need something in our build to translate JSX into JavaScript! We'll get to that in a bit. For now, just to get our example working, let's replace the JSX in our `render` function with a pure JavaScript call to `React.createElement()`. Note that we're not required to use JSX to write React. In fact, when we finish setting up our build, JSX will be transfromed into `React.createElement` calls. JSX is simply syntactic sugar over `React.createElement()`. We use JSX because it just makes our `render` function cleaner, easier to read, and almost 1:1 with HTML.
 
 To get our example working quickly without any more build configuration, replace `<h1>Hello, world!</h1>` with `React.createElement("h1", null, "Hello, world!")`. Then replace
 
@@ -309,9 +311,9 @@ NODE_ENV=development node ./devServer.js
 
 If we go to 'localhost:8001' in Chrome, we'll see 'Hello, world!' on the screen! Cool! Even though our code is uglier than we'd like, it runs without anything extra needed in our build.
 
-If you open the JavaScript source file for our application, you'll see that nothing has been done to JavaScript we wrote. It's simply been packaged up and it's still using ES6 syntax! If we tried running this application as it is using Internet Explorer 11, it would fail because IE 11 does not understand ES6! Sadly, not all browsers support ES6. Only the most modern WebKit browsers have 100% ES6 support!
+If you open the JavaScript source file for our application, you'll see that nothing has been done to JavaScript we wrote. It's simply been packaged up and it's still using ES6 syntax! If we tried running this application as it is using Internet Explorer 11, it would fail because IE 11 does not understand ES6 syntax! Sadly, not all browsers fully support ES6. Only the most modern WebKit browsers have 100% ES6 support!
 
-Rather than revert to development using old-school ES5, how can we write ES6 code and have it run on all browsers, not just the latest and greatest? How can we write JSX instead of making calls to React.createElement()?
+Rather than revert to development using old-school ES5, how can we write ES6 code and have it run on all browsers, not just the latest and greatest? How can we write JSX instead of making calls to `React.createElement`?
 
 **Babel** is a library that will allow us to transpile our JSX into JavaScript and our ES6 code into ES5, which is the latest standard that all browsers fully support. It requires a bit of setup, but it is well worth the investment.
 
@@ -337,25 +339,43 @@ Now, let's install Babel:
 npm install --save-dev babel-core babel-loader
 ```
 
-**babel-core** is the core Babel compiler. **babel-loader** is a 'loader' we will use to configure Webpack to use in order to 'load' files for processing by Babel. 'Loaders' are a Webpack concept that we'll see more of in other sections of our tutorial, but they essentially tell Webpack to use a certain library (or libraries) to process files during the build. They are almost like 'tasks' in other build tools, only we don't have to write them ourselves! In this case, 'babel-loader' will be used to load JavaScript files to be processed by Babel.
+**babel-core** is the core Babel compiler. **babel-loader** is a 'loader' Webpack will use in order to 'load' files for processing by Babel. 'Loaders' are a Webpack concept that we'll see more of in other sections of our tutorial, but they essentially tell Webpack to use a certain library (or libraries) to process files during the build. They are almost like 'tasks' in other build tools, only we don't have to write them ourselves! In our case, we will configure Webpack to use babel-loader to transpile JavaScript using Babel.
 
-By default, Babel is pretty stupid. It doesn’t know anything about ES6 or React or how to transpile them to ES5. It requires us to download ‘presets’ that it uses to understand the ES6 syntax and JSX code we’re going to write. We need to install the following:
+By default, Babel is pretty stupid. It doesn’t know anything about ES6 or JSX or how to transpile them to ES5. It requires us to download ‘presets’ that it uses to understand ES6 syntax and JSX. There are many different presets, some of which contain as of yet unstandardized features, such as the Object spread operator and class variables. The preset we will use contains only the 'latest' standards without any experimental features. However, some of these experimental features are pretty useful. We'll still be able to use them, but we need to download plugins so Babel knows about them.
+
+There are 5 stages of standardization (0 to 4). Until the feature gets to stage 4, it's not yet part of the future ES standard. Unless we include a preset that also contains knowledge of 'Object spread', Babel won't know about it.
+
+For example, the 'Object spread' `...` operator is not yet standardized. It's super useful, and we'll want use it extensively in our Redux code. Because we installed the 'latest' preset, we'll need plugins for this and any other experimental features we wish to use. Let's install them now:
 
 ```
-npm install —save-dev babel-preset-react
-npm install —save-dev babel-preset-latest
+npm install —save-dev babel-preset-react babel-preset-latest
+npm install --save-dev babel-plugin-transform-class-properties babel-plugin-transform-object-rest-spread
 ```
 
-**babel-preset-react** contains knowledge of JSX. **babel-preset-latest** contains knowledge of the very latest ES standards, ES2015 (also known as ES6), ES2016 (ES7), and ES2017 (TBD, not yet standardized). Next, we need to create a configuration for Babel to use these presets during our build. In the root of the app, create a file called *.babelrc* with the following contents:
+[**babel-preset-react**](https://babeljs.io/docs/plugins/preset-react/) contains knowledge of how to transform JSX into regular old `React.createElement` calls. JSX is not natively understood by browsers, so this preset is necessary for Babel to transform JSX to regular old JavaScript. [**babel-preset-latest**](https://babeljs.io/docs/plugins/preset-latest/) contains knowledge of the very latest ES standards, ES2015 (also known as ES6), ES2016 (ES7), and ES2017 (not yet completed). This preset does not include any experimental features. We'll simply add the experimental features we care about explicitly via plugins.
+
+**babel-plugin-transform-class-properties** is a Babel plugin that contains knowledge of static class properties, which is not yet standardized in ES6. It also allows us to use arrow functions as class functions, which is also still experimental. **babel-plugin-transform-object-rest-spread** informs Babel of the existence of the 'Object spread' operator, which is conceptually similar to the ES6 'array spread' operator. However, the Object spread operator is still in stage 2, and using it without the plugin installed will result in a error when we build.
+
+Next, we need to create a configuration for Babel to use these presets during our build. In the root of the app, create a file called *.babelrc* with the following contents:
 
 ```
 {
-    "presets": ["latest", "react"]
+    "presets": ["latest", "react"],
+    "plugins": ["transform-class-properties", "transform-object-rest-spread"]
 }
-
 ```
 
-This is the default configuration file Babel looks at during the build. Here we've told Babel to use the presets we've installed so it can understand JSX and ES6.
+This is the default configuration file Babel looks at during the build. Here we've told Babel to use the `presets` we've installed. We also let Babel know about the plugins we've just installed for enabling static class properties and the object spread operator. We won't need any other presets, but if you find an experimental feature you like, you can install it and add it to the plugins array here.
+
+Finally, remember that Babel only transpiles our ES6 **syntax** down to ES5. It doesn't do anything with our JavaScript built-in objects like `Promise`s or static methods like `Object.assign`. This becomes a problem when our code has been transpiled, but we're using these new ES6 standard library functions. We need a way to standardize the browser environment in which Babel runs in.
+
+Also note that many different browsers exist, each with many different versions supporting a varying subset of ES6's new functions and built-in types. **babel-polyfill** helps close the feature gap between all of these browsers. It gives Babel  runtime support by providing polyfills for the ES6 features that aren't transpiled. Let's install it now:
+
+```
+npm install babel-polyfill --save
+```
+
+Next, at the top of *src/index.js*, we simply `include 'babel-polyfill';`. This will be enough to supply the browser with the polyfills necessary to emulate a full ES6 environment. Note that this is a catch-all solution that adds quite a bit of size to our application. In an actual production app, to save as much framework weight as possible, we should include only the ES6/ES7/ES+ features we are using. This takes a bit more work on our side, but the savings in file size is definitely worth it. Note that babel-polyfill is just a wrapper around the [**core-js**](https://github.com/zloirock/core-js) library. By picking only the polyfills we need from core-js, we can significantly reduce our application size. Keep this in mind when creating a production application! For now, we'll stick with babel-polyfill.
 
 Now that Babel is set up, we need to configure Webpack to actually use Babel to process our JavaScript files. In *webpack.config.js*, create a new `module` section in the config that looks like this:
 
@@ -375,20 +395,20 @@ Now that Babel is set up, we need to configure Webpack to actually use Babel to 
 }
 ```
 
-The 'module' section contains a list of ‘rules’ (originally titled ‘loaders’ in Webpack 1). 'rules' simply contains a list of the loader configurations you need for your project build. Here we're telling Webpack to look at all of the *.js* files in our *src* directory and use the 'babel-loader' when it encounters these files. This will loading them in during the build for transpliation by Babel!
+The `module` section contains a list of ‘rules’ (originally titled `loaders` in Webpack 1). `rules` simply contains a list of the loader configurations you need for your project build. Here we're telling Webpack to look at all of the *.js* files in our *src* directory and use babel-loader when it encounters these files. That's how Babel knows to transpile our JavaScript!
 
-Run the project. Visit 'localhost:8001' and see that our app is running correctly! If you open up the JavaScript file that Webpack generated, you will see that it no longer contains any ES6 syntax because it's been transpiled by Babel! Also notice that we didn't see any errors about parsing JSX because Babel now knows about JSX and compiled it down to regular old JavaScript.
+Run the project using `NODE_ENV=development node ./devServer.js`. Visit 'localhost:8001' and see that our app is running correctly! If you open up the JavaScript file that Webpack generated, you will see that it no longer contains any ES6 syntax! It's been successfully transpiled by Babel! Also notice that we didn't see any errors about parsing JSX because Babel now knows about JSX and compiled it down to regular old JavaScript.
 
 Now, we have a framework in which we can write React in ES6!
 
 ## Milestone 6 (Bonus): Writing our configuration in ES6
-Notice all of our configuration is currently in ES5. If we want a full ES6 codebase including configs, we can simply install **babel-register** as a devDependency in our project. babel-register essentially replaces how Node loads files. If a file isn't part of *node-modules* and is not part of the Node core, babel-register will compile it with Babel before it's used! babel-register also plays nicely with our Webpack build too!
+Notice all of our configuration is currently in ES5. If we want a full ES6 codebase including configs and devServer code, we can simply install **babel-register** as a devDependency in our project. babel-register essentially replaces how Node loads files. It binds into the usage of 'require' and transpiles files with Babel on-the-fly. babel-register also plays nicely with our Webpack build! Note that babel-register is not meant for use in production. It's fine for loading configurations and writing our dev server code in ES6, but for a full-fledged server, we should transpile the server code explicitly with Babel and then deploy it.
 
 ```
 npm install --save-dev babel-register
 ```
 
-Babel-Register will transpile our configuration files from ES6 to ES5 so we can just use ES6 in our code base. Now, our build command becomes:
+babel-register will transpile our configuration files from ES6 to ES5 so we can just use ES6 in our code base. Now, our build command becomes:
 
 ```
 NODE_ENV=development node -r babel-register ./devServer.js
