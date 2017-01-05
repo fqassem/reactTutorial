@@ -1,11 +1,9 @@
 # Part 3: Production Build and Testing
-Let's add a testing framework to our application so we can be sure our code is solid when it gets deployed to production!
-
 So far, we've defined a project build that should only be used in development. After we've set up testing, let's create a usable production build that minifies our code and excludes any unnecessary libraries, such as Hot-Reloading.
 
-## Milestone 1: Testing
+Next, we'll add a testing framework to our application so we can be sure our code is solid when it gets deployed to production!
 
-## Milestone 2: Production build
+## Milestone 1: Production build
 So far, we've had only one config file for our build - the development build. Let's modify our config to support production as well! Let's also split out our framework code from our application code during the build. We do this in order to cache the framework code on the client's browser so we don't have to pull it in every time they visit our app! This will lead to a significantly smaller download for our users on subsequent loads of our website.
 
 Let's organize our configs inside a 'config' folder. In the root of our app, create a *config* folder and create three files:
@@ -219,9 +217,9 @@ Look inside the *dist* folder and see what we have so far:
 * *manifest.[hash].js*, our manifest that gets inlined into *index.html*
 * *vendor.[hash].js*, our framework code
 
-Let's test that our caching works as expected. Make a small change to the text in the render function in *SignIn.js* and run the build again. Open the *dist* folder and notice none of the JavaScript files were changed. Only two new files were created - a new *manifest.[hash].js* and another *1.[hash].chunk.js* file (with a new hash) containing the updated code with the changes we made for *SignIn.js*. After we ran the build, *index.html* was updated with the new manifest, and only the bundle that contains the change we made was created. All the other files were isolated because we are using *chunkHash* rather than *hash*! Our caching is now working as we expect it to!
+Let's test that our caching works as expected. Make a small change to the text in the `render` function in *SignIn.js* and run the build again. Open the *dist* folder and notice none of the JavaScript files were changed. Only two new files were created - a new *manifest.[hash].js* and another *1.[hash].chunk.js* file (with a new hash) containing the updated code with the changes we made for *SignIn.js*. After we ran the build, *index.html* was updated with the new manifest, and only the bundle that contains the change we made was created. All the other files were isolated because we are using *chunkHash* rather than *hash*! Our caching is now working as we expect it to!
 
-Let's do some clean-up now that we know everything is working correctly. Lets delete our old *webpack.config.js* file. Next, let's modify our build script a little:
+Let's do some clean-up now that we know everything is working correctly. Let's delete our old *webpack.config.js* file. Next, we'll modify our build script a little:
 
 ```
     scripts: {
@@ -230,3 +228,17 @@ Let's do some clean-up now that we know everything is working correctly. Lets de
     },
 ```
 This blows out the old *dist* directory in order to keep its size small and containing only the files it needs. Now our caching works correctly!
+
+## Milestone 2: Testing
+Now that we've set up both development and production environments, let's create our testing framework. We'll use **Karma** to run our tests in different browser environments. **Mocha** will be our testing framework. We'll use it to set up, tear down, and give structure to our tests. **Chai** is an assertion library that gives us different ways to define expectations for our tests. **Sinon** is a mocking library, helpful for defining mocks, stubs, and spies we can use for testing components with dependencies.
+
+Let's start by downloading and installing our core testing libraries:
+
+```
+npm install --save-dev karma mocha chai sinon
+```
+We'll also need some adapter plugins for Karma to be able to use and understand these testing libraries. We install the respective adapter (prefaced with 'karma-') for each of our main testing libraries. We also need **karma-webpack** to have Webpack pre-process our source files for use by Karma. Finally, **karma-chrome-laucher** is necessary for Karma to use Chrome as our browser testing environment.
+
+```
+npm install --save-dev karma-mocha karma-chai karma-sinon karma-webpack karma-chrome-launcher
+```
