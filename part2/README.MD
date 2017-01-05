@@ -1,5 +1,5 @@
 # Part 2: ESLint, Routing, and Hot-Loading
-Now that we have a good basic framework for writing applications, let's add on to it. In this part, we will be adding:
+Now that we have a very basic, working framework for writing applications, let's add on to it. In this part, we will be adding:
 
 * ESLint, for enforcing code-style and catching bugs
 * Routing using React-Router
@@ -8,7 +8,7 @@ Now that we have a good basic framework for writing applications, let's add on t
 Let's begin!
 
 ## Milestone 1: ESLint
-ESLint is a very useful development tool. It helps us keep code consistent and avoid writing bugs that we might otherwise miss. ESLint is configurable, allowing you to turn off, on, or modify certain rules to enforce a consistent style across your team. Let's install it now as a dev dependency:
+**ESLint** is a very useful development tool. It helps us standardize our code and avoid bugs that we might otherwise miss. ESLint is configurable, allowing you to turn off, on, or modify certain rules to enforce a consistent code style across your team. Let's install it now as a devDependency:
 
 ```
 npm install --save-dev eslint
@@ -17,7 +17,7 @@ npm install --save-dev eslint-loader
 
 Note that we've also installed **eslint-loader** in order for Webpack to know that we want ESLint to process certain files during the build.
 
-Now that we have the loader for ESLint and the core installed, let’s tell Webpack to run our files through ESLint during the build. Open the *webpack.config.js* file and add the following rule:
+Now that we have the ESLint loader and core installed, let’s tell Webpack to run our files through ESLint during the build. Open the *webpack.config.js* file and add the following rule:
 
 ```
   module: {
@@ -35,7 +35,7 @@ Now that we have the loader for ESLint and the core installed, let’s tell Webp
 
 This tells Webpack to run our '.js' files in the *src* folder through ESLint before the other loaders are run (using `enforce: 'pre'`). Note that this differs a bit from Webpack 1 syntax where ‘preloaders’ was a separate section entirely.
 
-Now, let's run `npm run start`. Notice that our build complains about 'No ESLint configuration found.'. This is because ESLint looks for a configuration named *.eslintrc*, which we haven't defined yet. Let's create one now in the root of our app now:
+Now, let's run `npm run start`. Notice that our build complains about 'No ESLint configuration found.'. This is because ESLint looks for a configuration named *.eslintrc*, which we haven't created yet. Let's create one now in the root of our app:
 
 ```
 {
@@ -51,9 +51,9 @@ Now, let's run `npm run start`. Notice that our build complains about 'No ESLint
 }
 ```
 
-This tells ESLint that global ‘browser’ variables like `window` and `document` are expected and should not raise red flags. In `"parserOptions"`, we are telling ESLint that we will be using ES6 and ES6 modules (source files that use `import` and `export`). We also tell it that we will use JSX in our code so that it doesn't complain. Because we are using ES6 modules and ES6 modules are in strict mode by default, we set `"impliedStrict"` to true so that any "use strict" declarations in our code are caught.
+This tells ESLint that global ‘browser’ variables like `window` and `document` are expected and should not raise red flags. In `"parserOptions"`, we are telling ESLint that we will be using ES6 syntax and ES6 modules (source files that use `import` and `export`). We also tell it that we will use JSX in our code so that it doesn't complain. Because we are using ES6 modules and ES6 modules are in strict mode by default, we set `"impliedStrict"` to true so that any unnecessary "use strict" declarations in our code are caught.
 
-By default, ESLint uses a parser called 'Espree'. While this parser is useful for most general cases, it won't support all of the advanced syntax or experimental features that Babel knows about and uses to transpile our code. To get ESLint and Babel to play nice, let's use the **Babel-ESLint** parser instead of the default provided by ESLint.
+By default, ESLint uses a parser called 'Espree'. While this parser is useful for most general cases, it won't support all of the advanced syntax or experimental features that Babel knows about and uses to transpile our code. To get ESLint and Babel to play nice, let's use the **Babel-ESLint** parser instead of the default.
 
 ```
 npm install --save-dev babel-eslint
@@ -65,12 +65,12 @@ Now, in your *.eslintrc* file, add the following line to tell ESLint we want to 
     "parser": "babel-eslint"
 ```
 
-Let’s set up ESLint to run automatically on our files within our environment, not just during our build. Pick the environment you're using and follow the instructions to install the ESLint plugin:
+Let’s set up ESLint to run automatically on our files within our environment, not just during our build. This will help us find syntax errors in real-time. Pick the environment you're using and follow the instructions to install the ESLint plugin:
 
 * [IntelliJ](https://plugins.jetbrains.com/plugin/7494)
 * [Atom](https://atom.io/packages/eslint)
 
-Now that we have ESLint running in our IDE, let's add some style rules. This section is optional, but it's useful if you want to use some industry standard ES6/React coding guidelines up-front. [Airbnb](https://airbnb.com) has published a very widely used ESLint configuration file (with React rules too!) for all to use. To install this configuration, run the following commands to install the configuration and its dependencies:
+Now that we have ESLint running in our IDE, let's add some style rules. [Airbnb](https://airbnb.com) has published a very widely used ESLint configuration file (with React rules too!) for all to use. To install this configuration, run the following commands to install the configuration and its dependencies:
 
 ```
 npm install --save-dev eslint-config-airbnb eslint-plugin-jsx-a11y@2.2.3 eslint-plugin-react eslint-plugin-import
@@ -78,7 +78,7 @@ npm install --save-dev eslint-config-airbnb eslint-plugin-jsx-a11y@2.2.3 eslint-
 
 Now, add `"extends": "airbnb"` to your *.eslintrc* config. This tells ESLint we want to use the Airbnb code style config we just installed.
 
-You might end up with errors if you save your *.eslintrc* file and run `npm run start`. Depending on how you want your code styled, you can turn off, turn on, or modify certain rules in *.eslintrc*. For a good explanation of how this works, visit the ESLint documentation [website](http://eslint.org/docs/user-guide/configuring#configuring-rules). I've added and modified the following rules in my *.eslintrc* file to fit my code style:
+You might end up with errors if you save your *.eslintrc* file and run `npm run start`. Depending on how you want your code styled, you can turn off, turn on, or modify certain rules in *.eslintrc*. For a good explanation of how this works, visit the ESLint [documentation](http://eslint.org/docs/user-guide/configuring#configuring-rules). I've added and modified the following rules in my *.eslintrc* file to fit my code style:
 
 ```
     ...,
@@ -114,7 +114,7 @@ While this doesn't matter too much for now, it will be useful to decide on a sta
 ## Milestone 2: Routing with React-Router
 One major feature missing from React by default is routing. We could build a router ourselves, but **React-Router** has become a go-to routing solution for React projects. We’ll be using v3. Note that there is currently a v4, but it’s still in alpha.
 
-Let’s start by installing react-router v3:
+Let’s start by installing React-Router v3:
 
 ```
 npm install --save react-router
@@ -122,7 +122,7 @@ npm install --save react-router
 
 Be sure you’ve installed v3 by looking at your package.json file. Because React-Router is required by the code we run on the browser, we install it as a 'dependency'.
 
-Let’s also create some files that represent pages within our application. This will help showcase routing, as well as incremental loading of our app. It will also be the start of our simple progressive web-app. Create a *pages* directory within *src*. This directory will hold the pages of our website that a user can navigate to. Add the following files:
+Let’s also create some files that represent pages within our application. This will help showcase routing, as well as incremental loading, in our app. It will also be the start of our sample progressive web-app. Create a *pages* directory within *src*. This directory will hold the pages of our website that a user can navigate to. Add the following files:
 
 ### Container.js
 ```
@@ -228,11 +228,12 @@ export default {
 
 How does this work? During the build of the app, Webpack is smart enough to take calls to 'System.import' and bundles those contents separately from the main application code. When React-Router takes the path from the URL, it calls ‘getComponent’, which attempts to grab the source for the component by calling 'System.import'. Now, 'System.import' makes a request to the server to retrieve the bundle for this specific component and then loads the route and displays it. Basically, use this 'getComponent' and 'System.import' boiler-plate to generate dynamic routes that are lazy-loaded within your application.
 
-Note that *Container* is our root component, which renders `this.props.children`. `this.props.children` will be replaced with whatever page component the current route of the app is configured to display. Basically, 'Container' will wrap all of the other pages in the application. Because we have defined the nav-bar in 'Container', it will be present in all of the other 'childRoutes' of the application. Note that our 'indexRoute', or default route, is set to 'Home'. Any routes that aren't resolved by the router will be sent to 'Home', which is handled by the childRoute with the wildcard path '*'. You could also create a 'NotFound' rather than route the user to the Home page if you desired.
+Note that *Container* is our root component, which renders `this.props.children`. `this.props.children` will be replaced with whatever page component the current route of the app is configured to display. Basically, 'Container' will wrap all of the other pages in the application. Because we have defined the nav-bar in 'Container', it will be present in all of the other 'childRoutes' of the application. Note that our 'indexRoute', or default route, is set to 'Home'. Any routes that aren't resolved by the router will be sent to 'Home', which is handled by the childRoute with the wildcard path '*'. You could also create a 'NotFound' page rather than route the user to the Home page if you desired.
 
-Finally, React-Router needs to know to use this *routes* definition. Modify *src/index.js* to look like this:
+Finally, React-Router needs to know to use these *routes*. Modify *src/index.js* to look like this:
 
 ```
+import 'babel-polyfill';
 import React from 'react';
 import { Router, browserHistory } from 'react-router';
 import { render } from 'react-dom';
@@ -249,7 +250,7 @@ class Main extends React.Component {
 render(<Main/>, document.getElementById('root'));
 ```
 
-We've imported 'Router' and 'browserHistory' from React-Router, and we're now rendering 'Router' instead of `<h1>Hello, world!</h1>`. 'Router' will use 'routes.js' to set up routes and load the necessary component based on the current route. Run `npm run start`, open 'localhost:8001' in Chrome and open up the dev-tools. As you navigate, you can see the routes are lazy-loading!
+We've imported 'Router' and 'browserHistory' from React-Router, and we're now rendering 'Router' instead of `<h1>Hello, world!</h1>`. 'Router' will use the routes from *routes.js* to set up routes and load the necessary component based on the current route. Run `npm run start`, open 'localhost:8001' in Chrome and open up the dev-tools. As you navigate, you can see the routes are loading as they're needed!
 
 ## Milestone 3: Hot-loading
 In part 1, we configured our server to be able to Hot Reload our application code without us having to rebuild or refresh. We need to add a little extra configuration for this to work, so let's do it now.
@@ -265,6 +266,7 @@ The last thing we have to do in our application is configure the modules to be a
 The first step is to separate out the Main component of the app into its own file rather than having it live in *index.js*. Create a *Main.js* file in the *src* folder and pull out the Main class and its dependencies, excluding 'routes.js'. After we're done, *index.js* should look like this:
 
 ```
+import 'babel-polyfill';
 import React from 'react';
 import { render } from 'react-dom';
 
@@ -319,9 +321,9 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 }
 ```
 
-This block of code is responsible for reloading our application code when a change is made. In part 1, if we tried to make a change to the app, we would get a warning in the console saying "This module doesn't know how to reload itself". That's because we didn't include this section of code! 
+This block of code is responsible for reloading our application code when a change is made. In part 1, if we tried to make a change to the app, we would get a warning in the console saying "This module doesn't know how to reload itself". That's because we didn't include this section of code! If we are in a development build, and the module is hot-reloaded, any components we change will try to reload themselves. This 'request' to change the component will bubble up until it gets to this block of code where we re-render our app with newly updated routes and the code they contain!
 
-Now, let's add the last configuration we need for hot reloading to work correctly and play nice with the internal state of our React components. We need to add 'react-hot-loader' as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components.
+Now, let's add the last configuration we need for hot reloading to work correctly and play nice with the internal state of our React components. We need to add react-hot-loader as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components. If we omit React-Hot-Loader, our React component's local state would not be preserved!
 ```
 entry: {
         app: [
@@ -337,6 +339,7 @@ Next, we need to modify our *.babelrc* so Babel knows about react-hot-loader:
 ```
 {
     "presets": ["latest", "react"],
+    "plugins": ["transform-class-properties", "transform-object-rest-spread"],
     "env": {
         "development": {
             "plugins": [
@@ -347,9 +350,9 @@ Next, we need to modify our *.babelrc* so Babel knows about react-hot-loader:
 }
 ```
 
-Not a lot of explanation is done as to why and how this configuration works, but it's necessary for hot-reloading to preserve the state of React components. See [here](https://github.com/gaearon/react-hot-loader/blob/next/docs/README.md#migrating-from-create-react-app) for the original set up instructions.
+Not a lot of explanation is given as to why and how this configuration works, but it's necessary for hot-reloading to preserve the state of React components. See [here](https://github.com/gaearon/react-hot-loader/blob/next/docs/README.md#migrating-from-create-react-app) for the original set up instructions.
 
-Finally, we need to make a small fix for Webpack 2 and Hot Module reloading to play nice. Open up *routes.js*. Notice that our dynamic routes are all using System.import. Sadly, dynamic routing doesn't work fully with Hot Module Reloading yet, so we need to add the following to the top of our *routes.js* file:
+Finally, we need to make a small fix for Webpack 2 and Hot Module Reloading to play nice. Open up *routes.js*. Notice that our dynamic routes are all using System.import. Sadly, dynamic routing doesn't yet function correctly with Hot Module Reloading, so we need to add the following to the top of our *routes.js* file:
 
 ```
 if(process.env.NODE_ENV === 'development' && module.hot) {
