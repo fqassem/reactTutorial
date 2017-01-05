@@ -12,6 +12,7 @@ This tutorial will utilize the following libraries and features:
 * [React-Router](https://github.com/ReactTraining/react-router) - app routing
 * [Redux](http://redux.js.org/) - predictable state management
 * [SASS](http://sass-lang.com/) - easier CSS
+* [Susy](http://susy.oddbird.net/) - SASS-based grid system
 * [Express.js](http://expressjs.com/) - Node.js-based development server for hosting applications
 * [ESLint](http://eslint.org/) - better JavaScript linting for consistent code style
 * Testing using:
@@ -36,7 +37,7 @@ Setting up NPM, Webpack, Babel, React, and Express.js development server
 ESLint, Routing, and Hot-Loading
 
 ## [Part 3](https://github.com/precorFadiQassem/reactTutorial/tree/master/part3)
-Testing and production build
+Testing and Production Build
 
 ## [Part 4](https://github.com/precorFadiQassem/reactTutorial/tree/master/part4)
 Back-end, State Management and Sign-in
@@ -45,13 +46,10 @@ Back-end, State Management and Sign-in
 Navbar, Sign-out, Register, and Protected Routes
 
 ## [Part 6](https://github.com/precorFadiQassem/reactTutorial/tree/master/part6)
-CSS support and Navigation Bar
+SASS support and Susy
 
 ## [Part 7](https://github.com/precorFadiQassem/reactTutorial/tree/master/part7)
-Service Workers
-
-## [Part 8](https://github.com/precorFadiQassem/reactTutorial/tree/master/part8)
-Testing
+Progressive Web App Overview, Service Workers
 
 #Useful Links
 https://medium.com/@addyosmani/progressive-web-apps-with-react-js-part-i-introduction-50679aef2b12#.nnp1mnt10
