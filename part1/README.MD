@@ -341,20 +341,20 @@ npm install --save-dev babel-core babel-loader
 
 **babel-core** is the core Babel compiler. **babel-loader** is a 'loader' Webpack will use in order to 'load' files for processing by Babel. 'Loaders' are a Webpack concept that we'll see more of in other sections of our tutorial, but they essentially tell Webpack to use a certain library (or libraries) to process files during the build. They are almost like 'tasks' in other build tools, only we don't have to write them ourselves! In our case, we will configure Webpack to use babel-loader to transpile JavaScript using Babel.
 
-By default, Babel is pretty stupid. It doesn’t know anything about ES6 or JSX or how to transpile them to ES5. It requires us to download ‘presets’ that it uses to understand ES6 syntax and JSX. There are many different presets, some of which contain as of yet unstandardized features, such as the Object spread operator and class variables. The preset we will use contains only the 'latest' standards without any experimental features. However, some of these experimental features are pretty useful. We'll still be able to use them, but we need to download plugins so Babel knows about them.
+By default, Babel is pretty stupid. It doesn’t know anything about ES6 or JSX or how to transpile them to ES5. It requires us to download plugins that it uses to understand ES6 syntax and JSX. There are different types of plugins. The one we'll encounter most is a 'transform' plugin that Babel uses to transpile the syntax of a certain language feature. To make life easier on us, Babel has collections of plugins called 'presets'. There are many different presets, some of which contain transforms for as-of-yet unstandardized features, such as the Object spread operator and static class variables. The preset we will use contains only the 'latest' standards without any experimental feature transforms. However, some of these experimental features are pretty useful. We'll still be able to use them, but we'll need to download the plugins we want ourselves.
 
-There are 5 stages of standardization (0 to 4). Until the feature gets to stage 4, it's not yet part of the future ES standard. Unless we include a preset that also contains knowledge of 'Object spread', Babel won't know about it.
+Side note: As defined by the Ecma International committee, there are 5 stages of standardization for EcmaScript (0 to 4). Until a feature gets to stage 4, it's not yet part of the future ES standard.
 
-For example, the 'Object spread' `...` operator is not yet standardized. It's super useful, and we'll want use it extensively in our Redux code. Because we installed the 'latest' preset, we'll need plugins for this and any other experimental features we wish to use. Let's install them now:
+Let's install the presets and plugins we need now:
 
 ```
 npm install —save-dev babel-preset-react babel-preset-latest
 npm install --save-dev babel-plugin-transform-class-properties babel-plugin-transform-object-rest-spread
 ```
 
-[**babel-preset-react**](https://babeljs.io/docs/plugins/preset-react/) contains knowledge of how to transform JSX into regular old `React.createElement` calls. JSX is not natively understood by browsers, so this preset is necessary for Babel to transform JSX to regular old JavaScript. [**babel-preset-latest**](https://babeljs.io/docs/plugins/preset-latest/) contains knowledge of the very latest ES standards, ES2015 (also known as ES6), ES2016 (ES7), and ES2017 (not yet completed). This preset does not include any experimental features. We'll simply add the experimental features we care about explicitly via plugins.
+[**babel-preset-react**](https://babeljs.io/docs/plugins/preset-react/) contains plugins that allow Babel to understand and transform JSX into regular old `React.createElement` calls. Remember that JSX isn't understood by browsers natively, so we have to transform it to JavaScript before it can be run! [**babel-preset-latest**](https://babeljs.io/docs/plugins/preset-latest/) contains knowledge of the very latest ES standards, ES2015 (also known as ES6), ES2016 (ES7), and ES2017. This preset does not include any experimental features transforms. We'll simply add the ones we care about explicitly.
 
-**babel-plugin-transform-class-properties** is a Babel plugin that contains knowledge of static class properties, which is not yet standardized in ES6. It also allows us to use arrow functions as class functions, which is also still experimental. **babel-plugin-transform-object-rest-spread** informs Babel of the existence of the 'Object spread' operator, which is conceptually similar to the ES6 'array spread' operator. However, the Object spread operator is still in stage 2, and using it without the plugin installed will result in a error when we build.
+**babel-plugin-transform-class-properties** is a Babel plugin that contains knowledge of static class properties, which is not yet standardized in ES6. It also allows us to use arrow functions as class functions, which is also still experimental. **babel-plugin-transform-object-rest-spread** informs Babel of the existence of the 'Object spread' operator, which is conceptually similar to the ES6 'array spread' operator. However, the Object spread operator is still in stage 2, so using it without the plugin installed will result in a error when we build.
 
 Next, we need to create a configuration for Babel to use these presets during our build. In the root of the app, create a file called *.babelrc* with the following contents:
 
@@ -365,7 +365,7 @@ Next, we need to create a configuration for Babel to use these presets during ou
 }
 ```
 
-This is the default configuration file Babel looks at during the build. Here we've told Babel to use the `presets` we've installed. We also let Babel know about the plugins we've just installed for enabling static class properties and the object spread operator. We won't need any other presets, but if you find an experimental feature you like, you can install it and add it to the plugins array here.
+This is the default configuration file Babel looks at during the build. Here we've told Babel to use the `presets` we've installed. We also let Babel know about the plugins we've just installed for enabling static class properties and the object spread operator. We won't need any other presets, but if you find an experimental feature you like, you can install it and add it to the plugins array here. Just be careful with stage-0 and stage-1 presets since they are subject to large changes.
 
 Finally, remember that Babel only transpiles our ES6 **syntax** down to ES5. It doesn't do anything with our JavaScript built-in objects like `Promise`s or static methods like `Object.assign`. This becomes a problem when our code has been transpiled, but we're using these new ES6 standard library functions. We need a way to standardize the browser environment in which Babel runs in.
 
@@ -396,6 +396,13 @@ Now that Babel is set up, we need to configure Webpack to actually use Babel to 
 ```
 
 The `module` section contains a list of ‘rules’ (originally titled `loaders` in Webpack 1). `rules` simply contains a list of the loader configurations you need for your project build. Here we're telling Webpack to look at all of the *.js* files in our *src* directory and use babel-loader when it encounters these files. That's how Babel knows to transpile our JavaScript!
+
+Let's take a quick look at the overall process that Webpack uses to build our code. Webpack loads the `webpack.config.js` (or whatever config we provide it) and:
+
+1. reads the `entry` points for our application, then
+2. finds all files referenced by our entry points and their children, then
+3. grabs all our source files and uses our `module.rules` sections to look up which loaders need to be run for which files, then
+4. pipes the generated content into files according to the structure we defined in `output`
 
 Run the project using `NODE_ENV=development node ./devServer.js`. Visit 'localhost:8001' and see that our app is running correctly! If you open up the JavaScript file that Webpack generated, you will see that it no longer contains any ES6 syntax! It's been successfully transpiled by Babel! Also notice that we didn't see any errors about parsing JSX because Babel now knows about JSX and compiled it down to regular old JavaScript.
 
