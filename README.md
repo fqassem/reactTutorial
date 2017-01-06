@@ -37,7 +37,7 @@ Setting up NPM, Webpack, Babel, React, and Express.js development server
 ESLint, Routing, and Hot-Loading
 
 ## [Part 3](https://github.com/precorFadiQassem/reactTutorial/tree/master/part3)
-Testing and Production Build
+Production Build and Testing
 
 ## [Part 4](https://github.com/precorFadiQassem/reactTutorial/tree/master/part4)
 Back-end, State Management and Sign-in

@@ -26,7 +26,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 export default {
     entry: {
-        vendor: ['react', 'react-dom', 'react-router']
+        vendor: ['react', 'react-dom', 'react-router', 'babel-polyfill']
     },
     output: {
         publicPath: '/'
@@ -62,7 +62,7 @@ export default {
 ```
 
 ### webpack.base.config.js
-Note that we now have an `entry` called 'vendor'. This is where we will house all of our framework code needed to run the app on the browser. It currently contains the React, ReactDOM, and React-Router libraries. If we add any more libraries needed to run our application, we should add them here. When the build is finished, it will output a file called *vendor.[generated_hash].js* containing all of our framework code. This makes for easy caching on the client.
+Note that we now have an `entry` called 'vendor'. This is where we will house all of our framework code needed to run the app on the browser. It currently contains the React, ReactDOM, React-Router, and Babel-Polyfill libraries. If we add any more libraries needed to run our application, we should add them here. When the build is finished, it will output a file called *vendor.[generated_hash].js* containing all of our framework code. This makes for easy caching on the client.
 
 We removed 'app' from our base `entry` so that the specific environment configurations define their own. This is because we need to add a few entry points in development so that HMR works correctly, while production won't need them. However, both development and production will share the same framework code, so we abstract that out here in the base config.
 
