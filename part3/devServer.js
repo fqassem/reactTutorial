@@ -1,6 +1,7 @@
 import webpack from 'webpack';// webpack = require('webpack');
 import express from 'express';
 import historyApiFallback from 'connect-history-api-fallback';
+import open from 'open';
 
 import devMiddleware from 'webpack-dev-middleware';
 import hotMiddleware from 'webpack-hot-middleware';
@@ -22,4 +23,6 @@ app.use(
 app.use(devMiddleware(compiler, serverConfig));
 app.use(hotMiddleware(compiler));
 
-app.listen(8001, 'localhost');
+app.listen(8001, 'localhost', () => {
+    open('http://localhost:8001', 'google chrome');
+});
