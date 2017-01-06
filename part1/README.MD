@@ -348,7 +348,7 @@ Side note: As defined by the Ecma International committee, there are 5 stages of
 Let's install the presets and plugins we need now:
 
 ```
-npm install —save-dev babel-preset-react babel-preset-latest
+npm install --save-dev babel-preset-react babel-preset-latest
 npm install --save-dev babel-plugin-transform-class-properties babel-plugin-transform-object-rest-spread
 ```
 
