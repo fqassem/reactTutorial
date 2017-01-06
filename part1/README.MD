@@ -506,3 +506,19 @@ Finally, instead of typing `NODE_ENV=development node -r babel-register ./devSer
 ```
 
 And now we can run `npm run start` instead!
+
+##Milestone 7 (Super Bonus!): Automatically open browser after running build
+If you're lazy like me, you'll want your build to automatically open a browser window for you. It's pretty simple to do so. We'll need to install the Node package **open**:
+
+```npm install --save-dev open```
+
+Next, `import open from 'open'` in *devServer.js*. Finally, at the bottom of our *devServer.js* file, we modify `app.listen` to accept a callback that 'open's the browser window to our specified port and host name:
+
+```
+...
+app.listen(8001, 'localhost', () => {
+    open('http://localhost:8001', 'google chrome');
+});
+```
+
+If you choose to, extract the port and hostname into their own variables so we don't have to duplicate them in this string. Run `npm run start` and watch the magic happen! If you don't have Chrome, you can substitute 'firefox' or 'safari' in the second parameter of the `open` function. 
