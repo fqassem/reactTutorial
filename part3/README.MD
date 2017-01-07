@@ -147,7 +147,6 @@ export default webpackMerge(baseConfig, {
                 conditionals: true,
                 unused: true,
                 comparisons: true,
-                sequences: true,
                 dead_code: true,
                 evaluate: true,
                 if_return: true,
@@ -242,3 +241,41 @@ We'll also need some adapter plugins for Karma to be able to use and understand 
 ```
 npm install --save-dev karma-mocha karma-chai karma-sinon karma-webpack karma-chrome-launcher
 ```
+
+Now that we have our core testing modules and our adapters installed, let's begin our test framework setup. Let's start by setting up Karma. If you run `./node_modules/.bin/karma init`, you'll start a wizard that helps you set up Karma. Instead, let's bypass the wizard and simply create a *karma.config.js* file in the root of our application. It should look like this:
+
+```
+```
+
+The comments should be sufficient for explaining the configuration.
+
+Let's create a simple test file to make sure our framework is running correctly. Create a 'test' folder in the root of our application, and then create a *sampleTest.js* file with the following contents:
+
+```
+describe('sample test container', () => {
+    describe('sample test', () => {
+        it('asserts correctly', () => {
+            expect(10.to.equal(10);
+        });
+    });
+});
+```
+
+This test simply asserts that 10 is equal to 10. You may notice ESLint complaining about the use of 'to' and 'describe'. That's because it doesn't yet know we're using Mocha, Chai, and Sinon and their respective functions. While we could modify our *.eslintrc* to include the testing framework library functions, that would affect the rest of the application. Lucky for us, ESLint supports 'cascading configurations'. This means that if we simply create another *.eslintrc* that lives in our test folder, we'll 'inherit' the main *.eslintrc* in the root of our application. Then, we can define whatever rules we want that only affect the contents of the *test* folder! Let's do that now. In the *test* folder, create an *.eslintrc*:
+
+```
+{
+    "env": {
+        "mocha": true,
+    },
+    "globals": {
+        "expect": true,
+        "assert": true,
+        "sinon": true
+    }
+}
+```
+
+That solves the complaints from ESLint. Now, let's try running Karma in the root of the app:
+
+```./node_modules/.bin/karma start```
