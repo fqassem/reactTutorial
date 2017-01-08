@@ -364,3 +364,146 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 This simply requires all of the routes we might load dynamically so a server request is no longer needed to grab them. What this basically means is that lazy-loading routes will only work in production, not in development. In development, those files will be packaged up with the rest of the app code. That's not a huge deal, but we should be sure that every time we add a new route, we should add it both to this code block and the code block that gets exported at the bottom of *routes.js*. Not a big deal - it should be fixed soon!
 
 Now, run `npm run start` and open our app in a browser. Make a change in *SignIn.js* or *Home.js* and you should see it reflected automatically in the browser after you save the file!
+
+## A few notes about React Components
+Before we dive further into React and some of the code in this tutorial, we should talk a bit about how to structure our React Components, as well as things to watch out for. Again, this is not a full tutorial, but more about best practices and how to structure your code.
+
+Remember that React is a view library - the 'V' in 'MVW'. The purpose of React is to create reusable components that can be used throughout an application. The majority of the components that comprise an application should be *stateless*. State becomes a huge concern when our app hierarchy grows in size and scope, so it definitely deserves its own section. We'll also talk about React types and how to make life easier with type checking.
+
+### State in React
+#### Overview
+State is a huge topic in React. Remember that React is simply the 'V' in 'MVW'. You can handle state however you like. As you app grows, you'll find that without having a good way to organize your components, your code turns into a mess.
+
+In React, it's good to understand the separation between 'presentational' and 'container' components. We'll go over the basics, but for more information, go to Dan Abramov's very detailed article [here](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0#.y590lz3f8).
+
+'Presentational' components are components we create that don't contain application state or logic. They simply display what is given to them via props. They basically describe how things look on the page. It's perfectly ok for them to contain UI logic, like CSS and conditional styles. However, if they contain application state, we can introduce all kinds of bugs into our app code, as well as complicate our code base.
+
+'Container' components compose these 'presentational' components. They know how to maintain the application's data, and they provide this data to the presentational components. Any communication with a state management library is done via these container components. Note that container components can contain other container components!
+
+####Example
+Let's make this concrete with an example. Imagine we're creating a tic-tac-toe game very similar to the React [tutorial](https://facebook.github.io/react/tutorial/tutorial.html). Our `Board` component will represent the 3x3 grid. Our `Square` component will represent the individual squares that comprise the grid. A square can be blank, contain an 'X', or contain an 'O'. For simplicity's sake, we won't fully implement the game. We'll simply draw an 'X' on the square the user clicked.
+
+If we think about this in a React way, we'll come to the conclusion that `Board` should be our container component. It should handle the logic of the game and contain all the state. `Square` should be a presentational component. Its only responsibility should be to display an 'X' or an 'O' when it's clicked. Let's purposely do things the wrong way to demonstrate why we need to define our components this way, and then go back and fix it.
+
+```
+class Board extends React.Component {
+    render() {
+        //While this could be done more compactly with loops, it's just easy to see this way:
+        return (
+            <div>
+                <div className="board-row">
+                    { <Square /> }
+                    { <Square /> }
+                    { <Square /> }
+                </div>
+                <div className="board-row">
+                    { <Square /> }
+                    { <Square /> }
+                    { <Square /> }
+                </div>
+                <div className="board-row">
+                    { <Square /> }
+                    { <Square /> }
+                    { <Square /> }
+                </div>
+            </div>
+        );
+    }
+}
+
+class Square extends React.Component {
+    constructor() {
+        super();
+        this.state = { value: '' }
+    }
+
+    render() {
+        return (
+            <button className="square" onClick={() => this.setState({value: 'X'})}>
+                {this.state.value}
+            </button>
+        );
+    }
+}
+```
+
+Notice that we're tracking state in the `Square` component, which is something we shouldn't do in our presentational components. Each individual square only knows about its current state and nothing about its neighboring squares. Imagine if we wanted to expand on this game and fully implement 'tic-tac-toe'. Each `Square` would have to communicate its state back to the board and the board would aggregate this data and process it. Trying to keep track of this would become a headache!
+
+React has a philosophy of 'lifting' the state, which plays well with our container/presentational distinction. When you want to aggregate data from multiple child components or have two child components communicate with each other, 'lift' the state up so that it lives in the parent component. In our case, we should keep the state of the `Square`s in the `Board` component and simply pass data the `Square` needs via props. This way, the split between state and presentation is maintained!
+
+If we did it this way, our `Board` now looks like this:
+
+```
+class Board extends React.Component {
+    constructor() {
+        super();
+        this.state = { squares: Array(9).fill(null) }
+    }
+
+    renderSquare(i) {
+        return <Square value={this.state.squares[i]} onClick={() => this.handleClick(i)} />;
+    }
+
+    handleClick(i) {
+        const squares = this.state.squares.slice();
+        squares[i] = 'X';
+        this.setState({squares: squares});
+    }
+
+    render() {
+        return (
+            <div>
+                <div className="board-row">
+                    {this.renderSquare(0)}
+                    {this.renderSquare(1)}
+                    {this.renderSquare(2)}
+                </div>
+                <div className="board-row">
+                    {this.renderSquare(3)}
+                    {this.renderSquare(4)}
+                    {this.renderSquare(5)}
+                </div>
+                <div className="board-row">
+                    {this.renderSquare(6)}
+                    {this.renderSquare(7)}
+                    {this.renderSquare(8)}
+                </div>
+            </div>
+        );
+    }
+}
+```
+
+and our `Square` looks like this:
+```
+class Square extends React.Component {
+    render() {
+        return (
+            <button className="square" onClick={() => this.props.handleClick()}>
+                {this.props.value}
+            </button>
+        );
+    }
+}
+```
+
+Our `Square` is now stateless and super simple! All it's focused on is presentation. The `onClick` and current `value` it needs are passed in from the `Board` class, which manipulate state outside the scope of `Square`. `Square` is merely a trigger for these state changes to occur.
+
+We can take this a step further by removing all of the syntactic sugar and creating what is called a 'functional stateless component'. Our `Square` component becomes this:
+
+```
+const Square = ({handleClick, value}) => {
+    return (
+        <button className="square" onClick={handleClick}>
+            {value}
+        </button>
+    );
+}
+```
+
+No boilerplate, no 'this' keyword - as simple as can be. Anything that's needed by `Square` is passed in via props, which we deconstruct in the parameters. This is the preferred way to write presentational components that don't need access to the DOM or the lifecycle functions React provides (e.g. *componentDidMount*). In the future, Facebook says that there may be performance benefits for using stateless, functional components too! For a nice list of benefits you get using stateless, functional components, visit this cool [article](https://medium.com/@housecor/react-stateless-functional-components-nine-wins-you-might-have-overlooked-997b0d933dbc).
+
+This distinction between presentational and container components will be important as our application grows in size and scope. The larger a React app grows, the larger the component hierarchy becomes, and the more difficult it becomes to pass props from parent to child. That's where state libraries like Redux come in handy. We'll set up Redux in a later part of this tutorial.
+
+### Types in React and JavaScript
+In React code, you may see "PropTypes" declared. "PropTypes" are a very useful debugging tool and we should use them everywhere in our React code. They help enforce that the props being passed into a component exist and are of the correct type (function, object, array, etc). PropTypes are a runtime tool, so they'll only be checked for components in our current code path. For static type checking in JavaScript, **Flow** can help catch type errors in your code and save you hours of debugging time. We don't set up Flow in this tutorial, but it is definitely something worth checking out. For further information, go the Flow website's [React page](https://flowtype.org/docs/react.html).
