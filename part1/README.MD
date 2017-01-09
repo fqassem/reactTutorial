@@ -43,7 +43,7 @@ This will create a *package.json* file with default values ('-y'). This file is 
 
 Let's open this file and take a look at it. Most of the content should be self-explanatory, but there are three sections of note: `"scripts"`, `"devDependencies"`, and `"dependencies"`.
 
-`"scripts"` is where we will create shortcut commands to run, build, and test the project. There's already a default, pre-generated `"test"` command in there that doesn't do anything useful. You can run these scripts with `npm run <script_name>`. So, to run the `"test"` command, we run `npm run test` in our console. We'll create some scripts throughout this tutorial.
+`"scripts"` is where we will create shortcut commands to run, build, and test the project. There's already a default, pre-generated `"test"` command in there that doesn't do anything useful. You can run these scripts with `npm run <script_name>`. So, to run the `"test"` command, we run `npm run test` in our console. We'll create some scripts throughout this tutorial. Note that `start` and `test` are special NPM commands that don't require `run`, but we include it for the sake of consistency.
 
 When we start installing packages, `"dependencies"` and `"devDependencies"` will appear in *package.json*. These sections contain a list a list of modules we require for our project to build and run. Note that `"devDependencies"` will not be packaged into the final production build of our project. `"devDependencies"`, as the name implies, should only contain a list of the dependencies our project needs for development, such as transpilers, loaders, and test frameworks, while `"dependencies"` should contain libraries needed for your application to run in a browser, such as React and Redux. When we run `npm install`, the modules listed in these sections will end up in a *node_modules* folder that NPM automatically creates for us.
 
@@ -521,4 +521,4 @@ app.listen(8001, 'localhost', () => {
 });
 ```
 
-If you choose to, extract the port and hostname into their own variables so we don't have to duplicate them in this string. Run `npm run start` and watch the magic happen! If you don't have Chrome, you can substitute 'firefox' or 'safari' in the second parameter of the `open` function. 
+If you choose to, extract the port and hostname into their own variables so we don't have to duplicate them in this string. Run `npm run start` and watch the magic happen! If you don't have Chrome, you can substitute 'firefox' or 'safari' in the second parameter of the `open` function.
