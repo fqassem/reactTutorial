@@ -20,6 +20,7 @@ This tutorial will utilize the following libraries and features:
     * [Mocha](https://mochajs.org/) - test framework
     * [Chai](http://chaijs.com/) - test assertions
     * [Sinon](http://sinonjs.org/) - creating test mocks, spies, stubs
+    * [Enzyme](https://github.com/airbnb/enzyme) - easier testing of React components
 
 ## Features
 * Hot Module Reloading - immediately show code changes on the browser using:

@@ -1,9 +1,11 @@
-describe('sample test container', () => {
-    describe('sample test', () => {
-        it('asserts correctly', () => {
-            '10'.should.equal('10');
-            expect('10').to.equal('10');
-            assert.equal('10', '10');
-        });
+import React from 'react';
+import { expect } from 'chai';
+import { shallow } from 'enzyme';
+import Home from '../src/pages/Home';
+
+describe('Home page', () => {
+    it('renders with no errors', () => {
+        const wrapper = shallow(<Home />);
+        expect(wrapper.type()).to.equal('div');
     });
 });
