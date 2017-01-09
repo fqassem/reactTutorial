@@ -11,6 +11,7 @@ Let's first create our *index.html*, the entry-point of our application. In the 
 
 ```
 <!DOCTYPE html>
+<html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>My Application</title>
