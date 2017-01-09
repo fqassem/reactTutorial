@@ -368,7 +368,7 @@ Now, run `npm run start` and open our app in a browser. Make a change in *SignIn
 ## A few notes about React Components
 Before we dive further into React and some of the code in this tutorial, we should talk a bit about how to structure our React Components, as well as things to watch out for. Again, this is not a full tutorial, but more about best practices and how to structure your code.
 
-Remember that React is a view library - the 'V' in 'MVW'. The purpose of React is to create reusable components that can be used throughout an application. The majority of the components that comprise an application should be *stateless*. State becomes a huge concern when our app hierarchy grows in size and scope, so it definitely deserves its own section. We'll also talk about React types and how to make life easier with type checking.
+The purpose of React is to create reusable components that can be used throughout an application to compose our interactive UI. The majority of the components that comprise an application should be *stateless*. State becomes a huge concern when our app hierarchy grows in size and scope, so it definitely deserves its own section. We'll also talk about React types and how to make life easier with type checking.
 
 ### State in React
 #### Overview
@@ -378,7 +378,9 @@ In React, it's good to understand the separation between 'presentational' and 'c
 
 'Presentational' components are components we create that don't contain application state or logic. They simply display what is given to them via props. They basically describe how things look on the page. It's perfectly ok for them to contain UI logic, like CSS and conditional styles. However, if they contain application state, we can introduce all kinds of bugs into our app code, as well as complicate our code base.
 
-'Container' components compose these 'presentational' components. They know how to maintain the application's data, and they provide this data to the presentational components. Any communication with a state management library is done via these container components. Note that container components can contain other container components!
+'Container' components compose these 'presentational' components. They know how to maintain the application's data, and they provide this data to the presentational components. Any communication with a state management library is done via these container components. Note that container components can contain other container components! 
+
+Simply put, the container components are usually parent components, and the children usually presentational componenents. Anything the child needs is given to it by the parent. Data flow in React is generally one-way, from parent to child (children *react* to changes in the parent). Trying to get around this becomes messy, as we'll see in our next example.
 
 ####Example
 Let's make this concrete with an example. Imagine we're creating a tic-tac-toe game very similar to the React [tutorial](https://facebook.github.io/react/tutorial/tutorial.html). Our `Board` component will represent the 3x3 grid. Our `Square` component will represent the individual squares that comprise the grid. A square can be blank, contain an 'X', or contain an 'O'. For simplicity's sake, we won't fully implement the game. We'll simply draw an 'X' on the square the user clicked.
