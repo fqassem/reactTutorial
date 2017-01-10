@@ -203,9 +203,7 @@ Finally, the last line of the configuration specifies that we want to run our ap
 Before we continue, we need to make a small change to the *webpack.config.js* file. First, change:
 
 ```
-app: [
-   path.join(__dirname, './src/index.js')
-]
+app: path.join(__dirname, './src/index.js')
 ```
 
 to:
