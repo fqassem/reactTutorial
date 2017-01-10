@@ -310,7 +310,7 @@ NODE_ENV=development node ./devServer.js
 
 If we go to 'localhost:8001' in Chrome, we'll see 'Hello, world!' on the screen! Cool! Even though our code is uglier than we'd like, it runs without anything extra needed in our build.
 
-If you open the JavaScript source file for our application, you'll see that nothing has been done to JavaScript we wrote. It's simply been packaged up and it's still using ES6 syntax! If we tried running this application as it is using Internet Explorer 11, it would fail because IE 11 does not understand ES6 syntax! Sadly, not all browsers fully support ES6. Only the most modern WebKit browsers have 100% ES6 support!
+If you open the JavaScript source file for our application, you'll see that nothing has been done to the JavaScript we wrote. It's simply been packaged up and it's still using ES6 syntax! If we tried running this application as it is using Internet Explorer 11, it would fail because IE 11 does not understand ES6 syntax! Sadly, not all browsers fully support ES6. Only the most modern WebKit browsers have 100% ES6 support!
 
 Rather than revert to development using old-school ES5, how can we write ES6 code and have it run on all browsers, not just the latest and greatest? How can we write JSX instead of making calls to `React.createElement`?
 
