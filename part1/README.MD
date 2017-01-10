@@ -498,7 +498,7 @@ Finally, instead of typing `NODE_ENV=development node -r babel-register ./devSer
 
 ```
     ...,
-    "scripts:" {
+    "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "NODE_ENV=development node -r babel-register ./devServer.js"
     }
