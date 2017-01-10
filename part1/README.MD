@@ -279,7 +279,9 @@ class Main extends React.Component {
 render(<Main/>, document.getElementById('root'));
 ```
 
-Using the ES6 module 'import' syntax, we import React as well as React-DOM's `render` function. Next, we create a simple 'Main' component for our application. Then we call render and attach the Main component to the DOM at the div with id 'root'. Remember `<div id="root"></div>` in our index.html file? That's where React will attach itself, render, and update using ReactDOM. Notice, in the `render` function, we are writing what is called JSX. [JSX](https://facebook.github.io/jsx/) is a language that allows us to write HTML-like syntax within our JavaScript.
+Using the ES6 module 'import' syntax, we import React. We also import React-DOM's `render` function. Next, we create a simple 'Main' component for our application that extends `React.Component`. All our componenent does is display 'Hello, world!'.
+
+Then we call `render` and attach the `Main` component to the DOM at the div with id 'root'. Remember `<div id="root"></div>` in our *index.html* file? That's where we're attaching our application! Notice, in the `render` function, we are writing **JSX**. [JSX](https://facebook.github.io/jsx/) is a language that allows us to write HTML-like syntax within our JavaScript.
 
 Now, let's try running our development server to build and host the application:
 
@@ -287,9 +289,9 @@ Now, let's try running our development server to build and host the application:
 NODE_ENV=development node ./devServer.js
 ```
 
-We get an error that says "Module Parse Failed". This is because JSX needs to be compiled down into JavaScript during the build process. It's not natively understood by Webpack or browsers.
+We get an error that says "Module Parse Failed". Webpack sees the JSX we created and thinks we've made a mistake in our JavaScript. JSX must be transformed into JavaScript before it's run on the browser. It's not natively understood by Webpack or browsers.
 
-So, we need something in our build to translate JSX into JavaScript! We'll get to that in a bit. For now, just to get our example working, let's replace the JSX in our `render` function with a pure JavaScript call to `React.createElement()`. Note that we're not required to use JSX to write React. In fact, when we finish setting up our build, JSX will be transfromed into `React.createElement` calls. JSX is simply syntactic sugar over `React.createElement()`. We use JSX because it just makes our `render` function cleaner, easier to read, and almost 1:1 with HTML.
+So, we need something in our build to translate JSX into JavaScript! We'll get to that in a bit. For now, just to get our example working, let's replace the JSX in our `render` function with a pure JavaScript call to `React.createElement()`. Note that we're not required to use JSX to write React. In fact, when we finish our setup, JSX will be transfromed into `React.createElement` calls during the Webpack build. JSX is simply syntactic sugar over `React.createElement()`. We use JSX because it just makes our `render` function cleaner, easier to read, and almost 1:1 with HTML.
 
 To get our example working quickly without any more build configuration, replace `<h1>Hello, world!</h1>` with `React.createElement("h1", null, "Hello, world!")`. Then replace
 
@@ -303,7 +305,7 @@ with
 render(React.createElement(Main, null, null), document.getElementById('root'));
 ```
 
-What we've done here is replace JSX with its JavaScript equivalent. Yeah. It's hideous. We definitely want to use JSX during development! For now, build and run the application:
+What we've done here is replace JSX with its JavaScript equivalent. Yeah. It's hideous. We definitely want to use JSX while writing our code! For now, let's just live with it and run the application:
 
 ```
 NODE_ENV=development node ./devServer.js
@@ -311,7 +313,7 @@ NODE_ENV=development node ./devServer.js
 
 If we go to 'localhost:8001' in Chrome, we'll see 'Hello, world!' on the screen! Cool! Even though our code is uglier than we'd like, it runs without anything extra needed in our build.
 
-If you open the JavaScript source file for our application, you'll see that nothing has been done to JavaScript we wrote. It's simply been packaged up and it's still using ES6 syntax! If we tried running this application as it is using Internet Explorer 11, it would fail because IE 11 does not understand ES6 syntax! Sadly, not all browsers fully support ES6. Only the most modern WebKit browsers have 100% ES6 support!
+If you open the JavaScript source file for our application, you'll see that nothing has been done to the code we wrote. It's simply been packaged up. It's still using ES6 syntax! If we tried running this application as it is using Internet Explorer 11, it would fail because IE 11 does not understand ES6 syntax! Sadly, not all browsers fully support ES6. Only the most modern WebKit browsers have 100% ES6 support!
 
 Rather than revert to development using old-school ES5, how can we write ES6 code and have it run on all browsers, not just the latest and greatest? How can we write JSX instead of making calls to `React.createElement`?
 
@@ -352,9 +354,9 @@ npm install --save-dev babel-preset-react babel-preset-latest
 npm install --save-dev babel-plugin-transform-class-properties babel-plugin-transform-object-rest-spread
 ```
 
-[**babel-preset-react**](https://babeljs.io/docs/plugins/preset-react/) contains plugins that allow Babel to understand and transform JSX into regular old `React.createElement` calls. Remember that JSX isn't understood by browsers natively, so we have to transform it to JavaScript before it can be run! [**babel-preset-latest**](https://babeljs.io/docs/plugins/preset-latest/) contains knowledge of the very latest ES standards, ES2015 (also known as ES6), ES2016 (ES7), and ES2017. This preset does not include any experimental features transforms. We'll simply add the ones we care about explicitly.
+[**babel-preset-react**](https://babeljs.io/docs/plugins/preset-react/) contains plugins that allow Babel to understand and transform JSX into regular old `React.createElement` calls. Remember that JSX isn't understood by browsers natively, so we have to transform it to JavaScript before it can be run! [**babel-preset-latest**](https://babeljs.io/docs/plugins/preset-latest/) contains knowledge of the very latest ES standards, ES2015 (also known as ES6), ES2016 (ES7), and ES2017. This preset does not include any experimental feature transforms. We'll simply add the ones we care about explicitly.
 
-**babel-plugin-transform-class-properties** is a Babel plugin that contains knowledge of static class properties, which is not yet standardized in ES6. It also allows us to use arrow functions as class functions, which is also still experimental. **babel-plugin-transform-object-rest-spread** informs Babel of the existence of the 'Object spread' operator, which is conceptually similar to the ES6 'array spread' operator. However, the Object spread operator is still in stage 2, so using it without the plugin installed will result in a error when we build.
+**babel-plugin-transform-class-properties** is a Babel plugin that contains knowledge of static class properties, which is not yet standardized in ES6. It also allows us to use arrow functions as class functions, which is also still experimental. **babel-plugin-transform-object-rest-spread** informs Babel of the existence of the 'Object spread' operator, which is conceptually similar to the ES6 'array spread' operator, but for objects. However, the Object spread operator is still in stage 2, so using it without the transform plugin installed will result in a error when we build.
 
 Next, we need to create a configuration for Babel to use these presets during our build. In the root of the app, create a file called *.babelrc* with the following contents:
 
@@ -365,11 +367,11 @@ Next, we need to create a configuration for Babel to use these presets during ou
 }
 ```
 
-This is the default configuration file Babel looks at during the build. Here we've told Babel to use the `presets` we've installed. We also let Babel know about the plugins we've just installed for enabling static class properties and the object spread operator. We won't need any other presets, but if you find an experimental feature you like, you can install it and add it to the plugins array here. Just be careful with stage-0 and stage-1 presets since they are subject to large changes.
+This is the default configuration file Babel looks at during the build. Here we've told Babel to use the `presets` we've installed. We also let Babel know about the `plugin`s we've just installed for enabling static class properties and the object spread operator. We won't need any other presets, but if you find an experimental feature you like, you can install it and add it to the plugins array here. Just be careful with stage-0 and stage-1 presets since they are subject to large changes.
 
-Finally, remember that Babel only transpiles our ES6 **syntax** down to ES5. It doesn't do anything with our JavaScript built-in objects like `Promise`s or static methods like `Object.assign`. This becomes a problem when our code has been transpiled, but we're using these new ES6 standard library functions. We need a way to standardize the browser environment in which Babel runs in.
+Finally, remember that Babel only transpiles our ES6 **syntax** down to ES5. It doesn't do anything with our JavaScript built-in objects like `Promise`s or static methods like `Object.assign`. This becomes a problem when our code has been transpiled *and* we're using these new ES6 standard library functions. We need a way to standardize the browser environment in which Babel runs in.
 
-Also note that many different browsers exist, each with many different versions supporting a varying subset of ES6's new functions and built-in types. **babel-polyfill** helps close the feature gap between all of these browsers. It gives Babel  runtime support by providing polyfills for the ES6 features that aren't transpiled. Let's install it now:
+Many different browsers exist, each with many different versions supporting a varying subset of ES6's new functions and built-in types. **babel-polyfill** helps close the feature gap between all of these browsers. It gives Babel runtime support by providing polyfills for the ES6 features that aren't transpiled. Let's install it now:
 
 ```
 npm install babel-polyfill --save
@@ -397,14 +399,14 @@ Now that Babel is set up, we need to configure Webpack to actually use Babel to 
 
 The `module` section contains a list of ‘rules’ (originally titled `loaders` in Webpack 1). `rules` simply contains a list of the loader configurations you need for your project build. Here we're telling Webpack to look at all of the *.js* files in our *src* directory and use babel-loader when it encounters these files. That's how Babel knows to transpile our JavaScript!
 
-Let's take a quick look at the overall process that Webpack uses to build our code. Webpack loads the `webpack.config.js` (or whatever config we provide it) and:
+Let's take a quick look at the overall process that Webpack uses to build our code. Webpack loads the `webpack.config.js` (or whatever config we provide it explicitly) and:
 
 1. reads the `entry` points for our application, then
 2. finds all files referenced by our entry points and their children, then
 3. grabs all our source files and uses our `module.rules` sections to look up which loaders need to be run for which files, then
 4. pipes the generated content into files according to the structure we defined in `output`
 
-Run the project using `NODE_ENV=development node ./devServer.js`. Visit 'localhost:8001' and see that our app is running correctly! If you open up the JavaScript file that Webpack generated, you will see that it no longer contains any ES6 syntax! It's been successfully transpiled by Babel! Also notice that we didn't see any errors about parsing JSX because Babel now knows about JSX and compiled it down to regular old JavaScript.
+Run the project using `NODE_ENV=development node ./devServer.js`. Visit 'localhost:8001' and see that our app is running correctly! If you open up the JavaScript file that Webpack generated, you will see that it no longer contains any ES6 syntax! It's been successfully transpiled by Babel! Also notice that we didn't see any errors about parsing JSX because Babel now knows about JSX and transformed it  to regular old JavaScript.
 
 Now, we have a framework in which we can write React in ES6!
 
@@ -505,7 +507,7 @@ Finally, instead of typing `NODE_ENV=development node -r babel-register ./devSer
     }
 ```
 
-And now we can run `npm run start` instead!
+And now we can run `npm run start` (or, because 'start' is a special script name in NPM, `npm start`) instead!
 
 ##Milestone 7 (Super Bonus!): Automatically open browser after running build
 If you're lazy like me, you'll want your build to automatically open a browser window for you. It's pretty simple to do so. We'll need to install the Node package **open**:
@@ -521,4 +523,4 @@ app.listen(8001, 'localhost', () => {
 });
 ```
 
-If you choose to, extract the port and hostname into their own variables so we don't have to duplicate them in this string. Run `npm run start` and watch the magic happen! If you don't have Chrome, you can substitute 'firefox' or 'safari' in the second parameter of the `open` function.
+If you choose to, extract the port and hostname into their own variables so we don't have to duplicate them in this string. Run `npm run start` and watch the magic happen! If you don't have Chrome, you can substitute 'firefox' or 'safari' in the second parameter of the `open` function. We won't use this in future tutorials, but know that you can add it whenever you want!
