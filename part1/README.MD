@@ -116,7 +116,7 @@ Now, we have a fully functioning Webpack 2 configuration. So, let's build our pr
 
 to have Webpack run the build. By default, Webpack will look for a file named *webpack.config.js*. It will use that configuration to generate the build.
 
-**Error!** Webpack should complain that it can't find the *src/* folder. That's because we haven't created it yet! Because creating a build without anything to build is essentially pointless, let's create the *src* folder to house all of our project source code. Next, in this folder, create an *index.js* file with the following contents:
+**Error!** Webpack should complain that it can't find the *src/index.js* file. That's because we haven't created it yet! Because creating a build without anything to build is essentially pointless, let's create the *src* folder to house all of our project source code. Next, in this folder, create an *index.js* file with the following contents:
 
 ```
 alert('Hi! Your app is working!');
