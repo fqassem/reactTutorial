@@ -5,7 +5,7 @@ Now that we have a very basic, working framework for writing applications, let's
 * Routing using React-Router
 * The final configuration for Hot-Loading to work correctly
 
-Let's begin!
+We'll also talk stucture and how to organize your React components. Let's begin!
 
 ## Milestone 1: ESLint
 **ESLint** is a very useful development tool. It helps us standardize our code and avoid bugs that we might otherwise miss. ESLint is configurable, allowing you to turn off, on, or modify certain rules to enforce a consistent code style across your team. Let's install it now as a devDependency:
