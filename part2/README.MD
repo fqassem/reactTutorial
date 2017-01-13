@@ -226,7 +226,7 @@ export default {
 };
 ```
 
-How does this work? During the build of the app, Webpack is smart enough to take calls to 'System.import' and bundles those contents separately from the main application code. When React-Router takes the path from the URL, it calls ‘getComponent’, which attempts to asynchronously grab the code for the requested component by calling 'System.import'. After transpilation and building, 'System.import' (when run on the client) will make a request to the server to retrieve the bundle for this specific component and then loads the route and displays it. Basically, use this 'getComponent' and 'System.import' boiler-plate to generate dynamic routes that are lazy-loaded within your application.
+How does this work? During the build of the app, Webpack is smart enough to take routes defined using 'System.import' and bundles them  separately from the main application code. When our app is loaded in the browser, the 'main' portion of the app and the framework code are loaded. When we navigate to a page defined in *routes.js*, React-Router calls ‘getComponent’, which attempts to asynchronously grab the bundle for the requested route by calling 'System.import'. After transpilation and building, 'System.import' (when run on the client) is transformed into a JSONP request that will asynchronously attempt to grab the route you just navigated to. Basically, use this 'getComponent' and 'System.import' boiler-plate to generate dynamic routes that are lazy-loaded within your application!
 
 Note that *Container* is our root component, which renders `this.props.children`. `this.props.children` will be replaced with whatever page component the current route of the app is configured to display. Basically, 'Container' will wrap all of the other pages in the application. Because we have defined the nav-bar in 'Container', it will be present in all of the other 'childRoutes' of the application. Note that our 'indexRoute', or default route, is set to 'Home'. Any routes that aren't resolved by the router will be sent to 'Home', which is handled by the childRoute with the wildcard path '*'. You could also create a 'NotFound' page rather than route the user to the Home page if you desired.
 
@@ -254,8 +254,8 @@ render(<Main/>, document.getElementById('root'));
 
 We've imported 'Router' and 'browserHistory' from React-Router, and we're now rendering 'Router' instead of the `<h1>Hello, world!</h1>` we had previoulsy. 'Router' will use the routes defined in *routes.js* to set up routes and load the necessary component based on the current route. Run `npm run start`, open 'localhost:8001' in Chrome and open up 'Network' tab in dev-tools. As you navigate, you can see the routes are loading as they're needed!
 
-## Milestone 3: Hot-loading
-In part 1, we configured our server to be able to Hot Reload our application code without us having to rebuild or refresh. We need to add a little extra configuration for this to work, so let's do it now.
+## Milestone 3: Hot-loading Final Configuration
+In part 1, we configured our server to be able to Hot Reload our application code without us having to rebuild or refresh. We need to add a little extra configuration for this to work completely with our app, so let's do it now.
 
 We have 3 modules that we installed earlier that work together to allow the app to do Hot Reloading:
 
@@ -325,9 +325,9 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 }
 ```
 
-This block of code is responsible for reloading our application code when a change is made. In part 1, if we tried to make a change to the app, we would get a warning in the console saying "This module doesn't know how to reload itself". That's because we didn't include this section of code! If we are in a development build, and the module is hot-reloaded, any components we change will try to reload themselves. This 'request' to change the component will bubble up until it gets to this block of code where we re-render our app with newly updated routes and the code they contain!
+This block of code is responsible for reloading our application code when a change is made. In part 1, if we tried to make a change to the app, we would get a warning in the console saying "This module doesn't know how to reload itself". That's because we didn't include this section of code! If we are in a development build, and the module is hot-reloaded, any components we change will try to reload themselves. This 'request' to change the component will bubble up to each component until it gets to this block of code where we re-render our app with newly updated routes and the code they contain!
 
-Now, let's add the last configuration we need for hot reloading to work correctly and play nice with the internal state of our React components. We need to add 'react-hot-loader' as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components and preseves their local component state. If we omit React-Hot-Loader, our React component's local state would not be preserved when the component is reloaded!
+Now, let's add the last configuration we need for hot reloading to work correctly and play nice with the internal state of our React components. We need to add 'react-hot-loader/patch' as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components and preseves their local component state. If we omit React-Hot-Loader, our React component's local state would not be preserved when the component is reloaded!
 ```
 entry: {
         app: [
@@ -354,9 +354,9 @@ Next, we need to modify our *.babelrc* so Babel knows about react-hot-loader:
 }
 ```
 
-Not a lot of explanation is given as to why and how this configuration works, but it's necessary for hot-reloading to preserve the state of React components. See [here](https://github.com/gaearon/react-hot-loader/blob/next/docs/README.md#migrating-from-create-react-app) for the original setup instructions.
+Not a lot of explanation is given as to why and how this configuration works, but it's necessary for hot-reloading to preserve the state of React components. See [here](https://github.com/gaearon/react-hot-loader/blob/next/docs/README.md#migrating-from-create-react-app) and [here](https://github.com/gaearon/react-hot-loader/issues/243) for the original setup instructions.
 
-Finally, we need to make a small fix for Webpack 2 and Hot Module Reloading to play nice. Open up *routes.js*. Notice that our dynamic routes are all using `System.import`. Sadly, dynamic routing doesn't yet function properly with Hot Module Reloading, so we need to add the following to the top of our *routes.js* file:
+Finally, we need to make a small fix for Webpack 2, dynamic routes, and Hot Module Reloading to play nice. Sadly, dynamic routing doesn't yet function properly with Hot Module Reloading, so we need to add the following to the top of our *routes.js* file:
 
 ```
 if(process.env.NODE_ENV === 'development' && module.hot) {
@@ -365,7 +365,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 }
 ```
 
-This simply requires all of the routes we might load dynamically. That will include them in our application code, rather than having them loaded dynamically. What this basically means is that lazy-loading routes will only work in production, not in development. In development, those files will be packaged up with the rest of the app code. That's not a huge deal, but we should be sure that every time we add a new route, we should add it both to this code block and the code block that gets exported at the bottom of *routes.js*. Not a big deal - it should be fixed soon!
+This simply requires all of the routes we might load dynamically. That will include them in our application code, rather than having them loaded dynamically. What this basically means is that lazy-loading routes will only work in production, not in development. In development, those files will be packaged up with the rest of the app code. That's not a huge deal, but we should be sure that every time we add a new route, we should add it both to this code block and the code block that gets exported at the bottom of *routes.js*. Not a big deal - it should (hopefully) be fixed soon!
 
 Now, run `npm run start` and open our app in a browser. Make a change in *SignIn.js* or *Home.js* and you should see it reflected automatically in the browser after you save the file!
 
