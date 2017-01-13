@@ -73,8 +73,13 @@ Let’s set up ESLint to run automatically on our files within our environment, 
 Now that we have ESLint running in our IDE, let's add some style rules. [Airbnb](https://airbnb.com) has published a very widely used ESLint configuration file (with React rules too!) for all to use. To install this configuration, run the following commands to install the configuration and its dependencies:
 
 ```
-npm install --save-dev eslint-config-airbnb eslint-plugin-jsx-a11y@2.2.3 eslint-plugin-react eslint-plugin-import
+(
+  export PKG=eslint-config-airbnb;
+  npm info "$PKG@latest" peerDependencies --json | command sed 's/[\{\},]//g ; s/: /@/g' | xargs npm install --save-dev "$PKG@latest"
+)
 ```
+
+This command installs the AirBnb config with the proper, compatible versions of its dependencies. To read more about it, go [here](https://github.com/airbnb/javascript/tree/master/packages/eslint-config-airbnb#eslint-config-airbnb-1).
 
 Now, add `"extends": "airbnb"` to your *.eslintrc* config. This tells ESLint we want to use the Airbnb code style config we just installed.
 
