@@ -7,11 +7,11 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 
 const errorLoading = (error) => {
     throw new Error(`Dynamic page loading failed: ${error}`);
-}
+};
 
 const loadRoute = (cb) => {
     return module => cb(null, module.default);
-}
+};
 
 export default {
     path: '/',

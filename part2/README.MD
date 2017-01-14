@@ -194,11 +194,11 @@ import Container from './Container';
 
 const errorLoading = (error) => {
     throw new Error(`Dynamic page loading failed: ${error}`);
-}
+};
 
 const loadRoute = (cb) => {
     return module => cb(null, module.default);
-}
+};
 
 export default {
     path: '/',
@@ -387,7 +387,7 @@ In React, it's good to understand the separation between 'presentational' and 'c
 
 'Presentational' components are components we create that don't contain application state or logic. They simply display what is given to them via props. They basically describe how things look on the page. It's perfectly ok for them to contain UI logic, like CSS and conditional styles. However, if they contain application state, we can introduce all kinds of bugs into our app code, as well as complicate our code base.
 
-'Container' components compose these 'presentational' components. They know how to maintain the application's data, and they provide this data to the presentational components. Any communication with a state management library is done via these container components. Note that container components can contain other container components! 
+'Container' components compose these 'presentational' components. They know how to maintain the application's data, and they provide this data to the presentational components. Any communication with a state management library is done via these container components. Note that container components can contain other container components!
 
 Simply put, the container components are usually parent components, and the children usually presentational components. Anything the child needs is given to it by the parent. Data flow in React is generally one-way, from parent to child (children *react* to changes in the parent). Trying to get around this becomes messy, as we'll see in our next example.
 
