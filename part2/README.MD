@@ -192,11 +192,11 @@ export default SignIn;
 ```
 import Container from './Container';
 
-errorLoading = (error) => {
+const errorLoading = (error) => {
     throw new Error(`Dynamic page loading failed: ${error}`);
 }
 
-loadRoute = (cb) => {
+const loadRoute = (cb) => {
     return module => cb(null, module.default);
 }
 
