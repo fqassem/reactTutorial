@@ -5,7 +5,7 @@ Now that we have a very basic, working framework for writing applications, let's
 * Routing using React-Router
 * The final configuration for Hot-Loading to work correctly
 
-We'll also talk stucture and how to organize your React components. Let's begin!
+We'll also talk structure and how to organize your React components. Let's begin!
 
 ## Milestone 1: ESLint
 **ESLint** is a very useful development tool. It helps us standardize our code and avoid bugs that we might otherwise miss. ESLint is configurable, allowing you to turn off, on, or modify certain rules to enforce a consistent code style across your team. Let's install it now as a devDependency:
@@ -257,7 +257,7 @@ class Main extends React.Component {
 render(<Main />, document.getElementById('root'));
 ```
 
-We've imported 'Router' and 'browserHistory' from React-Router, and we're now rendering 'Router' instead of the `<h1>Hello, world!</h1>` we had previoulsy. 'Router' will use the routes defined in *routes.js* to set up routes and load the necessary component based on the current route. Run `npm run start`, open 'localhost:8001' in Chrome and open up 'Network' tab in dev-tools. As you navigate, you can see the routes are loading as they're needed!
+We've imported 'Router' and 'browserHistory' from React-Router, and we're now rendering 'Router' instead of the `<h1>Hello, world!</h1>` we had previously. 'Router' will use the routes defined in *routes.js* to set up routes and load the necessary component based on the current route. Run `npm run start`, open 'localhost:8001' in Chrome and open up 'Network' tab in dev-tools. As you navigate, you can see the routes are loading as they're needed!
 
 ## Milestone 3: Hot-loading Final Configuration
 In part 1, we configured our server to be able to Hot Reload our application code without us having to rebuild or refresh. We need to add a little extra configuration for this to work completely with our app, so let's do it now.
@@ -389,7 +389,7 @@ In React, it's good to understand the separation between 'presentational' and 'c
 
 'Container' components compose these 'presentational' components. They know how to maintain the application's data, and they provide this data to the presentational components. Any communication with a state management library is done via these container components. Note that container components can contain other container components! 
 
-Simply put, the container components are usually parent components, and the children usually presentational componenents. Anything the child needs is given to it by the parent. Data flow in React is generally one-way, from parent to child (children *react* to changes in the parent). Trying to get around this becomes messy, as we'll see in our next example.
+Simply put, the container components are usually parent components, and the children usually presentational components. Anything the child needs is given to it by the parent. Data flow in React is generally one-way, from parent to child (children *react* to changes in the parent). Trying to get around this becomes messy, as we'll see in our next example.
 
 ####Example
 Let's make this concrete with an example. Imagine we're creating a tic-tac-toe game very similar to the React [tutorial](https://facebook.github.io/react/tutorial/tutorial.html). Our `Board` component will represent the 3x3 grid. Our `Square` component will represent the individual squares that comprise the grid. A square can be blank, contain an 'X', or contain an 'O'. For simplicity's sake, we won't fully implement the game. We'll simply draw an 'X' on the square the user clicked.
