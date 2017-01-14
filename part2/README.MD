@@ -192,11 +192,11 @@ export default SignIn;
 ```
 import Container from './Container';
 
-function errorLoading(error) {
+errorLoading = (error) => {
     throw new Error(`Dynamic page loading failed: ${error}`);
 }
 
-function loadRoute(cb) {
+loadRoute = (cb) => {
     return module => cb(null, module.default);
 }
 
@@ -231,7 +231,7 @@ export default {
 };
 ```
 
-How does this work? During the build of the app, Webpack is smart enough to take routes defined using 'System.import' and bundles them  separately from the main application code. When our app is loaded in the browser, the 'main' portion of the app and the framework code are loaded. When we navigate to a page defined in *routes.js*, React-Router calls ‘getComponent’, which attempts to asynchronously grab the bundle for the requested route by calling 'System.import'. After transpilation and building, 'System.import' (when run on the client) is transformed into a JSONP request that will asynchronously attempt to grab the route you just navigated to. Basically, use this 'getComponent' and 'System.import' boiler-plate to generate dynamic routes that are lazy-loaded within your application!
+How does this work? During the build of the app, Webpack is smart enough to take routes defined using 'System.import' and bundles them  separately from the main application code ('System.import' is an ES6 function to conditionally load modules). When our app is loaded in the browser, the 'main' portion of the app and the framework code are loaded. When we navigate to a page defined in *routes.js*, React-Router calls ‘getComponent’, which attempts to asynchronously grab the bundle for the requested route by calling 'System.import'. After transpilation and building, 'System.import' (when run on the client) is transformed into a JSONP request that will asynchronously attempt to grab the route you just navigated to. Basically, use this 'getComponent' and 'System.import' boiler-plate to generate dynamic routes that are lazy-loaded within your application!
 
 Note that *Container* is our root component, which renders `this.props.children`. `this.props.children` will be replaced with whatever page component the current route of the app is configured to display. Basically, 'Container' will wrap all of the other pages in the application. Because we have defined the nav-bar in 'Container', it will be present in all of the other 'childRoutes' of the application. Note that our 'indexRoute', or default route, is set to 'Home'. Any routes that aren't resolved by the router will be sent to 'Home', which is handled by the childRoute with the wildcard path '*'. You could also create a 'NotFound' page rather than route the user to the Home page if you desired.
 
@@ -254,7 +254,7 @@ class Main extends React.Component {
         );
     }
 }
-render(<Main/>, document.getElementById('root'));
+render(<Main />, document.getElementById('root'));
 ```
 
 We've imported 'Router' and 'browserHistory' from React-Router, and we're now rendering 'Router' instead of the `<h1>Hello, world!</h1>` we had previoulsy. 'Router' will use the routes defined in *routes.js* to set up routes and load the necessary component based on the current route. Run `npm run start`, open 'localhost:8001' in Chrome and open up 'Network' tab in dev-tools. As you navigate, you can see the routes are loading as they're needed!
