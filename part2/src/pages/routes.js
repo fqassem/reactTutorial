@@ -5,11 +5,11 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
     require('./SignIn');
 }
 
-function errorLoading(error) {
+const errorLoading = (error) => {
     throw new Error(`Dynamic page loading failed: ${error}`);
 }
 
-function loadRoute(cb) {
+const loadRoute = (cb) => {
     return module => cb(null, module.default);
 }
 
