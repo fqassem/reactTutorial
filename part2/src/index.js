@@ -7,7 +7,7 @@ import routes from './pages/routes';
 import Main from './Main';
 
 render(<AppContainer>
-            <Main routes={routes}/>
+            <Main routes={routes} />
         </AppContainer>,
         document.getElementById('root'));
 
