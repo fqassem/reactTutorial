@@ -3,7 +3,12 @@ import express from 'express';
 const api = express();
 const router = express.Router();
 
-//Sample API
+//Sample GET API
+router.route('/testGet').get((req, res) => {
+    res.send('Hello!');
+});
+
+//Sample POST API
 router.route('/signIn').post((req, res) => {
     res.sendStatus(200);
 });

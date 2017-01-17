@@ -11,12 +11,12 @@ Let's step back a bit. So far, we've been creating a framework from scratch. Alo
 
 Let's expand on what we've created so far. Let's add authentication to our application! Authentication is a huge pain. It's one of the tougher aspects of creating an application that lives client-side. We'll also need to create forms so the user can perform the authentication flow: sign-in, sign-out, editing profile information, and signing out. Forms are also a huge topic and can become unwieldy if you let them.
 
-So, going forward, we will both add on to our application and our framework. When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end.
+So, going forward, we will add on to both our application and our framework. When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end.
 
 ### Setting up the back-end
 You're welcome to skip this part of the tutorial. If you do, be sure to add *apiServer.js* and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventure-minded, continue below:
 
-In the root of our application, let's create a file called *apiServer.js*. This file will hold all of the code for our server. Let's piece it together:
+In the root of our application, let's create a file called *apiServer.js*. This file will hold all of the code for our back-end server. Let's piece it together:
 
 ```
 import express from 'express';
@@ -24,9 +24,14 @@ import express from 'express';
 const api = express();
 const router = express.Router();
 
-//Sample API
+//Sample GET API
+router.route('/testGet').get((req, res) => {
+    res.send('Hello!');
+});
+
+//Sample POST API
 router.route('/signIn').post((req, res) => {
-    res.send(200);
+    res.sendStatus(200);
 });
 
 //CORS
@@ -44,11 +49,31 @@ export default api;
 
 This looks familiar! It's very similar to the code we wrote to get our devServer running. We create an 'express' instance. Because we need more control over routing than the devServer does, we'll also create a `Router` instance to handle our API calls.
 
-Next, we create a sample 'signIn' API that will simply respond with a 200 when called. We also add some CORS configuration so that the server and client behave nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues. Using this code in production would necessitate a more restrictive header.
+Next, we create two simple sample 'test' APIs - a GET and a POST. We also add some CORS configuration so that the server and client behave nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues. Using this code in production would necessitate a more restrictive header.
 
-Next, we tell our server to use '/api' as the path to resolve requests. When we run our devServer, we'll also run our API server alongside it. Any requests made to '/api' will be handled by the API server. Any other requests will be handled by the devServer.
+Then, we tell our server to use '/api' as the path to resolve requests. When we run our devServer, we'll also run our API server alongside it. Any requests made to '/api' will be handled by the API server. Any other requests will be handled by the devServer.
 
-Finally, we simply export the api server. We'll let the devServer initialize and run it. Now, let's modify our devServer to run the apiServer alongside it.
+Finally, we simply export the api server. We'll let the devServer initialize and run it. Now, let's modify our devServer to run the apiServer alongside it. To make this cleaner, we'll have our development server use a proxy to communicate to our backend server. That way we have a lot less to keep track of during development - just a single endpoint that we hit to both serve our assets and make API calls. Neat!
+
+Let's install **express-http-proxy** so we can set up a proxy from our dev server to our backend server.
+
+```
+npm install --save-dev express-http-proxy
+```
+
+Now, in *devServer.js*, `import proxy from 'express-http-proxy';`, and add the following code to create and use the proxy:
+
+```
+const apiProxy = proxy('http://localhost:8002/', {
+    forwardPath: (req, res) => {
+        return require('url').parse(req.baseUrl).path;
+    }
+});
+
+app.use('/api/*', apiProxy);
+```
+
+Now, if you go to 'localhost:8001/api/testGet' in your browser, you should see 'Hello!'. Notice that our backend server is actually running on port 800*2*, so our dev server is proxying correctly! You can also test the POST requests in a REST client and see it return a 200.
 
 ## Milestone 2: State Management with Redux
 ### Setting up the store
