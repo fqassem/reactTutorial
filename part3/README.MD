@@ -111,7 +111,7 @@ Our development config is now very simple. It includes a 'devtool' entry, which 
 
 It includes the same 'entry' config as our original *webpack.config.js* file, which contains the entry points needed for HMR. `output` is the same as the our original webpack config too, but note that we've change the relative path of the *dev* folder so that this folder ends up in the root of the app, not in the config folder.
 
-In our plugins array, we've included HotModuleReplacementPlugin so that HMR is enabled in Webpack. We've also added the **LoaderOptionsPlugin**, allowing us to pass in parameters to the loaders. Our config is simply telling the loaders that we are in 'debug' mode (development), so turn on any special debug features as needed. 
+In our plugins array, we've included HotModuleReplacementPlugin so that HMR is enabled in Webpack. We've also added the **LoaderOptionsPlugin**, allowing us to pass in parameters to the loaders. Our config is simply telling the loaders that we are in 'debug' mode (development), so turn on any special debug features as needed.
 
 Note the use of 'webpackMerge' in the export. This will simply merge our baseConfig with the development config we've defined here. Webpack-Merge is smart enough to merge arrays, combine key/value pairs, and generally keeps our configuration clean.
 
@@ -168,7 +168,7 @@ export default webpackMerge(baseConfig, {
 ```
 Our production config contains an `entry` similar to our development config, but without the HMR dependencies.
 
-Our `output` section has changed a bit. `path` will create a folder to output the generated files because we don't use Webpack-Dev-Middleware in production. That means the files aren't stored in memory and they'll need to be written to disk. We modified `filename` to use `[chunkHash:8]` rather than `[hash]`. We've also added a section called `chunkFilename` that looks like `[name].[chunkHash:8].chunk.js`. Originally, we were using `[hash]`, which is the hash Webpack generates for the whole compilation. That meant if we make even a tiny change in the framework or application code, the compilation hash will be different. 
+Our `output` section has changed a bit. `path` will create a folder to output the generated files because we don't use Webpack-Dev-Middleware in production. That means the files aren't stored in memory and they'll need to be written to disk. We modified `filename` to use `[chunkHash:8]` rather than `[hash]`. We've also added a section called `chunkFilename` that looks like `[name].[chunkHash:8].chunk.js`. Originally, we were using `[hash]`, which is the hash Webpack generates for the whole compilation. That meant if we make even a tiny change in the framework or application code, the compilation hash will be different.
 
 Now that we've separated out the framework code, the hash of the compilation (`[hash]`) is no longer useful to us. If we change a single line of application code and build, all the output modules will get a new hash, even though the framework code was not touched! That's not what we want.
 
@@ -182,7 +182,7 @@ The last two plugins, CommonsChunkPlugin and InlineManifestWebpackPlugin, allow 
 
 Webpack generates a 'manifest' during the build. The 'manifest' is a file that contains the Webpack runtime, dependency information, and a mapping of modules to module ids necessary to load our application correctly. By default, Webpack packs up the manifest into our 'vendor' `entry`. Because the manifest changes with every build, the `chunkHash` will change as well, unnecessarily invalidating our hash and making our caching useless. We need to extract the manifest somehow! CommonsChunkPlugin to the rescue!
 
-**CommonsChunkPlugin** is used for preventing duplication across the modules that Webpack splits out for us. The 'vendor' chunk, by default, will include the Webpack manifest. To move 'manifest' out of 'vendor', we tell CommonsChunkPlugin to extract it by explicitly identifying it in the `name` array. CommonsChunkPlugin can even extract modules in your code that are used a certain number of times  (defined by *minChunks*). For our usecase, setting *minChunks* to Infinity basically tells CommonsChunkPlugin to separate out only the modules we've explicitly defined in the `name` array - the `vendor` code and the `manifest`. 
+**CommonsChunkPlugin** is used for preventing duplication across the modules that Webpack splits out for us. The 'vendor' chunk, by default, will include the Webpack manifest. To move 'manifest' out of 'vendor', we tell CommonsChunkPlugin to extract it by explicitly identifying it in the `name` array. CommonsChunkPlugin can even extract modules in your code that are used a certain number of times  (defined by *minChunks*). For our usecase, setting *minChunks* to Infinity basically tells CommonsChunkPlugin to separate out only the modules we've explicitly defined in the `name` array - the `vendor` code and the `manifest`.
 
 Note that the browser has to make a GET request to grab each of our modules from the server. After our build runs, we'll have an application bundle, a vendor bundle, and a manifest bundle. Since the *manifest* is so small, we can inline it instead of making a GET request for it so we can save some bytes. This is what the *InlineManifestWebpackPlugin* does for us. It will take the *manifest.js* file generated by Webpack (via CommonsChunkPlugin) and inline it into the *index.ejs* we'll create in a second.
 
@@ -205,7 +205,7 @@ To save time in the future, create a shortcut script for this in *package.json*:
 ```
     scripts: {
         ...,
-        "build:prod": "NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
+        "build:prod": "NODE_ENV=production node -r babel-register webpack --config ./config/webpack.production.config.js"
     },
 ```
 
@@ -213,16 +213,16 @@ Now you can just run `npm run build:prod` instead!
 
 Look inside the *dist* folder and see what we have so far:
 
-* *0.[hash].chunk.js*, containing our *Home.js* code (separated out because it's a dynamic route using System.import)
+* *0.[hash].chunk.js*, containing our *Home.js* code (separated out because it's a dynamic route using 'System.import')
 * *1.[hash].chunk.js*, containing our *SignIn.js* code (another dynamic route extracted into it's own chunk/bundle)
 * *app.[hash].js*, containing the rest of the app code we wrote ourselves
 * *index.html*, containing the inlined Webpack manifest and script tags
 * *manifest.[hash].js*, our manifest that gets inlined into *index.html*
 * *vendor.[hash].js*, our framework code
 
-Let's test that our caching works as expected. Make a small change to the text in the `render` function in *SignIn.js* and run the build again. Open the *dist* folder and notice none of the JavaScript files were changed. Only two new files were created - a new *manifest.[hash].js* and another *1.[hash].chunk.js* file (with a new hash) containing the updated code with the changes we made for *SignIn.js*. After we ran the build, *index.html* was updated with the new manifest, and only the bundle that contains the change we made was created. All the other files were isolated because we are using *chunkHash* rather than *hash*! Our caching is now working as we expect it to!
+Let's test that our caching works as expected. Make a small change to the text in the `render` function in *SignIn.js* and run the build again. Open the *dist* folder and notice none of the JavaScript files were changed. Only two new files were created - a new *manifest.[hash].js* and another *1.[hash].chunk.js* file (with a new hash) containing the updated code with the changes we made for *SignIn.js*. After we ran the build, *index.html* was updated with the new manifest, and only the bundle that contains the change we made was rebuilt and given a new hash. All the other files were isolated because we are using *chunkHash* rather than *hash*! Our caching is now working as we expect it to!
 
-Let's do some clean-up now that we know everything is working correctly. Let's delete our old *webpack.config.js* file. Next, we'll modify our build script a little:
+Let's do some clean-up now that we know everything is working correctly. Let's delete our old *src/webpack.config.js* file. Next, we'll modify our build script a little:
 
 ```
     scripts: {
@@ -230,7 +230,7 @@ Let's do some clean-up now that we know everything is working correctly. Let's d
         "build:prod": "rm -rf ./dist; NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
     },
 ```
-This blows out the old *dist* directory in order to keep its size small and containing only the files it needs. Now our caching works correctly!
+This blows out the old *dist* directory before the build runs so it contains only the result of the most recent build. Now, we have a production build that caches correctly!
 
 ## Milestone 2: Testing
 Now that we've set up both development and production environments, let's create our testing framework. We'll focus on *unit* testing, but the framework we create can easily be used for end-to-end tests that can be run in real browsers! In the future, that maybe something worth adding to our application!
