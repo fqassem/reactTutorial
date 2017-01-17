@@ -68,7 +68,7 @@ Now, in your *.eslintrc* file, add the following line to tell ESLint we want to 
 Let’s set up ESLint to run automatically on our files within our environment, not just during our build. This will help us find syntax errors in real-time. Pick the environment you're using and follow the instructions to install the ESLint plugin:
 
 * [IntelliJ](https://plugins.jetbrains.com/plugin/7494)
-* [Atom](https://atom.io/packages/eslint)
+* [Atom](https://github.com/AtomLinter/linter-eslint)
 
 Now that we have ESLint running in our IDE, let's add some style rules. [Airbnb](https://airbnb.com) has published a very widely used ESLint configuration file (with React rules too!) for all to use. To install this configuration, run the following commands to install the configuration and its dependencies:
 
