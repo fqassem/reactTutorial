@@ -1,7 +1,56 @@
-# Part 4: State Management
-In this part, we will focus on adding state management and the reasons for doing so.
+# Part 4: Back-end, State Management, Forms, and Sign-in
+In this part, we will create a simple Express.js backend for our application to make real REST API calls. While we won't create an actual database component, that's just a step away!
 
-## Milestone 1: State Management with Redux
+Next, we'll focus on adding state management to our application using Redux. Redux is a popular and very powerful state management library based on Flux. We'll also want a way to manage our application's forms! We will use Redux-Form to make creating, updating, and using forms quick and easy.
+
+Finally, we'll create the first part of our sample application's auth flow - sign-in. It will demonstrate Redux's capabilities and also how to make API calls to our backend. Let's get started!
+
+## Milestone 1: An Express.js Backend
+### Big picture
+Let's step back a bit. So far, we've been creating a framework from scratch. Along the way, we've been creating a very simple application with a few pages. Right now, it doesn't do all that much. There's a nav-bar and two pages that just print out 'Home' or 'Sign-in' to the screen. As we add new technologies, we'll create features that demonstrate how to use them in our application. Remember, the focus of this tutorial is more on creating the framework rather than creating the application, but it's worth talking about both.
+
+Let's expand on what we've created so far. Let's add authentication to our application! Authentication is a huge pain. It's one of the tougher aspects of creating an application that lives client-side. We'll also need to create forms so the user can perform the authentication flow: sign-in, sign-out, editing profile information, and signing out. Forms are also a huge topic and can become unwieldy if you let them.
+
+So, going forward, we will both add on to our application and our framework. When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end.
+
+### Setting up the back-end
+You're welcome to skip this part of the tutorial. If you do, be sure to add *apiServer.js* and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventure-minded, continue below:
+
+In the root of our application, let's create a file called *apiServer.js*. This file will hold all of the code for our server. Let's piece it together:
+
+```
+import express from 'express';
+
+const api = express();
+const router = express.Router();
+
+//Sample API
+router.route('/signIn').post((req, res) => {
+    res.send(200);
+});
+
+//CORS
+api.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
+// Resolve '/api' prefixed routes
+api.use('/api', router);
+
+export default api;
+```
+
+This looks familiar! It's very similar to the code we wrote to get our devServer running. We create an 'express' instance. Because we need more control over routing than the devServer does, we'll also create a `Router` instance to handle our API calls.
+
+Next, we create a sample 'signIn' API that will simply respond with a 200 when called. We also add some CORS configuration so that the server and client behave nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues. Using this code in production would necessitate a more restrictive header.
+
+Next, we tell our server to use '/api' as the path to resolve requests. When we run our devServer, we'll also run our API server alongside it. Any requests made to '/api' will be handled by the API server. Any other requests will be handled by the devServer.
+
+Finally, we simply export the api server. We'll let the devServer initialize and run it. Now, let's modify our devServer to run the apiServer alongside it.
+
+## Milestone 2: State Management with Redux
 ### Setting up the store
 The bigger a React application gets, the harder it becomes to deal reason about state. It's definitely possible to write React applications by just using `React.setState` calls. However, the bigger your application gets, the more difficult it becomes to share state between components. This is especially true if the components attempting to share state don't have a parent-child relationship.
 
