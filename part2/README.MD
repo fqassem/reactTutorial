@@ -300,7 +300,7 @@ Note that we'll be passing in the routes via props now rather than importing the
 
 ```
 render(<AppContainer>
-            <Main routes={routes}/>
+            <Main routes={routes} />
        </AppContainer>,
         document.getElementById('root'));
 ```
