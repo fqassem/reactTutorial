@@ -1,5 +1,12 @@
 {
     "env": {
         "mocha": true
+    },
+    "globals": {
+        "sinon": true,
+        "chai": true,
+        "expect": true,
+        "should": true,
+        "assert": true
     }
 }

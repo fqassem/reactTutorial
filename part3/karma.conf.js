@@ -4,24 +4,31 @@ module.exports = (config) => {
         frameworks: ['mocha', 'chai', 'sinon'],
         //Our test files glob
         files: [
-            'test/**/*.spec.js'
+            'test/**/*.js'
         ],
         //Use webpack and sourcemap to preprocess our files
         preprocessors: {
-            'test/**/*.spec.js': ['webpack', 'sourcemap']
+            'test/**/*.js': ['webpack', 'sourcemap']
         },
         //Our testing webpack configuration
         webpack: {
             devtool: 'inline-source-map',
+            //https://github.com/airbnb/enzyme/issues/47
             module: {
-                loaders: [
+                noParse: [
+                    /node_modules\/sinon\//
+                ],
+                rules: [
                     { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ }
                 ]
             },
             resolve: {
-                alias: { sinon: 'sinon/pkg/sinon' } // https://github.com/webpack/webpack/issues/177#issuecomment-185718237
+                alias: {
+                    sinon: 'sinon/pkg/sinon'
+                },
+                extensions: ['.js', '.jsx']
             },
-            //necessary for Enzyme to work
+            //necessary for Enzyme to work properly
             //https://github.com/airbnb/enzyme/blob/master/docs/guides/karma.md#enzyme--karma--webpack
             externals: {
                 cheerio: 'window',

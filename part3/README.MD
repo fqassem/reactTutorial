@@ -242,27 +242,27 @@ You might be wondering: why so many libraries? Why not just use **Jest** (Facebo
 
 Why aren't we using Jest? After all, it's a fully-fledged framework based on Jasmine and developed by Facebook. In a few words: preference and familiarity.
 
-Jest incorporates React testing tools already! While Jest definitely includes some useful like 'snapshot' and 'auto-mocking', most developers agree that the documentation isn't great. It's still a work-in-progress and Facebook is making huge strides in improving performance and usability of the framework. However, I believe Jest is a bit too heavy and it's still in flux. It recently received a huge update last September which changed a lot. Until Jest stabilizes a bit more, I believe the safer choice is to use the test framework we create here, and I also prefer the control and syntax of the libraries our testing framework is based on. That said, I believe Jest will definitely be worth considering in the future. Mostly, it's a matter of *preference*.
+While Jest includes some useful tools like 'snapshot' and 'auto-mocking', most developers agree that the documentation isn't great. It's still a work-in-progress and Facebook is making huge strides in improving performance and usability of the framework. However, I believe Jest is a bit too heavy and it's obviously still in flux. It recently received a huge update last September with a whole suite of improvements and features. Until Jest stabilizes a bit more, I believe the safer choice is to use the test framework we create here. I also prefer the control and syntax of the libraries our testing framework is based on, but Jest isn't *that* different from the testing framework we're creating. That said, I believe Jest will definitely be worth considering in the future. As of now, it's mostly a matter of *preference*.
 
-Using Karma as our test environment is extremely useful because it helps simulate the environment our code will be running in: the browser. It can help us detect browser-specific quirks or strange functionality differences during development! If we don't use Karma, we can definitely still run our tests, but we miss out on the powerful features it provides! It's definitely worth the few lines of setup. You might ask: is it even worth writing unit test suits against a real browser? It surely doesn't hurt! And in the future (if we desire to create some) our end-to-end tests will already have a browser environment set up with Karma!
+Using Karma as our test environment is extremely useful because it helps simulate the environment our code will be running in: the browser. It can help us detect browser-specific quirks or strange functionality differences during development! If we don't use Karma, we can definitely still run our tests, but we miss out on the features it provides! It's definitely worth the few lines of setup and the extra milliseconds for startup. You might ask: is it even worth writing unit test suits against a real browser? It surely doesn't hurt! And in the future (if we desire to create some), our end-to-end tests will already have a browser environment set up with Karma!
 
-Mocha, Chai, and Sinon are very standard JavaScript testing libraries that each serve a very specific purpose. It's definitely possible to use them (or even replace them) with a more complete solution like **Jasmine** or **Jest** and cut down on the libraries you're using. Again, doing so is simply a matter of preference. There are many more testing libraries available, but these three are very popular and widely used.
+Mocha, Chai, and Sinon are standard JavaScript testing libraries. It's definitely possible to use them (or even replace them) with a more complete solution like **Jasmine** or **Jest** and cut down on the libraries you're using. Again, doing so is simply a matter of preference. There are many more testing libraries available, but these three are very popular, widely used, and easy to piece together.
 
-Finally, Enzyme is extremely helpful for isolating and testing React components. It's become a standard for testing React components. It provides an intuitive API and employs a concept called 'shallow rendering' to help isolate our React components and keep our tests as... 'unit'... as possible.
+Finally, Enzyme is extremely helpful for isolating and testing React components. It's become a standard for testing React components. It provides an intuitive API and multiple ways to test React components. You can very easily isolate components using 'shallow rendering' (for unit tests) or mount the whole component tree to the DOM and make assertions on its behavior (more like integration testing).
 
 All of these libraries can live in harmony with each other. If you desired, you could use Jest and Enzyme together, or use Jasmine with Sinon. It's all up to preference!
 
 ### Side-side-note: What should we test?
-While it's certainly possible to test too little, it's also possible to test too much. Generally, what we want to test in our application will be *functionality*. In our case, this means:
+While it's certainly possible to test too little, you can also to test too much. Generally, what we want to test in our application will be *functionality*. In our case, this means:
 
-* Components - prop verification, were callbacks called?, did it render without errors?
+* Components - prop verification, were callbacks actual called?, did it render without errors?
 * State management, e.g. Redux reducers, async action creators
 * Services
 * Utilities
 * Edge cases
 * End-to-end for critical paths (in the future)
 
-While writing a test to ensure that a style was correctly placed when a button was clicked, it's definitely not a high priority test. Ensuring that we write useful tests for the critical parts of code will make our application much more robust. Keep this in mind when we start writing code!
+While writing a test to ensure that a style was added to an element when a certain button was clicked, it's not a high priority test.  Ensuring that we write useful tests for the most critical parts of code will make our application much more robust. Keep this in mind when we start writing code! Remember, don't write code you can't test.
 
 ### Unit testing: Back to our regularly scheduled program
 Let's start by downloading and installing our core testing libraries:
@@ -270,7 +270,8 @@ Let's start by downloading and installing our core testing libraries:
 ```
 npm install --save-dev karma mocha chai sinon enzyme react-addons-test-utils
 ```
-We'll also need some adapter plugins for Karma to be able to use, understand, and play nice with these testing libraries. We install the respective adapter (prefaced with 'karma-') for each of our main testing libraries. We also need **karma-webpack** to have Webpack pre-process our source files before they're run by Karma. **karma-chrome-laucher** is necessary for Karma to use Chrome as our browser testing environment. There are also launchers for other browsers, like IE and Safari. We'll stick with Chrome for simplicity. Finally, **karma-sourcemap-loader** is super useful for quick debugging because it loads our source maps into the browser Karma launches for testing. This makes it much easier to look up line numbers for errors that appear in the browser.
+
+We'll also need some adapter plugins for Karma to be able to use, understand, and play nice with these testing libraries. We install the respective adapter (prefaced with 'karma-') for each of our main testing libraries. We also need **karma-webpack** to have Webpack build our source files before they're run by Karma. **karma-chrome-laucher** is necessary for Karma to use Chrome as our browser testing environment. There are also launchers for other browsers, like IE and Safari. We'll stick with Chrome for simplicity, but you can add any number of browsers on which you can run your tests. Finally, **karma-sourcemap-loader** is super useful for quick debugging because it loads our source maps into the browser Karma launches for testing. This makes it much easier to look up line numbers for errors that appear in the browser.
 
 ```
 npm install --save-dev karma-mocha karma-chai karma-sinon karma-webpack karma-chrome-launcher karma-sourcemap-loader
@@ -285,24 +286,31 @@ module.exports = (config) => {
         frameworks: ['mocha', 'chai', 'sinon'],
         //Our test files glob
         files: [
-            'test/**/*.spec.js'
+            'test/**/*.js'
         ],
         //Use webpack and sourcemap to preprocess our files
         preprocessors: {
-            'test/**/*.spec.js': ['webpack', 'sourcemap']
+            'test/**/*.js': ['webpack', 'sourcemap']
         },
         //Our testing webpack configuration
         webpack: {
             devtool: 'inline-source-map',
+            //https://github.com/airbnb/enzyme/issues/47
             module: {
-                loaders: [
+                noParse: [
+                    /node_modules\/sinon\//
+                ],
+                rules: [
                     { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ }
                 ]
             },
             resolve: {
-                alias: { sinon: 'sinon/pkg/sinon' } // https://github.com/webpack/webpack/issues/177#issuecomment-185718237
+                alias: {
+                    sinon: 'sinon/pkg/sinon'
+                },
+                extensions: ['.js', '.jsx']
             },
-            //necessary for Enzyme to work
+            //necessary for Enzyme to work properly
             //https://github.com/airbnb/enzyme/blob/master/docs/guides/karma.md#enzyme--karma--webpack
             externals: {
                 cheerio: 'window',
@@ -319,15 +327,14 @@ module.exports = (config) => {
 };
 ```
 
-The comments should thoroughly explain the config entries. Notice, in the 'webpack' entry, we are defining a very barebones Webpack configuration we use to pre-process our test and src files.
+The comments should thoroughly explain the config entries. Notice, in the 'webpack' entry, we are defining a very barebones Webpack configuration we use to pre-process our files. The rest of the file is pretty standard Karma configuration.
 
-Let's create a simple test file to make sure our framework is running correctly.
+Notice that all of the frameworks we defined in the `"frameworks"` section are actually the "karma-*" packages that we installed early in the tutorial. By using these plugins, all of the Sinon, Chai, and Mocha functions are now available globally within our tests. That prevents us from having to include them in every single test file.
 
-Create a 'test' folder in the root of our application, and then create a *sample.spec.js* file with the following contents:
+Let's create a simple test file to make sure our framework is running correctly. Create a 'test' folder in the root of our application, and then create a *sample.spec.js* file with the following contents:
 
 ```
 import React from 'react';
-import { expect } from 'chai';
 import { shallow } from 'enzyme';
 import Home from '../src/pages/Home';
 
@@ -339,17 +346,32 @@ describe('Home page', () => {
 });
 ```
 
-This test simply asserts that our *Home* page is renders to a div. You may notice ESLint complaining about the use of 'to' and 'describe'. That's because it doesn't yet know we're using Mocha, Chai, and Sinon and their respective functions. While we could modify our *.eslintrc* to include the testing framework library functions, that would affect the rest of the application. Lucky for us, ESLint supports 'cascading configurations'. This means that if we simply create another *.eslintrc* that lives in our test folder, we'll 'inherit' the main *.eslintrc* in the root of our application. Then, we can define whatever rules we want that only affect the contents of the *test* folder! Let's do that now. In the *test* folder, create an *.eslintrc*:
+This test simply asserts that our *Home* page renders to a div using Enzyme's 'shallow rendering' functionality. Very simple!
+
+All of our testing framework functionality is actually available currently. Sadly, you'll noice that ESLint doesn't know about these functions yet. It thinks they're all undefined globals and assaults our eyeballs with a bunch of red squiggles.
+
+While we could modify our *.eslintrc* to include the testing framework library functions, that would affect the rest of the application. Lucky for us, ESLint supports 'cascading configurations'. This means that if we simply create another *.eslintrc* that lives in our test folder, we'll 'inherit' the main *.eslintrc* in the root of our application. Then we can define whatever rules we want that will only affect the contents of the *test* folder! Let's do that now. In the *test* folder, create an *.eslintrc*:
 
 ```
 {
     "env": {
         "mocha": true
+    },
+    "globals": {
+        "sinon": true,
+        "chai": true,
+        "expect": true,
+        "should": true,
+        "assert": true
     }
 }
 ```
 
-That solves the complaints from ESLint. Now, let's try running Karma in the root of the app:
+Remember, the way that ESLint deals with globals is through `"env"` configuration. It has quite a few built-in. Take a look [here](http://eslint.org/docs/user-guide/configuring#specifying-environments) for the complete list.
+
+We define a "mocha" environment which tells ESLint that we're using "mocha" as part of our testing framework. This makes ESLint aware of any globals that Mocha needs to structure our tests, such as 'describe', 'beforeEach', and 'it'. Sadly, ESLint doesn't have environments for Chai or Sinon, so we'll have to simulate that functionality using the `"globals"` block. Another way to do this would be to import the functions we use in our tests in every single file, but that's tedious and unnecessary. We've defined "sinon", "chai" as global variables. When we use Chai as our assertion library, its "expect", "should", and "assert" functions are automatically put into global scope, so we define them here in `"globals"` so ESLint knows about them.
+
+Next, let's run our tests and see if anything breaks!
 
 ```./node_modules/.bin/karma start```
 
@@ -363,3 +385,9 @@ And our test should pass! Our testing framework is now set up correctly. Let's q
 ```
 
 And now we can run `npm test` to run our tests!
+
+## Useful Links:
+http://www.thereformedprogrammer.net/unit-testing-react-components-that-use-redux/
+http://redux.js.org/docs/recipes/WritingTests.html
+http://pebblecode.com/blog/testing-redux-containers/
+http://blog.ricardofilipe.com/post/react-enzyme-tdd-tutorial

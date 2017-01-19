@@ -1,11 +1,12 @@
 import React from 'react';
-import { expect } from 'chai';
-import { shallow } from 'enzyme';
+import { mount } from 'enzyme';
+
 import Home from '../src/pages/Home';
 
-describe('Home page', () => {
+describe('<Home />', () => {
     it('renders with no errors', () => {
-        const wrapper = shallow(<Home />);
-        expect(wrapper.type()).to.equal('div');
+        sinon.spy(Home.prototype, 'render');
+        const wrapper = mount(<Home />);
+        expect(Home.prototype.render).to.have.property('callCount', 1);
     });
 });
