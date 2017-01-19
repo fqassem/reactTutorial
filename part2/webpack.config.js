@@ -7,7 +7,7 @@ export default {
         app: [
             'react-hot-loader/patch',
             'webpack-hot-middleware/client',
-            path.join(__dirname, './src/index.js')
+            './src/index.js'
         ]
     },
     output: {
