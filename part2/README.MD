@@ -280,7 +280,7 @@ import { render } from 'react-dom';
 import routes from './pages/routes';
 import Main from './Main';
 
-render(<Main routes={routes}/>,
+render(<Main routes={routes} />,
         document.getElementById('root'));
 ```
 
@@ -309,7 +309,7 @@ Note that we'll be passing in the routes via props now rather than importing the
 
 ```
 render(<AppContainer>
-            <Main routes={routes}/>
+            <Main routes={routes} />
        </AppContainer>,
         document.getElementById('root'));
 ```
