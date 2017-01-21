@@ -8,5 +8,8 @@
         "expect": true,
         "should": true,
         "assert": true
+    },
+    "rules": {
+        no-unused-expressions: [0]
     }
 }

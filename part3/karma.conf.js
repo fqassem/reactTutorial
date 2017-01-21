@@ -14,27 +14,28 @@ module.exports = (config) => {
         webpack: {
             devtool: 'inline-source-map',
             //https://github.com/airbnb/enzyme/issues/47
+            //https://github.com/producthunt/chai-enzyme/issues/46#issuecomment-200218983
             module: {
                 noParse: [
                     /node_modules\/sinon\//
                 ],
                 rules: [
-                    { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ }
+                    { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ },
+                    { test: /\.json$/, loader: 'json-loader', include: '/node_modules/cheerio/' }
                 ]
             },
             resolve: {
                 alias: {
                     sinon: 'sinon/pkg/sinon'
                 },
-                extensions: ['.js', '.jsx']
+                extensions: ['.js', '.jsx', '.json']
             },
             //necessary for Enzyme to work properly
             //https://github.com/airbnb/enzyme/blob/master/docs/guides/karma.md#enzyme--karma--webpack
             externals: {
-                cheerio: 'window',
                 'react/addons': true,
                 'react/lib/ExecutionEnvironment': true,
-                'react/lib/ReactContext': true
+                'react/lib/ReactContext': 'window'
             }
         },
         //Run our tests just once, if set to false then karma will watch our test files and re-run tests on changes

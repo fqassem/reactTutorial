@@ -271,10 +271,10 @@ Let's start by downloading and installing our core testing libraries:
 npm install --save-dev karma mocha chai sinon enzyme react-addons-test-utils
 ```
 
-We'll also need some adapter plugins for Karma to be able to use, understand, and play nice with these testing libraries. We install the respective adapter (prefaced with 'karma-') for each of our main testing libraries. We also need **karma-webpack** to have Webpack build our source files before they're run by Karma. **karma-chrome-laucher** is necessary for Karma to use Chrome as our browser testing environment. There are also launchers for other browsers, like IE and Safari. We'll stick with Chrome for simplicity, but you can add any number of browsers on which you can run your tests. Finally, **karma-sourcemap-loader** is super useful for quick debugging because it loads our source maps into the browser Karma launches for testing. This makes it much easier to look up line numbers for errors that appear in the browser.
+We'll also need some adapter plugins for Karma to be able to use, understand, and play nice with these testing libraries. We install the respective adapter (prefaced with 'karma-') for each of our main testing libraries. We also need **karma-webpack** to have Webpack build our source files before they're run by Karma. **karma-chrome-laucher** is necessary for Karma to use Chrome as our browser testing environment. There are also launchers for other browsers, like IE and Safari. We'll stick with Chrome for simplicity, but you can add any number of browsers on which you can run your tests. Finally, **karma-sourcemap-loader** is super useful for quick debugging because it loads our source maps into the browser Karma launches for testing. This makes it much easier to look up line numbers for errors that appear in the browser. Enzyme uses a library dependency called 'Cheerio' for parsing and rendering HTML. Cheerio's main file is not a '.js file, but a '.json' file. We'll need the **json-loader** for Webpack to load this dependency so Enzyme use Cheerio.
 
 ```
-npm install --save-dev karma-mocha karma-chai karma-sinon karma-webpack karma-chrome-launcher karma-sourcemap-loader
+npm install --save-dev karma-mocha karma-chai karma-sinon karma-webpack karma-chrome-launcher karma-sourcemap-loader json-loader
 ```
 
 Now, let's begin our test framework setup. Let's start by setting up Karma. If you run `./node_modules/.bin/karma init`, you'll start a wizard that helps you set up Karma. Instead, let's bypass the wizard and simply create a *karma.config.js* file in the root of our application. It should look like this:
@@ -296,27 +296,28 @@ module.exports = (config) => {
         webpack: {
             devtool: 'inline-source-map',
             //https://github.com/airbnb/enzyme/issues/47
+            //https://github.com/producthunt/chai-enzyme/issues/46#issuecomment-200218983
             module: {
                 noParse: [
                     /node_modules\/sinon\//
                 ],
                 rules: [
-                    { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ }
+                    { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ },
+                    { test: /\.json$/, loader: 'json-loader', include: '/node_modules/cheerio/' }
                 ]
             },
             resolve: {
                 alias: {
                     sinon: 'sinon/pkg/sinon'
                 },
-                extensions: ['.js', '.jsx']
+                extensions: ['.js', '.jsx', '.json']
             },
             //necessary for Enzyme to work properly
             //https://github.com/airbnb/enzyme/blob/master/docs/guides/karma.md#enzyme--karma--webpack
             externals: {
-                cheerio: 'window',
                 'react/addons': true,
                 'react/lib/ExecutionEnvironment': true,
-                'react/lib/ReactContext': true
+                'react/lib/ReactContext': 'window'
             }
         },
         //Run our tests just once, if set to false then karma will watch our test files and re-run tests on changes
@@ -327,7 +328,7 @@ module.exports = (config) => {
 };
 ```
 
-The comments should thoroughly explain the config entries. Notice, in the 'webpack' entry, we are defining a very barebones Webpack configuration we use to pre-process our files. The rest of the file is pretty standard Karma configuration.
+The comments should thoroughly explain the config entries. Notice, in the 'webpack' entry, we are defining a very barebones Webpack configuration we use to pre-process our files. The rest of the file is pretty standard Karma configuration. It's a bit of a pain to get everything correctly working together, as evidenced by the length of the Webpack configuration.
 
 Notice that all of the frameworks we defined in the `"frameworks"` section are actually the "karma-*" packages that we installed early in the tutorial. By using these plugins, all of the Sinon, Chai, and Mocha functions are now available globally within our tests. That prevents us from having to include them in every single test file.
 
@@ -335,18 +336,31 @@ Let's create a simple test file to make sure our framework is running correctly.
 
 ```
 import React from 'react';
-import { shallow } from 'enzyme';
+import { shallow, mount, render } from 'enzyme';
+
 import Home from '../src/pages/Home';
 
-describe('Home page', () => {
-    it('renders with no errors', () => {
+describe('<Home />', () => {
+    it('contains an H1 element', () => {
         const wrapper = shallow(<Home />);
-        expect(wrapper.type()).to.equal('div');
+        expect(wrapper.contains(<h1>Home</h1>)).to.equal(true);
+    });
+
+    it('mounts with no errors and has no props', () => {
+        sinon.spy(Home.prototype, 'render');
+        const wrapper = mount(<Home />);
+        expect(Home.prototype.render).to.have.property('callCount', 1);
+        wrapper.props().should.be.empty;
+    });
+
+    it('renders the word Home on the browser', () => {
+        const wrapper = render(<Home />);
+        expect(wrapper.text()).to.contain('Home');
     });
 });
 ```
 
-This test simply asserts that our *Home* page renders to a div using Enzyme's 'shallow rendering' functionality. Very simple!
+This tests uses all three of Enzyme's rendering [APIs](http://airbnb.io/enzyme/docs/api/index.html) to assert various things about the *Home.js* component.
 
 All of our testing framework functionality is actually available currently. Sadly, you'll noice that ESLint doesn't know about these functions yet. It thinks they're all undefined globals and assaults our eyeballs with a bunch of red squiggles.
 
@@ -363,6 +377,9 @@ While we could modify our *.eslintrc* to include the testing framework library f
         "expect": true,
         "should": true,
         "assert": true
+    },
+    "rules": {
+        no-unused-expressions: [0]
     }
 }
 ```
@@ -370,6 +387,15 @@ While we could modify our *.eslintrc* to include the testing framework library f
 Remember, the way that ESLint deals with globals is through `"env"` configuration. It has quite a few built-in. Take a look [here](http://eslint.org/docs/user-guide/configuring#specifying-environments) for the complete list.
 
 We define a "mocha" environment which tells ESLint that we're using "mocha" as part of our testing framework. This makes ESLint aware of any globals that Mocha needs to structure our tests, such as 'describe', 'beforeEach', and 'it'. Sadly, ESLint doesn't have environments for Chai or Sinon, so we'll have to simulate that functionality using the `"globals"` block. Another way to do this would be to import the functions we use in our tests in every single file, but that's tedious and unnecessary. We've defined "sinon", "chai" as global variables. When we use Chai as our assertion library, its "expect", "should", and "assert" functions are automatically put into global scope, so we define them here in `"globals"` so ESLint knows about them.
+
+Finally, we turn of the [no-unused-expressions](http://eslint.org/docs/rules/no-unused-expressions) rule because some of our testing assertions are simple expressions with no usable return value. For example, if you wanted to assert an object was empty using Chai, you could do it one of two ways, both of which ESLint would complain about:
+
+```
+myObject.should.be.empty; //using 'should'
+expect(myObject).to.be.empty; //using 'expect'
+```
+
+Therefore, we turn off this rule in our test folder.
 
 Next, let's run our tests and see if anything breaks!
 
@@ -391,3 +417,5 @@ http://www.thereformedprogrammer.net/unit-testing-react-components-that-use-redu
 http://redux.js.org/docs/recipes/WritingTests.html
 http://pebblecode.com/blog/testing-redux-containers/
 http://blog.ricardofilipe.com/post/react-enzyme-tdd-tutorial
+http://thereignn.ghost.io/a-step-by-step-tdd-approach-on-testing-react-components-using-enzyme/
+https://www.spencerdixon.com/blog/test-driven-react-tutorial.html
