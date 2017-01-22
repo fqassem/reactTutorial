@@ -13,6 +13,8 @@ Let's expand on what we've created so far. Let's add authentication to our appli
 
 So, going forward, we will add on to both our application and our framework. When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end.
 
+Note that in a real project, it's fine for your local dev server file to live in the same project as your application, but you should definitely create a separate project to house your server code. We don't do this here to keep our tutorial code compact, but it's something to keep in mind for production projects. One project/build for your client-side code and a separate project/build for your server-side code should be the goal for real applications
+
 ### Setting up the back-end
 You're welcome to skip this part of the tutorial. If you do, be sure to add *apiServer.js* and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventure-minded, continue below:
 
@@ -25,12 +27,12 @@ const api = express();
 const router = express.Router();
 
 //Sample GET API
-router.route('/testGet').get((req, res) => {
+router.get('/testGet', (req, res) => {
     res.send('Hello!');
 });
 
 //Sample POST API
-router.route('/signIn').post((req, res) => {
+router.post('/testPost', (req, res) => {
     res.sendStatus(200);
 });
 
@@ -73,7 +75,70 @@ const apiProxy = proxy('http://localhost:8002/', {
 app.use('/api/*', apiProxy);
 ```
 
-Now, if you go to 'localhost:8001/api/testGet' in your browser, you should see 'Hello!'. Notice that our backend server is actually running on port 800*2*, so our dev server is proxying correctly! You can also test the POST requests in a REST client and see it return a 200.
+Now, if you go to 'localhost:8001/api/testGet' in your browser, you should see 'Hello!'. Notice that our backend server is actually running on port 800*2*, so our dev server is proxying correctly! You can also test the POST request in a REST client and see it return a 200.
+
+### APIs
+Let's replace our test APIs with something a bit more useful. Our users will be able to sign-in, sign-out, register, and modify their data. Before we go further, let's create a simple map containing users so we can test and see the sign-in API is working correctly. We'll also add password hashing so we don't store passwords in plain-text. Obviously, a real implementation would utilize a database so data isn't volatile. If you wish to add a database component, that's up to you, but this should suffice for our purposes.
+
+To add password hashing, we'll use **bcrypt**. [Why not MD5/SHA/etc?](https://codahale.com/how-to-safely-store-a-password/). This library provides both synchronous and asynchronous versions of its hashing and comparison functions. Because we don't want to create blocking code, we'll use the asynchronous versions. We'll use the sync version only once in our 'users' object setup for the sake of simplicity, but we'll use the async version everywhere else. Let's install 'bcrypt' now:
+
+```
+npm install --save-dev bcrypt
+```
+
+Next, in our *apiServer.js*, we'll begin using bcrypt:
+
+```
+import bcrypt from 'bcrypt';
+const users = { 'tomjones': { username: 'tomjones', bcrypt.hashSync('password', 10), email: 'tom@jones.com', firstName: 'Tom', lastName: 'Jones', role: 'USER' } };
+```
+
+Our user object will consist of a username, password, email, first name, last name, and role. Role can be one of two strings (for registered users): 'USER' or 'ADMIN'. We'll turn off/on certain application features based on the user's role!
+
+#### signIn
+Our sign-in function will accept a 'credentials' object consisting of a username and a password. Interestingly, POST requests are not  supported out-of-the-box in Express.js. The request body needs some special handling. There are two ways to do it - manually or via a library called **body-parser**. We don't want to do it by hand, so we need to install **body-parser**:
+
+```
+npm install body-parser --save-dev
+```
+
+Next, in *apiServer.js*, we need to `import bodyParser from 'body-parser'`. Next, to support encoded request bodies, we define `const urlencodedParser = bodyParser.urlencoded({ extended: false });` near the top of our file. This is a parser that Express will use to process encoded request bodies. We'll add the parser as a parameter to the 'post' call we make for '/signIn'.
+
+Here is our '/signIn' POST request:
+
+```
+router.post('/signIn', urlencodedParser, (req, res) => {
+    const credentials = req.body;
+
+    if(!credentials) {
+        return res.sendStatus(400);
+    }
+
+    if(!credentials.username || !credentials.password) {
+        return res.status(400).send('Missing username or password');
+    }
+
+    const user = users[credentials.username];
+    if(user === undefined) {
+        return res.status(400).send('User not found');
+    }
+
+    bcrypt.compare(credentials.password, user.password, (err, bcryptResult) => {
+        if (err) throw err;
+        if(bcryptResult) {
+            const truncatedUser = {
+                username: user.username,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role
+            };
+            return res.status(200).send(truncatedUser);
+        }
+        return res.status(401).send({ password: 'Username or password was invalid' });
+    });
+});
+```
 
 ## Milestone 2: State Management with Redux
 ### Setting up the store
