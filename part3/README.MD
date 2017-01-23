@@ -1,10 +1,10 @@
 # Part 3: Production Build and Testing
-So far, we've defined a project build that should only be used in development. After we've set up testing, let's create a usable production build that minifies our code and excludes any unnecessary libraries, such as Hot-Reloading.
+So far, we've defined a project build that should only be used in development. Let's also create a usable production build that minifies our code and excludes any unnecessary libraries, such as Hot-Reloading.
 
 Next, we'll add a testing framework to our application so we can be sure our code is solid when it gets deployed to production!
 
 ## Milestone 1: Production build
-So far, we've had only one config file for our build - the development build. Let's modify our config to support production as well! Let's also split out our framework code from our application code during the build. We do this in order to cache the framework code on the client's browser so we don't have to pull it in every time they visit our app! This will lead to a significantly smaller download for our users on subsequent loads of our website.
+So far, we've had only one config file for our build - the development build. Let's modify our config to support production as well! Let's also split out our framework code from our application code during the build. We do this in order to cache the framework code on the client's browser so we don't have to pull it in every time they visit our app! This will lead to a significantly smaller download for our users on subsequent loads of our website. We had set up a very rudimentary version of caching in part 1. Throught this part of the tutorial, we'll make caching more fine-grained and even more useful.
 
 Let's organize our configs inside a 'config' folder. In the root of our app, create a *config* folder and create three files:
 * *webpack.base.config.js*
@@ -62,17 +62,17 @@ export default {
 };
 ```
 
-Note that we now have an `entry` called 'vendor'. This is where we will house all of our framework code needed to run the app on the browser. It currently contains the React, ReactDOM, React-Router, and Babel-Polyfill libraries. If we add any more libraries needed to run our application on the browser, we should add them here. When the build is finished, it will output a file called *vendor.[generated_hash].js* containing all of our framework code. This makes for easy caching on the client.
+Note that we now have an `entry` called 'vendor'. This is where we will house all of our framework code needed to run the app on the browser. It currently contains the React, ReactDOM, React-Router, and Babel-Polyfill libraries. If we add any more libraries needed to run our application on the browser, we should add them here. Because we've created a 'vendor' `entry`, the build will output a file called *vendor.[generated_hash].js*, containing all of our framework code. 
 
-We removed 'app' from our `entry` points so that development and production configurations define their own. This is because we need to add a few extra entry points in development so that HMR works correctly, while production won't need them. However, since both development and production will share the same framework code, we abstract that config here in *webpack.base.config.js*.
+We removed 'app' from our `entry` points so that development and production configurations define their own. This is because we need to add a few extra entry points in development so that HMR works correctly, while production won't need those entries. However, since both development and production will share the same framework code, we abstract that 'vendor' config here in *webpack.base.config.js*.
 
-`output` contains only the publicPath for the server, which should stay the same for both dev and prod.
+`output` contains only the publicPath for the server, which, in our case, should stay the same for both dev and prod.
 
-The `module` sections remains the same as the one in our old *webpack.config.js*. We need the same loaders in both dev and prod builds.
+The `module` section remains the same as the one in our old *webpack.config.js*. We need the same loaders in both dev and prod builds.
 
-Our `plugins` array, however, looks a bit different. We've removed the HotModuleReplacementPlugin because we only need it in development. However, the rest of the plugins should be the same as our old config, save for one. We include the **NamedModulesPlugin** to get around how Webpack combines modules behind the scenes. Webpack defaults to giving modules ascending integer ids. If a module is changed, it's possible that all the other ids change too. NamedModulesPlugin makes it so Webpack chooses ids in a more predictable, deterministic way.
+Our `plugins` array, however, looks a bit different. We've removed the HotModuleReplacementPlugin because we only need it in development. However, the rest of the plugins should be the same as our old config, save for one. We include the **NamedModulesPlugin** to get around how Webpack names modules behind the scenes. Webpack defaults to giving modules ascending integer ids. If a module is changed, it's possible that all the other ids change too which would cause the hash of the bundle to change unnecessarily. NamedModulesPlugin makes it so Webpack chooses ids in a more predictable, deterministic way.
 
-Notice that we've changed the `template` path to look for `index.ejs` rather than `index.html`. This will be important in the production configuration for getting caching to work correctly! Finally, since we're now in the *src/config* directory, any relative file paths that need to look in the *src* folder will use *../* rather than *./*
+Notice that we've changed the `template` path to look for `index.ejs` rather than `index.html`. This will be important in the production configuration for getting caching to work correctly! Finally, since we're now in the *src/config* directory, any relative file paths that need to look in the *src* folder will use *../* rather than *./*.
 
 ### webpack.development.config.js
 ```
@@ -83,7 +83,7 @@ import webpackMerge from 'webpack-merge';
 import baseConfig from './webpack.base.config';
 
 export default webpackMerge(baseConfig, {
-    devtool: 'source-map',
+    devtool: 'eval-source-map',
     entry: {
         app: [
              // activate HMR for React
@@ -107,9 +107,9 @@ export default webpackMerge(baseConfig, {
 });
 ```
 
-Our development config is now very simple. It includes a 'devtool' entry, which outputs a source map that allows us to see the original code (and line numbers!) in our browser. This makes debugging much easier. For a list of other options for source maps, check this [link](https://webpack.js.org/configuration/devtool/#devtool).
+Our development config is now very simple. It includes a 'devtool' entry, which outputs a source map that allows us to see the original code (and line numbers!) in our browser. This makes debugging much easier. There are many different options for source maps. Check this [link](https://webpack.js.org/configuration/devtool/#devtool) for further discussion.
 
-It includes the same 'entry' config as our original *webpack.config.js* file, which contains the entry points needed for HMR. `output` is the same as the our original webpack config too, but note that we've change the relative path of the *dev* folder so that this folder ends up in the root of the app, not in the config folder.
+Our config includes the same `entry` config as our original *webpack.config.js* file, which contains the entry points needed for HMR. `output` is the same as the our original webpack config too, but note that we've change the relative path of the *dev* folder so that this folder ends up in the root of the app, not in the config folder.
 
 In our plugins array, we've included HotModuleReplacementPlugin so that HMR is enabled in Webpack. We've also added the **LoaderOptionsPlugin**, allowing us to pass in parameters to the loaders. Our config is simply telling the loaders that we are in 'debug' mode (development), so turn on any special debug features as needed.
 
@@ -189,12 +189,19 @@ Note that the browser has to make a GET request to grab each of our modules from
 Rename *index.html* to *index.ejs*. *EJS* files are JavaScript files that can include templates, which is how the HtmlWebpackPlugin works behind the scenes to dynamically add *script* tags. We need to add the following line below our root div in the *index.ejs* file:
 
 ```
-    <%= htmlWebpackPlugin.files.webpackManifest %>
+    <body>
+        <div> id="root"></div>
+        <%= htmlWebpackPlugin.files.webpackManifest %>
+    </body>
 ```
 
-This is where **InlineManifestWebpackPlugin** will inline our manifest!
+This is where **InlineManifestWebpackPlugin** will inline our manifest! We haven't yet installed InlineManifestWebpackPlugin, so let's do it now:
 
-That was a lot of setup! Let's run a production build and see the results of our effort. In the root of our app, run:
+```
+npm install --save-dev inline-manifest-webpack-plugin
+```
+
+That was a lot of setup! Let's run a production build and see the results of our hard work. In the root of our app, run:
 
 ```
     NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js
@@ -205,7 +212,7 @@ To save time in the future, create a shortcut script for this in *package.json*:
 ```
     scripts: {
         ...,
-        "build:prod": "NODE_ENV=production node -r babel-register webpack --config ./config/webpack.production.config.js"
+        "build:prod": "NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
     },
 ```
 
@@ -230,7 +237,21 @@ Let's do some clean-up now that we know everything is working correctly. Let's d
         "build:prod": "rm -rf ./dist; NODE_ENV=production node -r babel-register ./node_modules/.bin/webpack --config ./config/webpack.production.config.js"
     },
 ```
-This blows out the old *dist* directory before the build runs so it contains only the result of the most recent build. Now, we have a production build that caches correctly!
+This blows out the old *dist* directory before the build runs so it contains only the result of the most recent build. Now, we have a production build that caches correctly! We'll also need to modify *devServer.js* to use our new development config. Change
+
+```
+import webpackConfig from './webpack.config';
+```
+to
+
+```
+import webpackConfig from './config/webpack.development.config';
+```
+
+Now, when you run `npm run start`, your server should pull in the right config.
+
+### Bonus: Gzipping Source Code
+To make our code extra tiny, we can use GZIP. We have two options: do it during the build via the [Compression plugin](https://github.com/webpack-contrib/compression-webpack-plugin) or have the [server](https://expressjs.com/en/advanced/best-practice-performance.html#use-gzip-compression) do it. We won't do it in this tutorial, but it should be done in a production application to keep your code as small as possible.
 
 ## Milestone 2: Testing
 Now that we've set up both development and production environments, let's create our testing framework. We'll focus on *unit* testing, but the framework we create can easily be used for end-to-end tests that can be run in real browsers! In the future, that maybe something worth adding to our application!
