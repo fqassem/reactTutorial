@@ -298,7 +298,10 @@ We'll also need some adapter plugins for Karma to be able to use, understand, an
 npm install --save-dev karma-mocha karma-chai karma-sinon karma-webpack karma-chrome-launcher karma-sourcemap-loader json-loader
 ```
 
-Now, let's begin our test framework setup. Let's start by setting up Karma. If you run `./node_modules/.bin/karma init`, you'll start a wizard that helps you set up Karma. Instead, let's bypass the wizard and simply create a *karma.config.js* file in the root of our application. It should look like this:
+Now, let's begin our test framework setup. Let's start by setting up Karma. If you run `./node_modules/.bin/karma init`, you'll start a wizard that helps you set up Karma. Instead, let's bypass the wizard and simply create a *karma.conf.js* file in the root of our application. Be sure it's not *karma.CONFIG.js*, or your file won't automatically be picked up by Karma. If you choose to name this file something else, you'll need to pass it into the karma start command: `./node_modules/.bin/karma start <your_config_name>`.
+
+
+Your karma configuration should look like this:
 
 ```
 module.exports = (config) => {
@@ -420,12 +423,12 @@ Therefore, we turn off this rule in our test folder.
 
 Next, let's run our tests and see if anything breaks!
 
-```./node_modules/.bin/karma start ./karma.config.js```
+```./node_modules/.bin/karma start```
 
 And our test should pass! Our testing framework is now set up correctly. Let's quickly add modify the 'test' script our *package.json*:
 ```
   "scripts": {
-    "test": "./node_modules/.bin/karma start ./karma.config.js",
+    "test": "./node_modules/.bin/karma start",
     ...
   },
 
