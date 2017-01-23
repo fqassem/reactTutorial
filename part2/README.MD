@@ -240,7 +240,6 @@ Also note that the *pages* we define are 'container' components, which we talk a
 Finally, React-Router needs to know to use the *routes* we just defined. Modify *src/index.js* to look like this:
 
 ```
-import 'babel-polyfill';
 import React from 'react';
 import { Router, browserHistory } from 'react-router';
 import { render } from 'react-dom';
@@ -273,7 +272,6 @@ The last thing we have to do in our application is configure the modules to be a
 The first step is to separate out the Main component of the app into its own file rather than having it live in *index.js*. Create a *Main.js* file in the *src* folder and pull out the Main class and its dependencies, excluding 'routes.js'. After we're done, *index.js* should look like this:
 
 ```
-import 'babel-polyfill';
 import React from 'react';
 import { render } from 'react-dom';
 
@@ -333,7 +331,6 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 Our *index.js* file should now look like this:
 
 ```
-import 'babel-polyfill';
 import React from 'react';
 import { render } from 'react-dom';
 import { AppContainer } from 'react-hot-loader';
@@ -365,6 +362,7 @@ Now, let's add the last configuration we need for hot reloading to work correctl
 ```
 entry: {
         app: [
+            'babel-polyfill',
             'react-hot-loader/patch',
             'webpack-hot-middleware/client',
             path.join(__dirname, './src/index.js')

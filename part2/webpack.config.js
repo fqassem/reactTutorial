@@ -5,6 +5,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 export default {
     entry: {
         app: [
+            'babel-polyfill',
             'react-hot-loader/patch',
             'webpack-hot-middleware/client',
             path.join(__dirname, './src/index.js')
@@ -20,7 +21,7 @@ export default {
             'NODE_ENV'
         ]),
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, './index.html'),
             filename: 'index.html',
