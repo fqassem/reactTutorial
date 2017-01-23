@@ -305,7 +305,7 @@ export default Main;
 
 This bit of refactoring allows us to pass the props our `Main` needs from *index.js*. We make this adjustment so our app structure plays nicely with the hot-reloading boilerplate we will add.
 
-Note that we'll be passing in the routes via props now rather than importing them. Next, we need to modify *index.js* to Hot Reload our application. We need to include a dependency on 'AppContainer' from the 'react-hot-loader' module. *AppContainer* is simply a wrapper provided by React-Hot-Loader that we need to include so that Hot Reloading preserves our application's current state. We need to wrap our 'Main' like so:
+Note that we'll be passing in the routes via props now rather than importing them. Next, we need to modify *index.js* to Hot Reload our application. We need to include a dependency on 'AppContainer' from the 'react-hot-loader' module like this: `import { AppContainer } from 'react-hot-loader';`. *AppContainer* is simply a wrapper provided by React-Hot-Loader that we need to include so that Hot Reloading preserves our application's current state. We need to wrap our 'Main' like so:
 
 ```
 render(<AppContainer>
