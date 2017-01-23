@@ -358,7 +358,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 
 This block of code is responsible for reloading our application code when a change is made. In part 1, if we tried to make a change to the app, we would get a warning in the console saying "This module doesn't know how to reload itself". That's because we didn't include this section of code! If we are in a development build, and the module is hot-reloaded, any components we change will try to reload themselves. This 'request' to change the component will bubble up to each component until it gets to this block of code where we re-render our app with newly updated routes and the code they contain!
 
-Now, let's add the last configuration we need for hot reloading to work correctly and play nice with the internal state of our React components. We need to add 'react-hot-loader/patch' as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components and preseves their local component state. If we omit React-Hot-Loader, our React component's local state would not be preserved when the component is reloaded!
+Now, let's add the last configuration we need for hot reloading to work correctly and play nice with the internal state of our React components. We need to add 'react-hot-loader/patch' as the first entry point to our application in *webpack.config.js*. This is how HMR is enabled for React components and preserves their local component state. If we omit React-Hot-Loader, our React component's local state would not be preserved when the component is reloaded!
 ```
 entry: {
         app: [
