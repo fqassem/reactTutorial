@@ -51,7 +51,7 @@ export default {
         new webpack.EnvironmentPlugin([
             'NODE_ENV'
         ]),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
         new webpack.NamedModulesPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, '../index.ejs'),
@@ -62,7 +62,7 @@ export default {
 };
 ```
 
-Note that we now have an `entry` called 'vendor'. This is where we will house all of our framework code needed to run the app on the browser. It currently contains the React, ReactDOM, React-Router, and Babel-Polyfill libraries. If we add any more libraries needed to run our application on the browser, we should add them here. Because we've created a 'vendor' `entry`, the build will output a file called *vendor.[generated_hash].js*, containing all of our framework code. 
+Note that we now have an `entry` called 'vendor'. This is where we will house all of our framework code needed to run the app on the browser. It currently contains the React, ReactDOM, React-Router, and Babel-Polyfill libraries. If we add any more libraries needed to run our application on the browser, we should add them here. Because we've created a 'vendor' `entry`, the build will output a file called *vendor.[generated_hash].js*, containing all of our framework code.
 
 We removed 'app' from our `entry` points so that development and production configurations define their own. This is because we need to add a few extra entry points in development so that HMR works correctly, while production won't need those entries. However, since both development and production will share the same framework code, we abstract that 'vendor' config here in *webpack.base.config.js*.
 

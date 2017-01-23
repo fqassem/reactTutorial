@@ -28,7 +28,7 @@ export default {
         new webpack.EnvironmentPlugin([
             'NODE_ENV'
         ]),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
         new webpack.NamedModulesPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, '../index.ejs'),
