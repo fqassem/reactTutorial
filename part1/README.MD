@@ -49,6 +49,11 @@ When we start installing packages, `"dependencies"` and `"devDependencies"` will
 
 If we run `npm install` now, nothing useful will happen. That's because we haven't specified any dependencies yet, so there's nothing for NPM to download. To install a dependency using NPM, we run `npm install <dependency-name> <flag>`. We will include either a `--save` flag to save the dependency we want to install as a 'dependency' or a `--save-dev` flag to save it as a 'devDependency'. The difference between devDependencies and normal dependencies will be important down the road when we build our project for production. Now that we have NPM set up, let's install some dependencies and create our project framework!
 
+### A Note About Dependencies
+Every time you run `npm install <package_name>`, you are pulling in the newest version of a package. It's possible that the packages you install are at a newer major version than the packages used to create this tutorial. If that's the case, then you will most likely see errors. To be safe, check the version you just downloaded against the *package.json* in this repo. If your application isn't working as expected, it's possible the versions you are using are simply incompatible. To download a specific version, run `npm install <package_name>@version`. 
+
+If you are unsure what may be causing the problem, copy over the *package.json* for the part of the tutorial you're on from this Github repo, delete your *node_modules* folder, and simply do an `npm install`. This will grab all of the packages needed for that part of the tutorial with all the right versions without you having to install any packages yourself. Then, every time you see `npm install <package_name>` in the part of the tutorial you are in, you can simply ignore it. 
+
 ## Milestone 3: Setting up Webpack 2
 **Webpack** is what we will be using to build our project. Webpack is a module bundler that process our files, manages project dependencies, and spits out static assets. Basically, it will transform our code into a few modules that a browser can grab from a server and run. Let's install it:
 
