@@ -420,12 +420,12 @@ Therefore, we turn off this rule in our test folder.
 
 Next, let's run our tests and see if anything breaks!
 
-```./node_modules/.bin/karma start```
+```./node_modules/.bin/karma start ./karma.config.js```
 
 And our test should pass! Our testing framework is now set up correctly. Let's quickly add modify the 'test' script our *package.json*:
 ```
   "scripts": {
-    "test": "./node_modules/.bin/karma start",
+    "test": "./node_modules/.bin/karma start ./karma.config.js",
     ...
   },
 
