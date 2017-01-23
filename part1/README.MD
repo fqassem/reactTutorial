@@ -193,7 +193,7 @@ app.listen(8001, 'localhost');
 
 Note that the server will automatically run our Webpack build when it starts up!
 
-Also note that we're using **historyApiFallback** because of the nature of single page applications. If you go to 'localhost:8001/some_route' in your browser, a request to the server is made, and the server tries to resolve this 'some_route' path you passed in to a resource. In a single page application, all these resources (pages) are on the client, so the server doesn't know about them and an error is returned to the browser. The only page your server knows how to handle is the landing/home page ('/', defined by *index.html*), which you configure to load your single page application. When *index.html* is loaded, your application will know how to navigate internally (via links defined in the app). However, if you refresh the page, or if you navigate directly to a page in our app via the address bar, a server request is made, which falls outside the domain of our application's routing. Unless the page you refreshed or tried to load in the address bar is the application's home page, the server won't know how to look it up, and a 404 is returned. 
+Also note that we're using **historyApiFallback** because of the nature of single page applications. If you go to 'localhost:8001/some_route' in your browser, a request to the server is made, and the server tries to resolve this 'some_route' path you passed in to a resource. In a single page application, all these resources (pages) are on the client, so the server doesn't know about them and an error is returned to the browser. The only page your server knows how to handle is the landing/home page ('/', defined by *index.html*), which you configure to load your single page application. When *index.html* is loaded, your application will know how to navigate internally (via links defined in the app). However, if you refresh the page, or if you navigate directly to a page in our app via the address bar, a server request is made, which falls outside the domain of our application's routing. Unless the page you refreshed or tried to load in the address bar is the application's home page, the server won't know how to look it up, and a 404 is returned.
 
 For example, imagine our app is hosted on *localhost:8001* and we've defined a 'SignIn' page and a '/signIn' route. If we navigate to *localhost:8001* in our browser, our app is loaded successfully. If we try to navigate to *localhost:8001/signIn* via a link in the application, the SignIn page will load as expected because the SignIn page is part of our application and we've configured our client-side app routing to know about it. However, if we refresh the page while we're at *localhost:8001/signIn*, or if we try to navigate to *localhost:8001/signIn* directly, we are explicitly making a server request, which will fail because all our sever doesn't know how to resolve the 'signIn' path.
 
@@ -229,7 +229,7 @@ Next, make sure your `"plugins"` array looks like this:
             'NODE_ENV'
         ]),
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, './index.html'),
             filename: 'index.html',
@@ -240,7 +240,7 @@ Next, make sure your `"plugins"` array looks like this:
 
 We've added a few plugins to make our lives easier! **EnvironmentPlugin** allows us to reference environment variables in the application. When we build our application, we will pass in a 'NODE_ENV' variable in the command-line that we will need to access within the application. This variable will allow us to turn off/on certain application features.
 
-**HotModuleReplacementPlugin** is necessary for enabling hot module replacement (HMR, or 'hot-reloading). **NoErrorsPlugin** is used to handle build errors more cleanly. By default, Webpack will still create junk build files if an error occurred during the build. NoErrorsPlugin makes it so no files are created if an error occurred, keeping our build folder clean!
+**HotModuleReplacementPlugin** is necessary for enabling hot module replacement (HMR, or 'hot-reloading). **NoEmitOnErrorsPlugin** is used to handle build errors more cleanly. By default, Webpack will still create junk build files if an error occurred during the build. NoEmitOnErrorsPlugin makes it so no files are created if an error occurred, keeping our build folder clean!
 
 To start the server, run the following command in the root of the project:
 ```
@@ -378,10 +378,20 @@ Finally, remember that Babel only transpiles our ES6 **syntax** down to ES5. It 
 Many different browsers exist, each with many different versions supporting a varying subset of ES6's new functions and built-in types. **babel-polyfill** helps close the feature gap between all of these browsers. It gives Babel runtime support by providing polyfills for the ES6 features that aren't transpiled. Let's install it now:
 
 ```
-npm install babel-polyfill --save
+npm install babel-polyfill --save-dev
 ```
 
-Next, at the top of *src/index.js*, we simply `import 'babel-polyfill';`. This will be enough to supply the browser with the polyfills necessary to emulate a full ES6 environment. Note that this is a catch-all solution that adds quite a bit of size to our application. In an actual production app, to save as much framework weight as possible, we should include only the ES6/ES7/ES+ features we are using. This takes a bit more work on our side, but the savings in file size is definitely worth it. Note that babel-polyfill is just a wrapper around the [**core-js**](https://github.com/zloirock/core-js) library. By picking only the polyfills we need from core-js, we can significantly reduce our application size. Keep this in mind when creating a production application! For now, we'll stick with babel-polyfill.
+Then, we'll add 'babel-polyfill' to our 'app' entry point in *webpack.config.js*:
+
+```
+app: [
+    'babel-polyfill',
+    'webpack-hot-middleware/client', //connect to the server to receive notifications when the bundle rebuilds
+    path.join(__dirname, './src/index.js')
+]
+```
+
+This will be enough to supply the browser with the polyfills necessary to emulate a full ES6 environment. Note that this is a catch-all solution that adds quite a bit of size to our application. In an actual production app, to save as much framework weight as possible, we should include only the ES6/ES7/ES+ features we are using. This takes a bit more work on our side, but the savings in file size is definitely worth it. Note that babel-polyfill is just a wrapper around the [**core-js**](https://github.com/zloirock/core-js) library. By picking only the polyfills we need from core-js, we can significantly reduce our application size. Keep this in mind when creating a production application! For now, we'll stick with babel-polyfill. We install it as a 'save-dev' dependency because
 
 Now that Babel is set up, we need to configure Webpack to actually use Babel to process our JavaScript files. In *webpack.config.js*, create a new `module` section in the config that looks like this:
 
@@ -437,6 +447,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 export default {
     entry: {
         app: [
+            'babel-polyfill',
             'webpack-hot-middleware/client',
             path.join(__dirname, './src/index.js')
         ]
@@ -451,7 +462,7 @@ export default {
             'NODE_ENV'
         ]),
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, './index.html'),
             filename: 'index.html',
