@@ -23,8 +23,8 @@
     "html-webpack-plugin": "^2.24.1",
     "open": "0.0.5",
     "react-hot-loader": "^3.0.0-beta.6",
-    "webpack": "^2.1.0-beta.28",
-    "webpack-dev-middleware": "^2.2.0",
+    "webpack": "^2.2.0",
+    "webpack-dev-middleware": "^1.8.4",
     "webpack-hot-middleware": "^2.13.2"
   },
   "dependencies": {
