@@ -214,8 +214,7 @@ router.post('/signIn', urlencodedParser, (req, res) => {
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                role: user.role,
-                token: 'MAGIC_TOKEN'
+                role: user.role
             };
             const userToken = generateToken(truncatedUserData);
             return res.status(200).send({ token: userToken, userData: truncatedUserData });
@@ -227,10 +226,10 @@ router.post('/signIn', urlencodedParser, (req, res) => {
 
 This is a pretty standard POST request. After we verify that our request contains what we expect, we call bcrypt's asynchronous `compare`. If `compare` succeeds, we return certain user information, along with a JWT token. This token is what the user will use to verify that they are who they say they are.
 
-Run our application, open up a rest client, and make a POST request to 'localhost:8001/api/signIn' with 'username' of 'tomjones' and 'password' of 'password'. You should receive a 200 OK with 'tomjones' information and token in the response.
+Run our application, open up a rest client, and make a POST request to 'localhost:8001/api/signIn' with 'username' of 'tomjones' and 'password' of 'password'. You should receive a 200 OK with 'tomjones' token and information in the response.
 
 ### Security
-Remember that plain-text passwords are not secure over HTTP. You must use HTTPS to secure your user's information in a POST request while they are in transit from client to server.
+Remember that plain-text passwords are not secure over HTTP. You must use *HTTPS* to secure your user's information in a POST request while they are in transit from client to server.
 
 ## Milestone 2: State Management with Redux
 Now that our signIn API is in place, let's switch to our client-side code and create the code for our authentication flow. We'll start by setting up Redux and Redux-Form. Then we'll create a protected resource only authorized user's can access.
@@ -241,9 +240,18 @@ The bigger a React application gets, the harder it becomes to deal reason about 
 There are quite a few libraries that allow you to manage state more efficiently. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is based on 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. Redux is extremely powerful, but it comes at the cost of writing a bit of boilerplate code. There are libraries to help alleviate this problem, but we'll stick to using plain old Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, so we won't be going too in-depth about all of its features. For a detailed Redux tutorial, checkout Egghead.io's [tutorial](https://egghead.io/courses/getting-started-with-redux) by Dan Abramov - the creator of the library.
 
 ### Quick Redux Overview
-If you've never seen any Redux code, this is a quick summary of how it works:
+If you've never seen or heard of Redux, this is a quick summary of what it is, why we use it, and how it works:
 
-There is a global state object (the 'store') in which we store our application's state. We never modify the store directly ourselves. Any time we need to modify the store, we dispatch an action with a type and some payload. The store uses reducers that we define (or import) that listen for specific actions and modify the store accordingly. The reducers should behave predictably because they must be defined as pure functions, so our store and our application state should behave predictably too. By default, any time the page is refreshed, the store is reset.
+#### What is Redux?
+Redux is a globally accessible, predictable state container for JavaScript applications based on [functional programming](https://medium.com/javascript-scene/master-the-javascript-interview-what-is-functional-programming-7f218c68b3a0#.2quwdduyi) concepts.
+
+#### Why use Redux?
+For large-scale React (or plain old JavaScript) applications, state can quickly become murky and hard to manage when it's divided amongst many disconnected components. Redux avoids this by giving state a defined place to live, making it globally accessible, and giving it an element of predictability.
+
+But isn't global bad? We've been trained to believe this since we wrote our first 'Hello, world' program. The whole idea of 'global === bad' stems mostly from difficulty of debugging. If it's global, anything can modify it, which makes it hard to trace what happened and what caused the change. Since Redux state is easily tracked and managed, it doesn't suffer from this drawback. Every action is traceable and every state modification is recorded (and can even be reversed!).
+
+#### How does it work?
+In Redux, there is a global state object (the 'store') in which we *store* our application's state. We never modify the store directly. Any time we need to modify the store, we dispatch an action with a type and some payload. The store uses reducers that we define (or import) that listen for specific actions and modify the store accordingly. The reducers should behave predictably because they are defined as pure functions, meaning our store and our application state should behave predictably as well.
 
 ### Redux
 Let's install and setup Redux in our application.
@@ -338,12 +346,12 @@ const rootElement = document.getElementById('root');
 ...
 ```
 
-Now, we have our middleware set up, and we can create asynchronous actions!
+Now, we have our Redux and our middleware set up. Let's actually do some cool stuff!
 
 ### Actions, Reducers, and State Shape
-Now that we have a store and middleware set up, we need our store to do something useful. What we want our store to keep track of?
+Now that we have a store and middleware set up, we need our store to do something useful. What do we want our store to keep track of?
 
-Let's think about the website we want to create. It shouldn't be too complex. At minimum, we'd like the following features:
+Let's think about the website we want to create to demonstrate our framework's features. At minimum, we'd like the following capabilities:
 
 * Register
 * Sign-in
@@ -354,11 +362,15 @@ These are pretty standard features for any website. These features are essential
 
 ```
 {
-    user: { id, username, email, firstName, lastName, role }
+    user: { username, email, firstName, lastName, role }
 }
 ```
 
-A user will also be interacting with a sign-in form. Should we store the state of the form in Redux? Does the rest of the application need access to the form state? Will other parts of the application affect the state of this form? Will the state of the form need to be kept after the component is unmounted from the DOM? If the answer to these questions is no, we can get away with just using `React.setState()` for component-level state. There are pros and cons for keeping all of your state in Redux. The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll use **Redux-Form** to manage our form state, so naturally it will be kept in Redux.
+Our users will interact with the backend via forms. How do forms fit in the Redux ecosystem?
+
+Let's step back and ask ourselves: When is it right to store state in Redux? When should we use `Component.setState()`? Can we use both? When creating components, we should ask ourselves if other parts of the application need access to the component's state? Will other parts of the application affect the state of this component? Will the state of the component need to be kept after the it's unmounted from the DOM? If the answer to these questions is no, we can get away with just using `Component.setState()` for component-level state.
+
+However, this isn't set in stone. There are many reasons for keeping all of your state in Redux. However, the flip-side isn't true at all. You shouldn't store all of your state in your component's. That's the whole reason we're using Redux in the first place. The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll use **Redux-Form** to manage our form state, so naturally it will be kept in Redux. We will use `Component.setState()` where it makes sense. This will become clear with experience.
 
 ### User state
 Create a *state* folder in the *src* folder of the application. This is where all of our state management code will go. Within this folder, create the following:

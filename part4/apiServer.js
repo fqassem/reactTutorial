@@ -48,7 +48,7 @@ router.post('/signIn', urlencodedParser, (req, res) => {
 
     const user = users[credentials.username];
     if(user === undefined) {
-        return res.status(400).send('User not found');
+        return res.status(404).send('User not found');
     }
 
     bcrypt.compare(credentials.password, user.password, (err, bcryptResult) => {
@@ -61,8 +61,7 @@ router.post('/signIn', urlencodedParser, (req, res) => {
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                role: user.role,
-                token: 'MAGIC_TOKEN'
+                role: user.role
             };
             const userToken = generateToken(truncatedUserData);
             return res.status(200).send({ token: userToken, userData: truncatedUserData });
