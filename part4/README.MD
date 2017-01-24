@@ -1,22 +1,25 @@
 # Part 4: Back-end, State Management, Forms, and Sign-in
-In this part, we will create a simple Express.js backend for our application to make real REST API calls. While we won't create an actual database component, that's just a step away!
+In this part, we will create a simple Express.js backend for our application to make real REST API calls. We won't create an actual database component, but it should be simple enough to add if you wanted to (see an example [here](https://blog.risingstack.com/node-js-database-tutorial/).
 
-Next, we'll focus on adding state management to our application using Redux. Redux is a popular and very powerful state management library based on Flux, an application architecture popularized by Facebook. We'll also want a way to manage our application's forms, so we will use Redux-Form to make creating, updating, and using forms quick and easy.
+Next, we'll focus on adding state management to our application using [Redux](http://redux.js.org/). Redux is a popular and very powerful state management library based on [Flux](https://facebook.github.io/flux/), an application architecture popularized by Facebook. We'll also want a way to manage our application's forms, so we will use [Redux-Form](http://redux-form.com/6.4.3/) to make creating, updating, and using forms quick and easy.
 
-Finally, we'll create the first part of our sample application's auth flow: sign-in. It will demonstrate Redux's capabilities and also how to make API calls to our backend. Let's get started!
+Finally, we'll create the first part of our sample application's auth flow: sign-in. It will demonstrate Redux's capabilities and also how to make API calls to our backend. After we are signed-in, we'll be able to see some restricted resources that only signed in users can access. Let's get started!
 
 ## Milestone 1: An Express.js Backend
 ### Big picture
-Let's step back a bit. So far, we've been creating a framework from scratch. Along the way, we've been creating a very simple application with a few pages that don't really do too much. There's a nav-bar and two pages that just print out 'Home' or 'Sign-in' to the screen. As we add new technologies, we'll create features that demonstrate how to use them in our application. Remember, the focus of this tutorial is more on creating the framework rather than creating the application, but it's worth talking some about both.
+Let's step back a bit. So far, we've been creating a framework from scratch. Along the way, we made a very simple application to demonstrate some features of the framework and to test that it was really working. We coded up a few pages that don't really do much. There's a nav-bar and two pages that just print out 'Home' or 'Sign-in' to the screen depending on your current route. As we add new technologies, we'll create features that demonstrate how to use them in our application. Remember, the focus of this tutorial is more on creating the framework rather than creating the application, but it's worth talking some about both.
 
-Let's expand on what we've created so far by adding authentication to our application! Authentication is a huge pain. It's one of the tougher aspects of creating an application that lives client-side. We'll also need to create forms so the user can perform the authentication flow: sign-in, sign-out, editing profile information, and signing out. Forms are also a huge topic and can become unwieldy if you let them. We'll focus on the sign-in porition in this part of the tutorial and we'll add the rest in a later part.
+Let's expand on what we've created so far by adding authentication to our application! Authentication is a huge pain in the backside. It's one of the tougher aspects of creating an application that lives client-side. There are a few server-side libraries to help make authentication a bit easier to implement, such as [Passport.js](http://passportjs.org/). We won't use these libraries, but we will create a working authentication flow that you can easily modify in the future.
 
-So, going forward, we will add on to both our application and our framework. When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end.
+We'll also need to create forms so the user can perform the authentication flow: register, sign-in, editing profile information, and sign-out. Forms are a large topic and can become unwieldy if you let them. Forms are arguably one of the more complicated pieces of client-side web development, so we'll use the Redux-Form library to make our lives a bit easier. We'll focus on the sign-in portion of the auth flow in this part of the tutorial. We'll add the rest in a later part.
 
-Note that in a real project, it's fine for your local dev server file to live in the same project as your application, but you should definitely create a separate project to house your server code. We don't do this here to keep our tutorial code compact, but it's something to keep in mind for production projects. One project/build for your client-side code and a separate project/build for your server-side code should be the goal for real applications
+When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end. We will use these forms to authenticate our user and access 'restricted' resources!
+
+### Side note
+In a real application, you should create a separate project to house your server code. We don't do this here to keep our tutorial compact, but it's something to keep in mind for production projects. One project/build for your client-side code and a separate project/build for your server-side code should be the goal for real applications.
 
 ### Setting up the back-end
-You're welcome to skip this part of the tutorial. You're also welcome to substitue this server with one you've already written, or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventure-minded, continue below:
+Server code. Fun stuff. You're welcome to skip this part if you aren't interested in writing server-side code. You're also welcome to substitute this server with one you've already written, or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
 
 In the root of our application, let's create a file called *apiServer.js*. This file will hold all of the code for our back-end server. Let's piece it together:
 
@@ -49,13 +52,13 @@ api.use('/api', router);
 export default api;
 ```
 
-This looks familiar! It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need more control over routing than the devServer does, we'll also create a `Router` instance to handle our API calls.
+This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need more control over routing than the devServer does, we'll also create a `Router` instance to handle our API calls.
 
-Next, we create two simple sample 'test' APIs - a GET and a POST. We also add some CORS configuration so that the server and client behave nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues, so using this code in production would necessitate some changes.
+Next, we create two simple sample 'test' APIs - a GET and a POST. We also add some CORS configuration so that the server and client play nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues, so using this config in production would necessitate some [changes](https://www.w3.org/wiki/CORS_Enabled).
 
 Then, we tell our server to use '/api' as the path to resolve requests. When we run our devServer, we'll also run our API server alongside it. Any requests made to '/api' will be handled by the API server. Any other requests will be handled by the devServer.
 
-Finally, we simply export the API server. Now, let's modify our devServer to run the apiServer alongside it. To make this cleaner, we'll have our development server use a proxy to communicate to our backend server. That way we have a lot less to keep track of during development - just a single endpoint that we hit to both serve our assets and make API calls. Neat!
+Finally, we simply export the API server. Now, let's modify our *devServer.js* to run the apiServer alongside it. To make this cleaner, we'll have our development server use a proxy to communicate to our backend server. That way we have less to keep track of during development - just a single endpoint that we hit to both serve our assets and make API calls. Neat!
 
 Let's install **express-http-proxy** so we can set up a proxy from our dev server to our backend server.
 
@@ -96,7 +99,7 @@ const users = { 'tomjones': { username: 'tomjones', bcrypt.hashSync('password', 
 Our user object will consist of a username, password, email, first name, last name, and role. Role can be one of two strings (for registered users): 'USER' or 'ADMIN'. We'll turn off/on certain application features based on the user's role!
 
 #### signIn
-Our sign-in function will accept a 'credentials' object consisting of a username and a password. Interestingly, POST requests are not  supported out-of-the-box in Express.js. The request body needs some special handling not provided by default. There are two ways to do it - manually or via a library called **body-parser**. We don't want to do it by hand, so we need to install **body-parser**:
+Our sign-in POST request will accept a username and a password in the body. Interestingly, POST requests are not immediately supported out-of-the-box in Express.js. The request body needs some special handling not provided by default. There are two ways to do it - manually or via a library called **body-parser**. We don't want to do it by hand, so we need to install **body-parser**:
 
 ```
 npm install body-parser --save-dev
