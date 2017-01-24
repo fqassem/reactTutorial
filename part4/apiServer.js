@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const users = {
     tomjones: {
@@ -13,12 +14,24 @@ const users = {
     }
 };
 
+const JWT_SECRET = 'SUPER_DUPER_SECURE_SECRET';
+
 const api = express();
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
 
+const generateToken = (user) => {
+    return jwt.sign(user, JWT_SECRET, {
+        expiresIn: 60 * 60 * 24 // expires in 24 hours
+    });
+};
+
 //Sample GET API
 router.get('/testGet', (req, res) => {
+    res.send('Hello!');
+});
+
+router.post('/testPost', (req, res) => {
     res.send('Hello!');
 });
 
@@ -41,7 +54,9 @@ router.post('/signIn', urlencodedParser, (req, res) => {
     bcrypt.compare(credentials.password, user.password, (err, bcryptResult) => {
         if(err) throw err;
         if(bcryptResult) {
-            const userInfo = {
+            //include only relevant user fields
+            const truncatedUserData = {
+                id: user.id,
                 username: user.username,
                 email: user.email,
                 firstName: user.firstName,
@@ -49,7 +64,8 @@ router.post('/signIn', urlencodedParser, (req, res) => {
                 role: user.role,
                 token: 'MAGIC_TOKEN'
             };
-            return res.status(200).send(userInfo);
+            const userToken = generateToken(truncatedUserData);
+            return res.status(200).send({ token: userToken, userData: truncatedUserData });
         }
         return res.status(401).send({ password: 'Username or password was invalid' });
     });

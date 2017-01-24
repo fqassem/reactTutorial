@@ -106,6 +106,77 @@ const users = {
 
 Our 'users' object will contain... users. A user object will consist of a username, password, email, first name, last name, and role. Role can be one of two strings (for registered users): 'USER' or 'ADMIN'. We'll turn off/on certain features in our code based on the user's role.
 
+We'll also use a JWT token for user authentication. Remember that the user can change *anything* on the client side. If they want to access a protected resource, they must go through the server and verify they have the permissions to see/use/modify the resource they're attempting to access. We'll use the JWT token every time the user attempts to access protected resources to verify they are who they say they are. Let's install the JWT library:
+
+```
+npm install --save-dev jsonwebtoken
+```
+
+We'll define a secret signing key in our server code along with a 'generateToken' function to create the JWT from user data and give it an expiration time:
+
+```
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = 'SUPER_DUPER_SECURE_SECRET';
+
+const generateToken = (user) => {
+    return jwt.sign(user, JWT_SECRET, {
+        expiresIn: 60 * 60 * 24 // expires in 24 hours
+    });
+};
+...
+```
+
+Our api server code should now look like this:
+```
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+const users = {
+    tomjones: {
+        username: 'tomjones',
+        password: bcrypt.hashSync('password', 10),
+        email: 'tom@jones.com',
+        firstName: 'Tom',
+        lastName: 'Jones',
+        role: 'USER'
+    }
+};
+
+const JWT_SECRET = 'SUPER_DUPER_SECURE_SECRET';
+
+const api = express();
+const router = express.Router();
+
+const generateToken = (user) => {
+    return jwt.sign(user, JWT_SECRET, {
+        expiresIn: 60 * 60 * 24 // expires in 24 hours
+    });
+};
+
+//Sample GET API
+router.get('/testGet', (req, res) => {
+    res.send('Hello!');
+});
+
+router.post('/testPost', (req, res) => {
+    res.send('Hello!');
+});
+
+//CORS
+api.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
+// Resolve '/api' prefixed routes
+api.use('/api', router);
+
+export default api;
+```
+
 #### Sign-in API
 Our sign-in POST request will accept a username and a password in the body. Interestingly, POST requests are not immediately supported out-of-the-box in Express.js. The request body needs some special handling not installed by default. There are two ways to do add this functionality - manually or via a library called **body-parser**. We don't want to do it by hand, so we need to install **body-parser**:
 
@@ -137,7 +208,8 @@ router.post('/signIn', urlencodedParser, (req, res) => {
     bcrypt.compare(credentials.password, user.password, (err, bcryptResult) => {
         if(err) throw err;
         if(bcryptResult) {
-            const userInfo = {
+            //include only relevant user fields
+            const truncatedUserData = {
                 username: user.username,
                 email: user.email,
                 firstName: user.firstName,
@@ -145,16 +217,15 @@ router.post('/signIn', urlencodedParser, (req, res) => {
                 role: user.role,
                 token: 'MAGIC_TOKEN'
             };
-            return res.status(200).send(userInfo);
+            const userToken = generateToken(truncatedUserData);
+            return res.status(200).send({ token: userToken, userData: truncatedUserData });
         }
         return res.status(401).send({ password: 'Username or password was invalid' });
     });
 });
 ```
 
-This is a pretty standard POST request. After we verify that our request contains what we expect it to contain, we call bcrypt's asynchronous `compare`. If it succeeds, we return certain user information, along with a token. This token is what the user will use to verify that they are who they say they are. It's similar in spirit to a very simplified [JWT](https://jwt.io/).
-
-Remember that the user can change *anything* on the client side. If they want to access a protected resource, they must go through the server and verify they have the permissions to see/use/modify the resource they're attempting to access. We'll use the token that we pass back to the user on every attempt to access protected resources. While we are simply returning 'MAGIC_TOKEN', this is for the sake of simplicity rather than security. This is **not** a production ready authentication scheme. A real production authentication mechanism would require a more secure token that expires and isn't easily guessed. You could create a JWT, use Passport.JS, OAuth - any number of methods that would require a more boiler-plate, setup, and code. For further discussions on creating a JWT, visit [Scotch.io](https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens) or [Auth-0](https://auth0.com/blog/secure-your-react-and-redux-app-with-jwt-authentication/)s more fully-fledged authentication tutorials. Our auth is just a very simplified version of this that you can easily extend.
+This is a pretty standard POST request. After we verify that our request contains what we expect, we call bcrypt's asynchronous `compare`. If `compare` succeeds, we return certain user information, along with a JWT token. This token is what the user will use to verify that they are who they say they are.
 
 Run our application, open up a rest client, and make a POST request to 'localhost:8001/api/signIn' with 'username' of 'tomjones' and 'password' of 'password'. You should receive a 200 OK with 'tomjones' information and token in the response.
 
@@ -172,7 +243,7 @@ There are quite a few libraries that allow you to manage state more efficiently.
 ### Quick Redux Overview
 If you've never seen any Redux code, this is a quick summary of how it works:
 
-There is a global state object (the 'store') in which we store our application's state. We never modify the store directly ourselves. Any time we need to modify the store, we dispatch an action with a type and some payload. The store uses reducers that we define (or import) that listen for specific actions and modify the store accordingly. The reducers should behave predictably because they must be defined as pure functions, so our store and our application state should behave predictably too.
+There is a global state object (the 'store') in which we store our application's state. We never modify the store directly ourselves. Any time we need to modify the store, we dispatch an action with a type and some payload. The store uses reducers that we define (or import) that listen for specific actions and modify the store accordingly. The reducers should behave predictably because they must be defined as pure functions, so our store and our application state should behave predictably too. By default, any time the page is refreshed, the store is reset.
 
 ### Redux
 Let's install and setup Redux in our application.
@@ -270,27 +341,24 @@ const rootElement = document.getElementById('root');
 Now, we have our middleware set up, and we can create asynchronous actions!
 
 ### Actions, Reducers, and State Shape
-Now that we have a store and middleware set up, we need our store to do something useful! First, let's think about what we want our store to keep track of.
+Now that we have a store and middleware set up, we need our store to do something useful. What we want our store to keep track of?
 
 Let's think about the website we want to create. It shouldn't be too complex. At minimum, we'd like the following features:
 
 * Register
-* Log-in
-* Log-out
+* Sign-in
+* Sign-out
 * Edit profile
-* See some pre-defined content while logged in
 
-These are pretty standard features for any website. These features are essentially 'actions' that a user can perform by clicking a button. What is a user? A user is someone with an id, username, and first and last name (perhaps even an address, state, zipcode, etc). They may be registered or unregistered. Let's structure our user as follows:
+These are pretty standard features for any website. These features are essentially 'actions' that a user can perform by clicking a button or submitting a form. These will match with the API calls we can make to the server. What is a user? We defined our user in the Express.js backend code we created!
 
 ```
 {
-    user: { id, username, firstName, lastName, email, role }
+    user: { id, username, email, firstName, lastName, role }
 }
 ```
 
-`user` is our user's state. Initially when a user comes to our website, they will not be logged in. An first-time, unauthenticated user will have no id, firstName, lastName, or username! If the user is not logged in, let's give them a role of 'GUEST'. If they are logged in, the 'user' state should be populated with an `id`, `firstName`, `lastName`, `userName`, `email`, and `role` from the backend. A user's role will affect the parts of the website that they can access. In our example website, only an authenticated user can access content other than the log-in page. An authenticated user will have the role of 'MEMBER'.
-
-A user will also be interacting with a sign-in form. Should we store the state of the form in Redux? Does the rest of the application need access to the form state? Will other parts of the application affect the state of this form? Will the state of the form need to be kept after the component is unmounted from the DOM? If the answer to these questions is no, we can get away with just using `React.setState()` for component-level state. There are pros and cons for keeping all of your state in Redux. The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll keep component-level state and application-level state separate.
+A user will also be interacting with a sign-in form. Should we store the state of the form in Redux? Does the rest of the application need access to the form state? Will other parts of the application affect the state of this form? Will the state of the form need to be kept after the component is unmounted from the DOM? If the answer to these questions is no, we can get away with just using `React.setState()` for component-level state. There are pros and cons for keeping all of your state in Redux. The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll use **Redux-Form** to manage our form state, so naturally it will be kept in Redux.
 
 ### User state
 Create a *state* folder in the *src* folder of the application. This is where all of our state management code will go. Within this folder, create the following:
