@@ -1,8 +1,17 @@
 import express from 'express';
-import bcrypt from 'bcrypt';
 import bodyParser from 'body-parser';
+import bcrypt from 'bcrypt';
 
-const users = { 'tomjones': { username: 'tomjones', password: bcrypt.hashSync('password', 10), email: 'tom@jones.com', firstName: 'Tom', lastName: 'Jones', role: 'USER' } };
+const users = {
+    tomjones: {
+        username: 'tomjones',
+        password: bcrypt.hashSync('password', 10),
+        email: 'tom@jones.com',
+        firstName: 'Tom',
+        lastName: 'Jones',
+        role: 'USER'
+    }
+};
 
 const api = express();
 const router = express.Router();
@@ -30,16 +39,17 @@ router.post('/signIn', urlencodedParser, (req, res) => {
     }
 
     bcrypt.compare(credentials.password, user.password, (err, bcryptResult) => {
-        if (err) throw err;
+        if(err) throw err;
         if(bcryptResult) {
-            const truncatedUser = {
+            const userInfo = {
                 username: user.username,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                role: user.role
+                role: user.role,
+                token: 'MAGIC_TOKEN'
             };
-            return res.status(200).send(truncatedUser);
+            return res.status(200).send(userInfo);
         }
         return res.status(401).send({ password: 'Username or password was invalid' });
     });

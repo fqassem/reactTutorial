@@ -89,17 +89,25 @@ To add password hashing, we'll use **bcrypt**. [Why not MD5/SHA/etc?](https://co
 npm install --save-dev bcrypt
 ```
 
-Next, in our *apiServer.js*, we'll begin using bcrypt:
+Next, in our *apiServer.js*, we'll begin using bcrypt: `import bcrypt from 'bcrypt';`. Next, let's add a global 'users' object in our application code. This 'users' object will mimic a database implementation.
 
 ```
-import bcrypt from 'bcrypt';
-const users = { 'tomjones': { username: 'tomjones', bcrypt.hashSync('password', 10), email: 'tom@jones.com', firstName: 'Tom', lastName: 'Jones', role: 'USER' } };
+const users = {
+    tomjones: {
+        username: 'tomjones',
+        password: bcrypt.hashSync('password', 10),
+        email: 'tom@jones.com',
+        firstName: 'Tom',
+        lastName: 'Jones',
+        role: 'USER'
+    }
+};
 ```
 
-Our user object will consist of a username, password, email, first name, last name, and role. Role can be one of two strings (for registered users): 'USER' or 'ADMIN'. We'll turn off/on certain application features based on the user's role!
+Our 'users' object will contain... users. A user object will consist of a username, password, email, first name, last name, and role. Role can be one of two strings (for registered users): 'USER' or 'ADMIN'. We'll turn off/on certain features in our code based on the user's role.
 
-#### signIn
-Our sign-in POST request will accept a username and a password in the body. Interestingly, POST requests are not immediately supported out-of-the-box in Express.js. The request body needs some special handling not provided by default. There are two ways to do it - manually or via a library called **body-parser**. We don't want to do it by hand, so we need to install **body-parser**:
+#### Sign-in API
+Our sign-in POST request will accept a username and a password in the body. Interestingly, POST requests are not immediately supported out-of-the-box in Express.js. The request body needs some special handling not installed by default. There are two ways to do add this functionality - manually or via a library called **body-parser**. We don't want to do it by hand, so we need to install **body-parser**:
 
 ```
 npm install body-parser --save-dev
@@ -127,47 +135,46 @@ router.post('/signIn', urlencodedParser, (req, res) => {
     }
 
     bcrypt.compare(credentials.password, user.password, (err, bcryptResult) => {
-        if (err) throw err;
+        if(err) throw err;
         if(bcryptResult) {
-            const truncatedUser = {
+            const userInfo = {
                 username: user.username,
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                role: user.role
+                role: user.role,
+                token: 'MAGIC_TOKEN'
             };
-            return res.status(200).send(truncatedUser);
+            return res.status(200).send(userInfo);
         }
         return res.status(401).send({ password: 'Username or password was invalid' });
     });
 });
 ```
 
+This is a pretty standard POST request. After we verify that our request contains what we expect it to contain, we call bcrypt's asynchronous `compare`. If it succeeds, we return certain user information, along with a token. This token is what the user will use to verify that they are who they say they are. It's similar in spirit to a very simplified [JWT](https://jwt.io/).
+
+Remember that the user can change *anything* on the client side. If they want to access a protected resource, they must go through the server and verify they have the permissions to see/use/modify the resource they're attempting to access. We'll use the token that we pass back to the user on every attempt to access protected resources. While we are simply returning 'MAGIC_TOKEN', this is for the sake of simplicity rather than security. This is **not** a production ready authentication scheme. A real production authentication mechanism would require a more secure token that expires and isn't easily guessed. You could create a JWT, use Passport.JS, OAuth - any number of methods that would require a more boiler-plate, setup, and code. For further discussions on creating a JWT, visit [Scotch.io](https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens) or [Auth-0](https://auth0.com/blog/secure-your-react-and-redux-app-with-jwt-authentication/)s more fully-fledged authentication tutorials. Our auth is just a very simplified version of this that you can easily extend.
+
+Run our application, open up a rest client, and make a POST request to 'localhost:8001/api/signIn' with 'username' of 'tomjones' and 'password' of 'password'. You should receive a 200 OK with 'tomjones' information and token in the response.
+
+### Security
+Remember that plain-text passwords are not secure over HTTP. You must use HTTPS to secure your user's information in a POST request while they are in transit from client to server.
+
 ## Milestone 2: State Management with Redux
+Now that our signIn API is in place, let's switch to our client-side code and create the code for our authentication flow. We'll start by setting up Redux and Redux-Form. Then we'll create a protected resource only authorized user's can access.
+
 ### Setting up the store
-The bigger a React application gets, the harder it becomes to deal reason about state. It's definitely possible to write React applications by just using `React.setState` calls. However, the bigger your application gets, the more difficult it becomes to share state between components. This is especially true if the components attempting to share state don't have a parent-child relationship.
+The bigger a React application gets, the harder it becomes to deal reason about state. It's definitely possible to write React applications by just using `React.setState` calls. However, the more code you write, the more difficult it becomes to share state between components. This is especially true if the components attempting to share state don't have a parent-child relationship.
 
-There are quite a few libraries that allow you to manage state more efficiently. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is based on 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. Redux is extremely powerful, but it comes at the cost of writing a bit of boilerplate code. There are libraries to help alleviate this problem, but we'll stick to using plain old Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, so we won't be going into depth about all of its features.
+There are quite a few libraries that allow you to manage state more efficiently. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is based on 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. Redux is extremely powerful, but it comes at the cost of writing a bit of boilerplate code. There are libraries to help alleviate this problem, but we'll stick to using plain old Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, so we won't be going too in-depth about all of its features. For a detailed Redux tutorial, checkout Egghead.io's [tutorial](https://egghead.io/courses/getting-started-with-redux) by Dan Abramov - the creator of the library.
 
-### Side-note: Arrow Functions as class methods
-If you want to use arrow functions as class methods instead of binding in the `render` or constructor, you'll need to install the **babel-transform-class-properties** plugin. This is still an experimental feature (not yet standardized) and Babel will need to know how to transpile it with a plugin. If you don't want to do any configuration changes, you can simply use the old syntax of binding the class functions in the constructor and instead use the old function declaration. If you want to use this syntax:
+### Quick Redux Overview
+If you've never seen any Redux code, this is a quick summary of how it works:
 
-```
-npm install --save-dev babel-transform-class-properties
-```
+There is a global state object (the 'store') in which we store our application's state. We never modify the store directly ourselves. Any time we need to modify the store, we dispatch an action with a type and some payload. The store uses reducers that we define (or import) that listen for specific actions and modify the store accordingly. The reducers should behave predictably because they must be defined as pure functions, so our store and our application state should behave predictably too.
 
-and modify our *.babelrc* to use this plugin during transpilation by adding it to (or creating) the 'plugins' array:
-
-```
-    ...,
-    "plugins": ["transform-class-properties"],
-    "env": ...
-
-```
-
-Another cool feature this plugin allows is declaring static class properties! We won't do that for now, but it's definitely a useful feature.
-
-### Regularly scheduled program
+### Redux
 Let's install and setup Redux in our application.
 
 ```
@@ -175,9 +182,9 @@ npm install --save redux
 npm install --save react-redux
 ```
 
-They are installed as regular 'dependency's because the browser needs them to manage our state. We also installed **React-Redux**, a library that includes useful bindings for more easily using Redux and React together. It's not necessary, but it makes using React and Redux together much nicer.
+These libraries are installed as regular 'dependency's because the browser needs them to manage application state. **React-Redux** is a library that includes useful bindings for more easily using Redux and React together. It's not necessary, but it makes development much nicer.
 
-Let's set up the Redux store. Open up *src/Main.js*. Let's import 'Provider' from 'react-redux' and add it to our app. 'Provider' connects our components to the Redux store. We'll only have to set it up here at the root component of our app. 'Provider' accepts a 'store' prop, which we will pass in from *index.js* much like we do for the `routes` prop. Your *Main.js* file should look like this now:
+Let's set up the Redux store. Open up *src/Main.js*. Let's `import 'Provider' from 'react-redux';` and add it to our app. 'Provider' connects our React components to the Redux store. We'll only have to set it up here at the root component of our app. 'Provider' accepts a 'store' prop, which we will pass in from *index.js* much like we do for the `routes` prop. Your *Main.js* file should look like this now:
 
 ```
 import React from 'react';
@@ -198,10 +205,9 @@ Main.propTypes = {
     store: React.PropTypes.object.isRequired
 };
 export default Main;
-
 ```
 
-Now, let's create the store and pass it in. Open *index.js* and import 'createStore' from 'redux'. This is the library function we will use to create our store. It accepts a rootReducer as a parameter. Because we haven't defined any reducers yet, let's simply define an empty function as a placeholder. While we're at it, let's clean the file up a bit by removing some duplication. Instead of us calling `document.getElementById('root')` multiple times in this file, let's replace it with `rootElement` constant we define at the top of the file.
+Now, let's create the store and pass it in to Provider. Open *index.js* and `import 'createStore' from 'redux';`. This is the library function we will use to create our store. It accepts a root reducer as a parameter. Since we haven't defined any reducers yet, let's simply define an empty function as a placeholder. While we're at it, let's clean the file up a bit by removing some duplication. Instead of us calling `document.getElementById('root')` multiple times in this file, let's replace it with `rootElement` constant we define at the top of the file.
 
 So, now our *src/index.js* file looks like this:
 ```
@@ -236,7 +242,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 
 ```
 
-Run `npm run start` and notice that we get no errors. We have a store set up now! Before we continue, we need a little bit more setup.  In order to write clean, asynchronous actions in Redux, we will need middleware called 'Redux-Thunk'. To read more about the reasoning behind it, check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/). To summarize, writing asynchronous actions while obeying the laws of 'pure' functions can get ugly. The 'redux-thunk' middleware makes it slightly less ugly. Simple!
+Run `npm run start` and notice that we get no errors. We have a store set up now! Before we continue, we need a little bit more setup. In order to write clean, asynchronous actions in Redux, we will need middleware called 'Redux-Thunk'. We need asynchronous actions to make calls to our back-end. Check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/) for the reasoning behind thunk. To summarize, writing asynchronous actions while obeying the laws of 'pure functions' can get ugly. The 'redux-thunk' middleware makes it slightly less ugly. Easy-peasy.
 
 Let's install and set it up:
 
@@ -244,7 +250,7 @@ Let's install and set it up:
 npm install --save redux-thunk
 ```
 
-Now, open up *src/index.js*. We'll need `applyMiddleware` from Redux, which tells the Redux store we'll be using some middleware that we'll pass in as parameters.  We also need to import 'thunk' from Redux-Thunk, which is our middleware. Finally, we'll need to tell the store we're using the middleware. Our *src/index.js* should now look like this:
+Now, open up *src/index.js*. We'll need to `import { applyMiddleware } from 'redux';`, which tells the Redux store we'll be using some middleware that we'll pass in as parameters. We also need to `import thunk from 'redux-thunk';` - our thunk middleware. Finally, we'll need to tell the store we're actually using the middleware. Our *src/index.js* should now look like this:
 
 ```
 import React from 'react';
