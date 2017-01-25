@@ -7,7 +7,7 @@ class Home extends React.Component {
         return (
             <div>
                 <h1>Home</h1>
-                {user.role !== 'GUEST' && <p>Welcome, {user.username}</p>}
+                {user.role && <p>Welcome, {user.username}</p>}
             </div>
         );
     }

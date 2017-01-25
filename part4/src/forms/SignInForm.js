@@ -1,60 +1,51 @@
 import React from 'react';
+import { Field, reduxForm, propTypes } from 'redux-form';
+
+import { signIn } from '../state/user';
 
 class SignInForm extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            username: '',
-            password: ''
-        };
-    }
-
-    onSignIn = (event) => {
-        const { username, password } = this.state;
-        event.preventDefault();
-
-        this.props.onSignIn(username, password); //call the passed in onSignIn function
-    }
-
-    handleUsernameChange = (event) => {
-        const newUsername = event.target.value;
-        this.setState({
-            username: newUsername
-        });
-    }
-
-    handlePasswordChange = (event) => {
-        const newPassword = event.target.value;
-        this.setState({
-            password: newPassword
-        });
-    }
+    renderField = ({ input, label, type, meta: { touched, error } }) => {
+        return (
+            <div>
+                <label>{label}</label>
+                <div>
+                    <input {...input} placeholder={label} type={type}/>
+                    {touched && error && <span>{error}</span>}
+                </div>
+            </div>
+        );
+    };
 
     render() {
-        const { username, password } = this.state;
-        const { isFetching, error } = this.props;
+        const { handleSubmit, pristine, submitting, error } = this.props;
         return (
-            <form onSubmit={this.onSignIn}>
-                { isFetching && <div>Loading gif</div> }
-                { error && <div>{error.message}</div> }
+            <form onSubmit={handleSubmit(signIn)}>
+                { submitting && <div>Loading gif</div> }
+                { error && <div>Sign In Failed</div> }
                 <div>
-                    <label>Username</label>
-                    <input type="text" placeholder="Username" name="username"
-                      onChange={this.handleUsernameChange} value={username}/>
-
-                    <label>Password</label>
-                    <input type="password" placeholder="Password" name="password"
-                      onChange={this.handlePasswordChange} value={password}/>
-
-                    <button type="submit">Sign In</button>
+                    <Field name="username" label="Username" type="text" component={this.renderField}/>
                 </div>
+                <div>
+                    <Field name="password" label="Password" type="password" component={this.renderField}/>
+                </div>
+                <button type="submit" disabled={pristine || submitting} >Sign In</button>
             </form>
         );
     }
 }
-SignInForm.propTypes = {
-    onSignIn: React.PropTypes.func.isRequired,
-    isFetching: React.PropTypes.bool,
-    error: React.PropTypes.object
+const validate = (values) => {
+    const errors = {};
+
+    if(!values.username) {
+        errors.username = 'Please enter a username';
+    }
+
+    if(!values.password) {
+        errors.password = 'Please enter a password';
+    }
+    return errors;
 };
-export default SignInForm;
+SignInForm.propTypes = {
+    ...propTypes
+};
+export default reduxForm({ form: 'signInForm', validate })(SignInForm);
