@@ -10,7 +10,7 @@ const store = createStore();
 const rootElement = document.getElementById('root');
 
 render(<AppContainer>
-            <Main routes={routes} store={store}/>
+            <Main routes={routes} store={store} />
         </AppContainer>,
         rootElement);
 
@@ -19,7 +19,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
         const updatedRoutes = require('./pages/routes').default;
         render(
             <AppContainer>
-                <Main routes={updatedRoutes} store={store}/>
+                <Main routes={updatedRoutes} store={store} />
             </AppContainer>,
             rootElement
         );

@@ -22,7 +22,7 @@ const urlencodedParser = bodyParser.urlencoded({ extended: true });
 
 const generateToken = (user) => {
     return jwt.sign(user, JWT_SECRET, {
-        expiresIn: 60 * 60 * 24 // expires in 24 hours
+        expiresIn: 60 * 60 * 2 //expires in 2 hours
     });
 };
 
@@ -63,7 +63,9 @@ router.post('/signIn', urlencodedParser, (req, res) => {
                 lastName: user.lastName,
                 role: user.role
             };
+
             const userToken = generateToken(truncatedUserData);
+            //send both user data and token
             return res.status(200).send({ token: userToken, userData: truncatedUserData });
         }
         return res.status(401).send({ password: 'Username or password was invalid' });

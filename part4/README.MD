@@ -1,4 +1,4 @@
-# Part 4: Back-end, State Management, Forms, and Sign-in
+# Part 4: Back-end, State Management, Forms, Sign-in, and Restricted-Routes
 In this part, we will create a simple Express.js backend for our application to make real REST API calls. We won't create an actual database component, but it should be simple enough to add if you wanted to (see an example [here](https://blog.risingstack.com/node-js-database-tutorial/).
 
 Next, we'll focus on adding state management to our application using [Redux](http://redux.js.org/). Redux is a popular and very powerful state management library based on [Flux](https://facebook.github.io/flux/), an application architecture popularized by Facebook. We'll also want a way to manage our application's forms, so we will use [Redux-Form](http://redux-form.com/6.4.3/) to make creating, updating, and using forms quick and easy.
@@ -9,7 +9,7 @@ Finally, we'll create the first part of our sample application's auth flow: sign
 ### Big picture
 Let's step back a bit. So far, we've been creating a framework from scratch. Along the way, we made a very simple application to demonstrate some features of the framework and to test that it was really working. We coded up a few pages that don't really do much. There's a nav-bar and two pages that just print out 'Home' or 'Sign-in' to the screen depending on your current route. As we add new technologies, we'll create features that demonstrate how to use them in our application. Remember, the focus of this tutorial is more on creating the framework rather than creating the application, but it's worth talking some about both.
 
-Let's expand on what we've created so far by adding authentication to our application! Authentication is a huge pain in the backside. It's one of the tougher aspects of creating an application that lives client-side. There are a few server-side libraries to help make authentication a bit easier to implement, such as [Passport.js](http://passportjs.org/). We won't use these libraries, but we will create a working authentication flow that you can easily modify in the future.
+Let's expand on what we've created so far by adding authentication to our application! Authentication is a huge pain in the backside. It's one of the tougher aspects of creating an application that lives client-side. There are a few server-side libraries to help make authentication a bit easier to implement, such as [Passport.js](http://passportjs.org/). We will use [JWT](https://jwt.io/) (JSON Web Tokens) to provide authentication for our users. JWTs are simple in concept, but very powerful.
 
 We'll also need to create forms so the user can perform the authentication flow: register, sign-in, editing profile information, and sign-out. Forms are a large topic and can become unwieldy if you let them. Forms are arguably one of the more complicated pieces of client-side web development, so we'll use the Redux-Form library to make our lives a bit easier. We'll focus on the sign-in portion of the auth flow in this part of the tutorial. We'll add the rest in a later part.
 
@@ -19,7 +19,7 @@ When we finish this part of the tutorial, we will have set up state management w
 In a real application, you should create a separate project to house your server code. We don't do this here to keep our tutorial compact, but it's something to keep in mind for production projects. One project/build for your client-side code and a separate project/build for your server-side code should be the goal for real applications.
 
 ### Setting up the back-end
-Server code. Fun stuff. You're welcome to skip this part if you aren't interested in writing server-side code. You're also welcome to substitute this server with one you've already written, or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
+Server code - not everyone's cup of tea. You're welcome to skip this part if you aren't interested in writing server-side JavaScript. You're also welcome to substitute this server with one you've already written, or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
 
 In the root of our application, let's create a file called *apiServer.js*. This file will hold all of the code for our back-end server. Let's piece it together:
 
@@ -52,7 +52,7 @@ api.use('/api', router);
 export default api;
 ```
 
-This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need more control over routing than the devServer does, we'll also create a `Router` instance to handle our API calls.
+This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our API calls.
 
 Next, we create two simple sample 'test' APIs - a GET and a POST. We also add some CORS configuration so that the server and client play nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues, so using this config in production would necessitate some [changes](https://www.w3.org/wiki/CORS_Enabled).
 
@@ -104,7 +104,7 @@ const users = {
 };
 ```
 
-Our 'users' object will contain... users. A user object will consist of a username, password, email, first name, last name, and role. Role can be one of two strings (for registered users): 'USER' or 'ADMIN'. We'll turn off/on certain features in our code based on the user's role.
+Our 'users' object will contain users keyed by their username. A user object will consist of a username, password, email, first name, last name, and role. Role can be one of two strings (for registered users): 'USER' or 'ADMIN'. We'll turn off/on certain features in our code based on the user's role.
 
 We'll also use a JWT token for user authentication. Remember that the user can change *anything* on the client side. If they want to access a protected resource, they must go through the server and verify they have the permissions to see/use/modify the resource they're attempting to access. We'll use the JWT token every time the user attempts to access protected resources to verify they are who they say they are. Let's install the JWT library:
 
@@ -112,7 +112,19 @@ We'll also use a JWT token for user authentication. Remember that the user can c
 npm install --save-dev jsonwebtoken
 ```
 
-We'll define a secret signing key in our server code along with a 'generateToken' function to create the JWT from user data and give it an expiration time:
+#### JWT
+[JWT](https://jwt.io/introduction/)s are a popular, secure way of transmitting information between two parties. In our case, we will issue a JWT from our server to our user. The user will use this JWT to authenticate themselves whenever an API call is made. Can't we use a session instead? Check this [article](https://ponyfoo.com/articles/json-web-tokens-vs-session-cookies) for further discussion.
+
+A JWT consists of 3 sections concatenated by periods: <header>.<payload>.<signature>
+
+1. Header is a base64url encoded JSON string that has info about algorithm used to encode the token.
+2. Payload is a base64url encoded JSON string that contains 'claims' - information about the user.
+3. Signature: A string generated by combining the header, payload, and some secret held by the server. This string is then encoded with the algorithm defined in the header. The purpose of the signature is to ensure the integrity of the payload.
+
+Because the user can change anything, they can even change their JWT and modify the data it contains. When the user makes an API call, we validate the token using the algorithm in its header and our server-side secret so we're sure that we issued this token and that its contents have not been tampered with.
+
+### Regularly Scheduled Program
+We'll define a secret signing key in our server code. Let's also create a 'generateToken' function to create the JWT from user data and give it an expiration time:
 
 ```
 import jwt from 'jsonwebtoken';
@@ -121,7 +133,7 @@ const JWT_SECRET = 'SUPER_DUPER_SECURE_SECRET';
 
 const generateToken = (user) => {
     return jwt.sign(user, JWT_SECRET, {
-        expiresIn: 60 * 60 * 24 // expires in 24 hours
+        expiresIn: 60 * 60 * 2 // expires in two hours
     });
 };
 ...
@@ -151,7 +163,7 @@ const router = express.Router();
 
 const generateToken = (user) => {
     return jwt.sign(user, JWT_SECRET, {
-        expiresIn: 60 * 60 * 24 // expires in 24 hours
+        expiresIn: 60 * 60 * 2 //expires in 2 hours
     });
 };
 
@@ -184,7 +196,7 @@ Our sign-in POST request will accept a username and a password in the body. Inte
 npm install body-parser --save-dev
 ```
 
-Next, in *apiServer.js*, we need to `import bodyParser from 'body-parser';`. Next, to support encoded request bodies, we define `const urlencodedParser = bodyParser.urlencoded({ extended: false });` near the top of our file. This is a parser that Express will use to process encoded request bodies. We'll add the parser as a parameter to the 'post' call we make for '/signIn'.
+Next, in *apiServer.js*, we need to `import bodyParser from 'body-parser';`. Next, to support encoded request bodies, we define `const urlencodedParser = bodyParser.urlencoded({ extended: false });` near the top of our file. This is a parser that Express will use to process encoded request bodies. We'll add the parser as a parameter to the POST call we make for '/signIn'. We'll also need to add it as a parameter to any other POST requests we create. Why? [Security issues, mostly](https://fosterelli.co/dangerous-use-of-express-body-parser.html).
 
 Here is our '/signIn' POST request:
 
@@ -202,7 +214,7 @@ router.post('/signIn', urlencodedParser, (req, res) => {
 
     const user = users[credentials.username];
     if(user === undefined) {
-        return res.status(400).send('User not found');
+        return res.status(404).send('User not found');
     }
 
     bcrypt.compare(credentials.password, user.password, (err, bcryptResult) => {
@@ -253,13 +265,13 @@ export default AuthenticationService;
 ```
 
 ### Security
-Remember that plain-text passwords are not secure over HTTP. You must use *HTTPS* to secure your user's information in a POST request while they are in transit from client to server.
+Remember that plain-text passwords are not secure over HTTP. You must use *HTTPS* to secure your user's information in a POST request while they are in transit from client to server. Remember that a JWT, just like cookies, can be vulnerable to man-in-the-middle or CSRF attacks. We try to limit any damage that could be caused by setting an expiration for the token, but that's just a band-aid. Use **HTTPS** in a real application - always!
 
 ## Milestone 2: State Management with Redux
 Now that our signIn API is in place, let's switch to our client-side code and create the code for our authentication flow. We'll start by setting up Redux and Redux-Form. Then we'll create a protected resource only authorized user's can access.
 
 ### Setting up the store
-The bigger a React application gets, the harder it becomes to deal reason about state. It's definitely possible to write React applications by just using `React.setState` calls. However, the more code you write, the more difficult it becomes to share state between components. This is especially true if the components attempting to share state don't have a parent-child relationship.
+The bigger a React application gets, the harder it becomes to deal reason about state. It's definitely possible to write React applications by just using `ReactComponent.setState()` calls. However, the more code you write, the more difficult it becomes to share state between components. This is especially true if the components attempting to share state don't have a parent-child relationship.
 
 There are quite a few libraries that allow you to manage state more efficiently. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is based on 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. Redux is extremely powerful, but it comes at the cost of writing a bit of boilerplate code. There are libraries to help alleviate this problem, but we'll stick to using plain old Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, so we won't be going too in-depth about all of its features. For a detailed Redux tutorial, checkout Egghead.io's [tutorial](https://egghead.io/courses/getting-started-with-redux) by Dan Abramov - the creator of the library.
 
@@ -366,7 +378,7 @@ const store = createApplicationStore();
 const rootElement = document.getElementById('root');
 
 render(<AppContainer>
-            <Main routes={routes} store={store}/>
+            <Main routes={routes} store={store} />
         </AppContainer>,
         rootElement);
 
@@ -380,7 +392,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
         const updatedRoutes = require('./pages/routes').default;
         render(
             <AppContainer>
-                <Main routes={updatedRoutes} store={store}/>
+                <Main routes={updatedRoutes} store={store} />
             </AppContainer>,
             rootElement
         );
@@ -412,9 +424,9 @@ These are pretty standard features for any website. These features are essential
 
 Our users will interact with the backend via forms. How do forms fit in the Redux ecosystem?
 
-Let's step back and ask ourselves: When is it right to store state in Redux? When should we use `Component.setState()`? Can we use both? When creating components, we should ask ourselves if other parts of the application need access to the component's state? Will other parts of the application affect the state of this component? Will the state of the component need to be kept after the it's unmounted from the DOM? If the answer to these questions is no, we can get away with just using `Component.setState()` for component-level state.
+Let's step back and ask ourselves: When is it right to store state in Redux? When should we use `ReactComponent.setState()`? Can we use both? When creating components, we should consider if other parts of the application need access to the component's state. Will other parts of the application affect the state of this component? Will the state of the component need to be kept after the it's unmounted from the DOM? If the answer to these questions is no, we can get away with just using `ReactComponent.setState()` for component-level state.
 
-However, this isn't set in stone. There are many reasons for keeping all of your state in Redux. However, the flip-side isn't true at all. You shouldn't store all of your state in your component's. That's the whole reason we're using Redux in the first place. The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll use **Redux-Form** to manage our form state, so naturally it will be kept in Redux. We will use `Component.setState()` where it makes sense. This will become clear with experience.
+However, this isn't set in stone. There are many reasons for keeping all of your state in Redux. However, the flip-side isn't true. You shouldn't store all of your state in your components. That's the whole reason we're using Redux in the first place! The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll use **Redux-Form** to manage our form state, so naturally it will be kept in Redux. We will use `ReactComponent.setState()` where it makes sense. This will become clear with experience.
 
 ### User state
 Inside of *src/state*, create the following:
@@ -451,10 +463,50 @@ A default user should have no firstName, lastName, userName, email, or role - si
 
 #### src/state/user/index.js
 ```
+import { SubmissionError } from 'redux-form';
 
+import AuthenticationService from '../../services/AuthenticationService';
+import InitialUserState from './InitialUserState';
+
+//Action constants
+export const SET_USER_DATA = 'SET_USER_DATA';
+
+//Actions
+export const setUserData = (userData) => {
+    return { type: SET_USER_DATA, userData };
+};
+
+//Async action
+export const signIn = (values, dispatch) => {
+    const { username, password } = values;
+
+    return AuthenticationService.signIn(username, password)
+    .then((response) => {
+        if(response.ok) {
+            response.json().then((json) => {
+                dispatch(setUserData(json.userData));
+                AuthenticationService.storeToken(json.token);
+            });
+        } else {
+            throw new SubmissionError({ _error: 'Invalid Credentials' });
+        }
+    });
+};
+
+//Reducer
+export default (state = InitialUserState, action) => {
+    switch(action.type) {
+        case SET_USER_DATA: {
+            const userData = action.userData;
+            return { ...state, ...userData };
+        }
+        default:
+            return state;
+    }
+};
 ```
 
-To get us started, let's create the sign-in functionality. We define two actions: `setUserData`, a pure Redux action creator, and `signIn`, an asynchronous 'thunk' action. `signIn` is currently a placeholder until we plug in an actual backend, but it will behave similarly to a 'fetch' or 'XMLHttpRequest'. Unless the username we sign in with is 'fail', the hard-coded user data will be added to the state by the reducer, the promise will be resolved, and the user will be signed-in.
+To get us started, let's create the sign-in functionality. We define two actions: `setUserData`, a pure Redux action creator, and `signIn`, an asynchronous 'thunk' action (an action that returns a function). When the `signIn` action is dispatched, our AuthenticationService's `signIn` function is called so we can sign the user in. When it succeeds, we dispatch `setUserData`, with the user's data we retrieved from the backend. The reducer then takes this data and stuffs it into the state.
 
 Now that we have our user reducer and initial state defined, let's define our root reducer. In the *state* folder, create a file called *rootReducer.js*:
 
@@ -500,7 +552,7 @@ export default function createApplicationStore() {
 Now, we've got our reducer hooked up to our store. If we run our application, nothing useful will happen because we're not calling our `signIn` function any where! Let's fix that in the next section.
 
 ### Setting up Redux-Form
-We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our signIn API and page, let's create a 'sign-in' form. We need to set up Redux-Form. Redux-Form has its own reducer that we need to add to our applications root reducer. In *src/state/index.js*, `import { reducer as formReducer } from 'redux-form';`. Next, add `form: formReducer` to our `combineReducers` function. After we're done, *src/state/index.js* should look like this:
+We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our signIn API and page, let's create a 'sign-in' form. We need to set up Redux-Form. Redux-Form has its own reducer that we need to add to our applications root reducer. In *src/state/index.js*, `import { reducer as form } from 'redux-form';`. Next, add `form` to our `combineReducers` function. After we're done, *src/state/index.js* should look like this:
 
 ```
 import { combineReducers } from 'redux';
@@ -520,13 +572,15 @@ Now, the infrastructure for Redux-Form is all set up! Let's get started creating
 import React from 'react';
 import { Field, reduxForm, propTypes } from 'redux-form';
 
+import { signIn } from '../state/user';
+
 class SignInForm extends React.Component {
     renderField = ({ input, label, type, meta: { touched, error } }) => {
         return (
             <div>
                 <label>{label}</label>
                 <div>
-                    <input {...input} placeholder={label} type={type}/>
+                    <input {...input} placeholder={label} type={type} />
                     {touched && error && <span>{error}</span>}
                 </div>
             </div>
@@ -534,80 +588,71 @@ class SignInForm extends React.Component {
     };
 
     render() {
-        const { handleSubmit, pristine, submitting } = this.props;
+        const { error, handleSubmit, pristine, submitting } = this.props;
         return (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit(signIn)}>
                 { submitting && <div>Loading gif</div> }
+                { error && <div>Sign In Failed</div> }
                 <div>
-                    <Field name="username" label="Username" type="text" component={this.renderField}/>
+                    <Field name="username" label="Username" type="text" component={this.renderField} />
                 </div>
                 <div>
-                    <Field name="password" label="Password" type="password" component={this.renderField}/>
+                    <Field name="password" label="Password" type="password" component={this.renderField} />
                 </div>
                 <button type="submit" disabled={pristine || submitting} >Sign In</button>
             </form>
         );
     }
 }
+const validate = (values) => {
+    const errors = {};
+
+    if(!values.username) {
+        errors.username = 'Please enter a username';
+    }
+
+    if(!values.password) {
+        errors.password = 'Please enter a password';
+    }
+    return errors;
+};
 SignInForm.propTypes = {
     ...propTypes
 };
-export default reduxForm({ form: 'signInForm' })(SignInForm);
+export default reduxForm({ form: 'signInForm', validate })(SignInForm);
 ```
 
-This is a fairly barebones 'Redux-Form' form. To understand this better, check out the Redux-Form documentation and examples [here](http://redux-form.com/6.4.3/docs/GettingStarted.md/). The main things to note are that `handleSubmit`, `pristine`, and `submitting` are all provided to us by Redux-Form and inform us about the current state of the form via props. We decorate our form component in the `export` with `reduxForm` to transform our plain old React Component form into one decorated with Redux-Form.
+This is a fairly barebones 'Redux-Form' form. To understand this better, check out the Redux-Form documentation and examples [here](http://redux-form.com/6.4.3/docs/GettingStarted.md/). The main things to note are that `error`, `handleSubmit`, `pristine`, and `submitting` are all provided to us by Redux-Form and inform us about the current state of the form via props. We decorate our form component in the `export` with `reduxForm` to transform our plain old React Component form into one decorated with Redux-Form.
 
 We don't check username or password length, but that should be fairly trivial to implement on your own. Notice that there is zero state being kept in this component. Everything it needs will be passed in by props.
 
-Also notice that we have a placeholder div that contains the words 'Loading gif' that shows when `isFetching` is true. When we update our application with CSS, we'll replace with something nicer.
+Also notice that we have a placeholder div that contains the words 'Loading gif' that shows when `isFetching` is true. When we update our application with CSS, we'll replace with something nicer, but it will do for now.
 
 Now that we've created our form, let's add it to our *pages/SignIn.js* page:
 ```
 import React from 'react';
 import { connect } from 'react-redux';
-
 import { browserHistory } from 'react-router';
-import { signIn } from '../state/user';
+
 import SignInForm from '../forms/SignInForm';
 
 class SignIn extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            isFetching: false,
-            error: null
-        };
-    }
-
-    componentWillMount() {
-        if(this.props.user.role !== 'GUEST') { //forward already signed-in users
+    componentWillReceiveProps(nextProps) {
+        if(nextProps.user && (nextProps.user.role === 'USER' || nextProps.user.role === 'ADMIN')) {
             browserHistory.push('/');
         }
     }
 
-    onSignIn = (username, password) => {
-        const credentials = { username, password };
-
-        this.setState({ isFetching: true, error: null });
-        this.props.signIn(credentials)
-            .then(() => this.setState({ isFetching: false }))
-            .then(() => browserHistory.push('/'))
-            .catch(error => this.setState({ isFetching: false, error }));
-    }
-
     render() {
-        const { isFetching, error } = this.state;
         return (
             <div>
                 <h1>Sign In</h1>
-                <SignInForm onSignIn={this.onSignIn} isFetching={isFetching} error={error}/>
+                <SignInForm />
             </div>
         );
     }
 }
 SignIn.propTypes = {
-    signIn: React.PropTypes.func.isRequired,
     user: React.PropTypes.object
 };
 const mapStateToProps = (state) => {
@@ -615,17 +660,15 @@ const mapStateToProps = (state) => {
         user: state.user
     };
 };
-export default connect(mapStateToProps, { signIn })(SignIn);
+export default connect(mapStateToProps)(SignIn);
 ```
 
-The `onSignIn` function is the heart of this page. When it's called, we set `isFetching` to true and remove any errors that were present. Then we call the `signIn` Redux thunk action we defined earlier. If it completes successfully, we set `isFetching` to false and we redirect the user to the home page. If an error occurs during the `signIn` call, we capture it so the form can display it.
+In the `render` function, we define our *SignInForm* component.
 
-In the `render` function, we define our *SignInForm* and pass in the props it cares about.
-
-Notice that we've added a `componentWillMount`. It's purpose is to check if the user is already signed-in. If that's the case, we simply forward them to the Home page.
+Notice that we've added a `componentWillReceiveProps`. When the 'signIn' action is dispatched and the reducer modifies the global state, all components that are both connected to the store and are 'listening' for the part of the state that was modified (ie those that called `mapStateToProps`) will receive new props. In *SignIn.js*, we will receive the 'user' state as a prop, which we check and make sure that the user exists and their role is now 'USER' or 'ADMIN'. If that's the case, we know they are signed in, and we forward them to the *Home* page ('/')!
 
 ### Adding 'hidden' content
-Now that we have a way to sign in, let's greet the signed-in user on the home page! Let's start with something simple to demonstrate the concept. In *Home.js* , let's connect the page to Redux and if the user is signed in, let's display their username. After connecting our component and adding the display of username (if the user is signed in), our component looks like this:
+Now that we have a way to sign in, let's greet the signed-in user on the home page. Let's start with something simple to demonstrate the concept. In *Home.js* , let's connect the page to Redux so it knows about the application state. If the user is signed in, we'll display a welcome message containing their username. After connecting our component and adding the display username (if the user is signed in), our component looks like this:
 
 ```
 import React from 'react';
@@ -637,7 +680,7 @@ class Home extends React.Component {
         return (
             <div>
                 <h1>Home</h1>
-                {user.role === 'MEMBER' && <p>Welcome, {user.username}</p>}
+                { user && user.role && <p>Welcome, {user.username}</p>}
             </div>
         );
     }
@@ -653,7 +696,11 @@ const mapStateToProps = (state) => {
 export default connect(mapStateToProps)(Home);
 ```
 
-If the user has a role of 'MEMBER', they should be signed in currently (otherwise, they would still be a 'GUEST'). If they're a 'MEMBER', we will display their username on the homepage. Easy! Note that this is not a completely fool-proof method of verifying a user is who they say they are. A malicious user could still manipulate the role they are because all of this is being stored and rendered client-side! In a later tutorial, we will add user tokens and server-side authentication so that a malicious user can access and modify only what their token allows them to.
+If the user exists and has a role (meaning they've signed in), we will display a 'Welcome, <username>' message to them.
+
+Now, to really see our authentication working, let's define a restricted route only signed-in users can see:
+
+## Milestone 3: Restricted Route
 
 ### Configuration updates
 Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, and Redux-Thunk to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
@@ -664,3 +711,11 @@ Notice that we've added quite a few libraries as 'dependency's. We'll need to ad
     },
     ...
 ```
+
+### Summary
+That was a lot of stuff! To recap:
+
+1. We created an Express.js API server
+2. We added authentication using JWT
+3. We now have a working Redux implementation that stores our user data
+4. We are using Redux-Form to easily create and manage form state

@@ -1,14 +1,21 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { browserHistory } from 'react-router';
 
 import SignInForm from '../forms/SignInForm';
 
 class SignIn extends React.Component {
+    componentWillReceiveProps(nextProps) {
+        if(nextProps.user && (nextProps.user.role === 'USER' || nextProps.user.role === 'ADMIN')) {
+            browserHistory.push('/');
+        }
+    }
+
     render() {
         return (
             <div>
                 <h1>Sign In</h1>
-                <SignInForm/>
+                <SignInForm />
             </div>
         );
     }

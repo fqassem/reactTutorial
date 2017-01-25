@@ -1,4 +1,3 @@
-import { browserHistory } from 'react-router';
 import { SubmissionError } from 'redux-form';
 
 import AuthenticationService from '../../services/AuthenticationService';
@@ -21,13 +20,10 @@ export const signIn = (values, dispatch) => {
             response.json().then((json) => {
                 dispatch(setUserData(json.userData));
                 AuthenticationService.storeToken(json.token);
-                browserHistory.push('/');
             });
         } else {
-            throw new SubmissionError({ username: 'Bad things', _error: 'You done goofed' });
+            throw new SubmissionError({ _error: 'Invalid Credentials' });
         }
-    }).catch((error) => {
-        throw new Error(error);
     });
 };
 

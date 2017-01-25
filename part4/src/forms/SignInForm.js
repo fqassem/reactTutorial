@@ -9,7 +9,7 @@ class SignInForm extends React.Component {
             <div>
                 <label>{label}</label>
                 <div>
-                    <input {...input} placeholder={label} type={type}/>
+                    <input {...input} placeholder={label} type={type} />
                     {touched && error && <span>{error}</span>}
                 </div>
             </div>
@@ -21,12 +21,12 @@ class SignInForm extends React.Component {
         return (
             <form onSubmit={handleSubmit(signIn)}>
                 { submitting && <div>Loading gif</div> }
-                { error && <div>Sign In Failed</div> }
+                { error && <div>{ error }</div> }
                 <div>
-                    <Field name="username" label="Username" type="text" component={this.renderField}/>
+                    <Field name="username" label="Username" type="text" component={this.renderField} />
                 </div>
                 <div>
-                    <Field name="password" label="Password" type="password" component={this.renderField}/>
+                    <Field name="password" label="Password" type="password" component={this.renderField} />
                 </div>
                 <button type="submit" disabled={pristine || submitting} >Sign In</button>
             </form>
