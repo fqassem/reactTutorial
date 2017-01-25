@@ -228,6 +228,11 @@ This is a pretty standard POST request. After we verify that our request contain
 
 Run our application, open up a rest client, and make a POST request to 'localhost:8001/api/signIn' with 'username' of 'tomjones' and 'password' of 'password'. You should receive a 200 OK with 'tomjones' token and information in the response.
 
+Finally, let's make this API accessible on the client-side. In the *src* folder, create a *services* folder with a file called *AuthenticationService.js* and the following contents:
+
+```
+```
+
 ### Security
 Remember that plain-text passwords are not secure over HTTP. You must use *HTTPS* to secure your user's information in a POST request while they are in transit from client to server.
 
@@ -380,7 +385,7 @@ Create a *state* folder in the *src* folder of the application. This is where al
 3. *user/InitialUserState.js*, an object the describes the shape of the 'user' state
 4. *user/index.js*, where all of our user related actions, action creators, and reducers live
 
-Note that we will be using a Redux 'philosophy' called '[Ducks](https://github.com/erikras/ducks-modular-redux)'. 'Ducks' keeps the Redux boiler-plate self-contained and easier to manage. The alternative is to define actions, action creators, and reducers in separate folders/files, which gets tedious when you need access to related files.
+Note that we will be using a Redux 'philosophy' called '[Ducks](https://github.com/erikras/ducks-modular-redux)'. 'Ducks' keeps the Redux boiler-plate self-contained and easier to manage. The alternative is to define actions and reducers in separate folders/files, which gets tedious when you need access to related files.
 
 Also note that we are calling some files *index.js*. *index.js* is a special file name that can be imported easily in other files simply by referring to the path of the containing folder. For example, if I wanted to refer to the file that contains our user actions, creators, and reducers, rather than doing this:
 
@@ -390,68 +395,23 @@ import stuff from './redux/user/index.js'
 
 you can shorten the path to just `'./redux/user'`. It's a very useful shorthand!
 
-Let's define each of these files, starting with the *InitialUserState*
+Let's define each of these files, starting with the *InitialUserState*:
 
 #### src/state/user/InitialUserState.js
 ```
 export default {
-    id: null,
     firstName: null,
     lastName: null,
     username: null,
     email: null,
-    role: 'GUEST'
+    role: null
 };
 ```
-A default user should have no id, firstName, lastName, userName, or email. They should also have a role of 'GUEST', signifying they are not signed in.
+
+A default user should have no firstName, lastName, userName, email, or role - signifying they are not signed in.
 
 #### src/state/user/index.js
 ```
-import InitialUserState from './InitialUserState';
-
-//Action constants
-export const SET_USER_DATA = 'SET_USER_DATA';
-
-//Actions
-export const setUserData = (userData) => {
-    return { type: SET_USER_DATA, userData };
-};
-
-export const signIn = (credentials) => {
-    return (dispatch) => {
-        return new Promise(
-            (resolve, reject) => {
-                setTimeout(() => {
-                    if(credentials.username !== 'fail') {
-                        dispatch(setUserData({
-                            id: 1,
-                            firstName: 'Tom',
-                            lastName: 'Jones',
-                            username: 'tomjones',
-                            email: 'tomjones@gmail.com',
-                            role: 'MEMBER'
-                        }));
-                        resolve();
-                    } else {
-                        reject(Error('Username or password was invalid'));
-                    }
-                }, 2000);
-            }
-        );
-    };
-};
-
-//Reducer
-export default (state = InitialUserState, action) => {
-    switch(action.type) {
-        case SET_USER_DATA: {
-            const userData = action.userData;
-            return Object.assign({}, state, userData );
-        }
-        default:
-            return state;
-    }
-};
 ```
 
 To get us started, let's create the sign-in functionality. We define two actions: `setUserData`, a pure Redux action creator, and `signIn`, an asynchronous 'thunk' action. `signIn` is currently a placeholder until we plug in an actual backend, but it will behave similarly to a 'fetch' or 'XMLHttpRequest'. Unless the username we sign in with is 'fail', the hard-coded user data will be added to the state by the reducer, the promise will be resolved, and the user will be signed-in.
@@ -467,7 +427,7 @@ export default combineReducers({
 });
 ```
 
-As we define more reducers, we'll add them to this file. Finally, let's add this root reducer to our main *index.js* in the root of our application (where we create our store):
+This is our root reducer - a reducer that contains all of our other reducers. As we define more reducers, we'll add them to this file. Finally, let's add this root reducer to our main *index.js* in the root of our application (where we create our store):
 
 ```
 import rootReducer from './state'; //import the root reducer
@@ -482,70 +442,60 @@ const rootElement = document.getElementById('root');
 
 Now, we've got our reducer hooked up to our store. If we run our application, nothing useful will happen because we're not calling our `signIn` function any where! Let's fix that in the next section.
 
-### Adding sign-in form
-We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our signIn state management, let's create a 'sign-in' form. Let's create a new folder that houses the forms we're goign to create. In the root of our application, create a *src/forms* folder. Within this folder, create a *SignInForm.js* file:
+### Setting up Redux-Form
+We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our signIn API and page, let's create a 'sign-in' form. We need to set up Redux-Form. Redux-Form has its own reducer that we need to add to our applications root reducer. In *src/state/index.js*, `import { reducer as formReducer } from 'redux-form';`. Next, add `form: formReducer` to our `combineReducers` function. After we're done, *src/state/index.js* should look like this:
+
+```
+import { combineReducers } from 'redux';
+import { reducer as formReducer } from 'redux-form';
+
+import user from './user';
+
+export default combineReducers({
+    user,
+    form: formReducer
+});
+```
+
+Now, the infrastructure for Redux-Form is all set up! Let's get started creating an actual form. In the root of our application, create a *src/forms* folder. Within this folder, create a *SignInForm.js* file:
 
 ```
 import React from 'react';
+import { Field, reduxForm, propTypes } from 'redux-form';
 
 class SignInForm extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            username: '',
-            password: ''
-        };
-    }
-
-    onSignIn = (event) => {
-        const { username, password } = this.state;
-        event.preventDefault();
-
-        this.props.onSignIn(username, password); //call the passed in onSignIn function
-    }
-
-    handleUsernameChange = (event) => {
-        const newUsername = event.target.value;
-        this.setState({
-            username: newUsername
-        });
-    }
-
-    handlePasswordChange = (event) => {
-        const newPassword = event.target.value;
-        this.setState({
-            password: newPassword
-        });
-    }
+    renderField = ({ input, label, type, meta: { touched, error } }) => {
+        return (
+            <div>
+                <label>{label}</label>
+                <div>
+                    <input {...input} placeholder={label} type={type}/>
+                    {touched && error && <span>{error}</span>}
+                </div>
+            </div>
+        );
+    };
 
     render() {
-        const { username, password } = this.state;
-        const { isFetching, error } = this.props;
+        const { handleSubmit, pristine, submitting } = this.props;
         return (
-            <form onSubmit={this.onSignIn}>
-                { isFetching && <div>Loading gif</div> }
-                { error && <div>{error.message}</div> }
+            <form onSubmit={handleSubmit}>
+                { submitting && <div>Loading gif</div> }
                 <div>
-                    <label>Username</label>
-                    <input type="text" placeholder="Username" name="username"
-                      onChange={this.handleUsernameChange} value={username}/>
-
-                    <label>Password</label>
-                    <input type="password" placeholder="Password" name="password"
-                      onChange={this.handlePasswordChange} value={password}/>
-
-                    <button type="submit">Sign In</button>
+                    <Field name="username" label="Username" type="text" component={this.renderField}/>
                 </div>
+                <div>
+                    <Field name="password" label="Password" type="password" component={this.renderField}/>
+                </div>
+                <button type="submit" disabled={pristine || submitting} >Sign In</button>
             </form>
         );
     }
 }
 SignInForm.propTypes = {
-    onSignIn: React.PropTypes.func.isRequired,
-    isFetching: React.PropTypes.bool.isRequired,
-    error: React.PropTypes.object.isRequired
+    ...propTypes
 };
-export default SignInForm;
+export default reduxForm({ form: 'signInForm' })(SignInForm);
 ```
 
 This is a fairly barebones form. It accepts three props:
