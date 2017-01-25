@@ -1,4 +1,4 @@
-# Part 4: Back-end, State Management, Forms, Sign-in, and Restricted-Routes
+# Part 4: Back-end, State Management, Forms, and Sign-in
 In this part, we will create a simple Express.js backend for our application to make real REST API calls. We won't create an actual database component, but it should be simple enough to add if you wanted to (see an example [here](https://blog.risingstack.com/node-js-database-tutorial/).
 
 Next, we'll focus on adding state management to our application using [Redux](http://redux.js.org/). Redux is a popular and very powerful state management library based on [Flux](https://facebook.github.io/flux/), an application architecture popularized by Facebook. We'll also want a way to manage our application's forms, so we will use [Redux-Form](http://redux-form.com/6.4.3/) to make creating, updating, and using forms quick and easy.
@@ -24,6 +24,7 @@ Server code - not everyone's cup of tea. You're welcome to skip this part if you
 In the root of our application, let's create a file called *apiServer.js*. This file will hold all of the code for our back-end server. Let's piece it together:
 
 ```
+/* eslint consistent-return: 0 */
 import express from 'express';
 
 const api = express();
@@ -52,7 +53,7 @@ api.use('/api', router);
 export default api;
 ```
 
-This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our API calls.
+This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our API calls. We turn off the ESLint rule 'consistent-return' because our '/signIn' API's actual return will be nested in an asynchronous function.
 
 Next, we create two simple sample 'test' APIs - a GET and a POST. We also add some CORS configuration so that the server and client play nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues, so using this config in production would necessitate some [changes](https://www.w3.org/wiki/CORS_Enabled).
 
@@ -698,10 +699,6 @@ export default connect(mapStateToProps)(Home);
 
 If the user exists and has a role (meaning they've signed in), we will display a 'Welcome, <username>' message to them.
 
-Now, to really see our authentication working, let's define a restricted route only signed-in users can see:
-
-## Milestone 3: Restricted Route
-
 ### Configuration updates
 Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, and Redux-Thunk to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
 
@@ -719,3 +716,5 @@ That was a lot of stuff! To recap:
 2. We added authentication using JWT
 3. We now have a working Redux implementation that stores our user data
 4. We are using Redux-Form to easily create and manage form state
+
+In the next part of the tutorial, we'll be creating the register, edit profile, and sign-out functionality. We'll create the necessary pages and API calls to make it work. In this part, we saw how to show 'restricted' information to signed-in users by displaying 'Welcome, <username>'. We'll take this a step further by protecting some of our routes from being accessed by unauthenticated users and authenticating our TBD 'editProfile' API so that only users with valid JWTs can call that API!

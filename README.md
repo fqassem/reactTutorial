@@ -44,10 +44,10 @@ Production Build and Testing
 Back-end, State Management, Forms, and Sign-in
 
 ## [Part 5](https://github.com/precorFadiQassem/reactTutorial/tree/master/part5)
-Navbar, Sign-out, Register, and Protected Routes
+Protected Routes, Sign-out, Edit Profile, and Register
 
 ## [Part 6](https://github.com/precorFadiQassem/reactTutorial/tree/master/part6)
-SASS support and Susy
+Navbar, Localization, SASS support, and Susy
 
 ## [Part 7](https://github.com/precorFadiQassem/reactTutorial/tree/master/part7)
 Progressive Web App Overview, Service Workers

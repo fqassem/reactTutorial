@@ -1,3 +1,4 @@
+/* eslint consistent-return: 0 */
 import express from 'express';
 import bodyParser from 'body-parser';
 import bcrypt from 'bcrypt';
