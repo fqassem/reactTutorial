@@ -357,7 +357,8 @@ export default function createApplicationStore() {
 
     if(process.env.NODE_ENV === 'development' && module.hot) {
         module.hot.accept('./rootReducer', () => {
-            store.replaceReducer(require('./rootReducer').default);
+            const nextReducer = require('./rootReducer').default;
+            store.replaceReducer(nextReducer);
         });
     }
 
