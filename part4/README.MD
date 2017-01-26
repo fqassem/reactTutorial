@@ -253,7 +253,7 @@ const TOKEN_KEY = 'TUTORIAL_APP_TOKEN_KEY';
 
 class AuthenticationService {
     static signIn(username, password) {
-        return fetch(`${API_ENDPOINT}/signIn`, {
+        return fetch(`${API_ENDPOINT}signIn`, {
             method: 'POST',
             body: `username=${username}&password=${password}`,
             headers: {
@@ -275,12 +275,12 @@ This service is simply an abstraction over the fetch and sessionStorage APIs. Yo
 Remember that communication is not secure over HTTP. In a real application, you must use **HTTPS** to secure your user's password and  token.
 
 ## Milestone 2: State Management with Redux
-Now that our signIn API is in place, let's switch to our client-side code and create the code for our authentication flow. We'll start by setting up Redux and Redux-Form. Then we'll create a protected resource only authorized user's can access.
+Now that our signIn API is in place, we can use it to authenticate our user 'tomjones'. We need to create a UI for the authentication flow and implement state management for the application as a whole. We'll start by setting up Redux and Redux-Form. Then we'll demonstrate that our authentication is successful by displaying a message to a signed-in user.
 
 ### Setting up the store
 The bigger a React application gets, the harder it becomes to deal reason about state. It's definitely possible to write React applications by just using `ReactComponent.setState()` calls. However, the more code you write, the more difficult it becomes to share state between components. This is especially true if the components attempting to share state don't have a parent-child relationship.
 
-There are quite a few libraries that allow you to manage state more efficiently. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is based on 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. Redux is extremely powerful, but it comes at the cost of writing a bit of boilerplate code. There are libraries to help alleviate this problem, but we'll stick to using plain old Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, so we won't be going too in-depth about all of its features. For a detailed Redux tutorial, checkout Egghead.io's [tutorial](https://egghead.io/courses/getting-started-with-redux) by Dan Abramov - the creator of the library.
+There are quite a few libraries that allow you to manage state more efficiently. One of the most popular is **Redux**. Redux is a predictable state container for JavaScript apps based on **Flux**, an architecture for maintaining application state created by Facebook. Redux is utilizes 'functional programming', so it may be hard to reason about initially if you are unfamiliar with this paradigm. Redux is extremely powerful, but it comes at the cost of writing a bit of boilerplate code. There are libraries to help alleviate this problem, but we'll stick to using plain old Redux in this tutorial. Again, this is not a full-fledged Redux tutorial, so we won't be going too in-depth about all of its features. For a detailed Redux tutorial, checkout Egghead.io's [tutorial](https://egghead.io/courses/getting-started-with-redux) by Dan Abramov - the creator of the library.
 
 ### Quick Redux Overview
 If you've never seen or heard of Redux, this is a quick summary of what it is, why we use it, and how it works:
@@ -289,29 +289,26 @@ If you've never seen or heard of Redux, this is a quick summary of what it is, w
 Redux is a globally accessible, predictable state container for JavaScript applications based on [functional programming](https://medium.com/javascript-scene/master-the-javascript-interview-what-is-functional-programming-7f218c68b3a0#.2quwdduyi) concepts.
 
 #### Why use Redux?
-For large-scale React (or plain old JavaScript) applications, state can quickly become murky and hard to manage when it's divided amongst many disconnected components. Redux avoids this by giving state a defined place to live, making it globally accessible, and giving it an element of predictability.
+For large-scale React (or plain old JavaScript) applications, state can quickly become murky and hard to manage when it's divided among many disconnected components. Redux avoids this by making state globally accessible and predictable.
 
 But isn't global bad? We've been trained to believe this since we wrote our first 'Hello, world' program. The whole idea of 'global === bad' stems mostly from difficulty of debugging. If it's global, anything can modify it, which makes it hard to trace what happened and what caused the change. Since Redux state is easily tracked and managed, it doesn't suffer from this drawback. Every action is traceable and every state modification is recorded (and can even be reversed!).
 
 #### How does it work?
-In Redux, there is a global state object (the 'store') in which we *store* our application's state. We never modify the store directly. Any time we need to modify the store, we dispatch an action with a type and some payload. The store uses reducers that we define (or import) that listen for specific actions and modify the store accordingly. The reducers should behave predictably because they are defined as pure functions, meaning our store and our application state should behave predictably as well.
+In Redux, there is a global state object (the 'store') in which we *store* our application's state. We never modify the store directly. Any time we need to modify the store, we dispatch an action with a type and some payload. The store uses reducers that we define (or import) that listen for specific actions and modify the application state accordingly. The reducers should behave predictably because they are defined as pure functions, meaning our store and our application state should behave predictably as well.
 
 ### Redux
 Let's install and setup Redux in our application.
 
 ```
-npm install --save redux
-npm install --save react-redux
+npm install --save redux react-redux redux-thunk
 npm install --save-dev redux-logger
-
-npm install --save redux-thunk
 ```
 
 These libraries are installed as regular 'dependency's because the browser needs them to manage application state. **React-Redux** is a library that includes useful bindings for more easily using Redux and React together. It's not necessary, but it makes development much nicer. **Redux-Logger** is a very useful middleware we can use during development to output our current store to the console in our browser's debugger.
 
-We'll also need another middleware called 'Redux-Thunk' so we can write clean, asynchronous actions in Redux. We need asynchronous actions to make calls to our back-end. Check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/) for the reasoning behind thunk. To summarize, writing asynchronous actions while obeying the laws of 'pure functions' can get ugly. The 'redux-thunk' middleware makes it slightly less ugly. Easy-peasy.
+We'll also need another middleware called [**Redux-Thunk**]( so we can write clean, asynchronous actions in Redux. We need asynchronous actions to make calls to our back-end. Check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/) for the reasoning behind it. To summarize, writing asynchronous actions while obeying the laws of 'pure functions' can get ugly. The 'redux-thunk' middleware makes it slightly less ugly. Easy-peasy. Note that there are a dozen ways to create asyncrhonous actions in Redux. If you don't like Redux-Thunk, check out the alternatives listed [here](https://medium.com/@jtbennett/asynchronous-actions-in-redux-8412cf92a26f#.aib0dex2g)
 
-Let's first set up the Redux store. Open up *src/Main.js*. Let's `import 'Provider' from 'react-redux';` and add it to our app. 'Provider' connects our React components to the Redux store. We'll only have to set it up here at the root component of our app. 'Provider' accepts a 'store' prop, which we will pass in from *index.js* much like we do for the `routes` prop. Your *Main.js* file should look like this now:
+Let's first set up the Redux store. Open up *src/Main.js*. Let's `import { Provider } from 'react-redux';` and add it to our app. 'Provider' connects our React components to the Redux store. We'll only have to set it up here at the root component of our app. 'Provider' accepts a 'store' prop, which we will pass in from *index.js* much like we do for the `routes` prop. Your *Main.js* file should look like this now after we wrap 'Router' with 'Provider' and add 'store' to the propTypes.
 
 ```
 import React from 'react';
@@ -334,9 +331,9 @@ Main.propTypes = {
 export default Main;
 ```
 
-Now, let's create the store and pass it in to Provider. Our store will have different functionality depending on if we're in development or production. Let's abstract this logic into its own file. Create a *src/state* folder and a *createApplicationStore.js* file that lives within it. `import { createStore } from 'redux';`. This is the library function we will use to create our store. It accepts a root reducer as a parameter. Since we haven't defined any reducers yet, let's simply define an empty function as a placeholder.
+Now, let's create the store and pass it in to Provider. Our store will have different functionality depending on if we're in development or production. Rather than polluting our 'main' project files, let's abstract this logic into its own file. Create a *src/state* folder and a *createApplicationStore.js* file that lives within it. `import { createStore } from 'redux';`. This is the library function we will use to create our store. It accepts a root reducer as a parameter. Let's quickly create a placeholder 'rootReducer'. Inside *src/state*, create a *rootReducer.js* file that simply contains `export default () => {};` as a placeholder empty reducer.
 
-We'll need to `import { applyMiddleware } from 'redux';`, which tells the Redux store we'll be using some middleware that we'll pass in as parameters. We'll add Redux-Thunk and Redux-Logger middleware (`import thunk from 'redux-thunk';` and `import createLogger from 'redux-logger';`) as parameters to `applyMiddleware`. Keep in mind that for Redux-Logger to work properly, it has to be the last middleware in the chain. We don't want Redux-Logger in our production build, so we only apply it if we're in 'development'.
+Now, back in *createApplicationStore.js*, we'll need to `import { applyMiddleware } from 'redux';`, which tells the Redux store we'll be using some middleware that we'll pass in as parameters. We'll add Redux-Thunk and Redux-Logger middleware (`import thunk from 'redux-thunk';` and `import createLogger from 'redux-logger';`) as parameters to `applyMiddleware`. Keep in mind that for Redux-Logger to work properly, it has to be the last middleware in the chain. We don't want Redux-Logger in our production build, so we only apply it if we're in 'development'.
 
 Our *createApplicationStore.js* should look like this:
 
@@ -369,7 +366,7 @@ export default function createApplicationStore() {
 
 Notice that it includes logic for hot reloading the reducers if we are in development.
 
-Now, let's open up *src/index.js* and create our store. `import createStore from './state/createApplicationStore'`. At the top of the file, we create the store `const store = createStore();` and add it to our `Main` component's props. While we're at it, let's clean the file up a bit by removing some duplication. Instead of us calling `document.getElementById('root')` multiple times in this file, let's replace it with `rootElement` constant we define at the top of the file.
+Now, let's open up *src/index.js* and create our store. `import createStore from './state/createApplicationStore';`. At the top of the file, we create the store `const store = createStore();` and add it to our `Main` component's props. While we're at it, let's clean the file up a bit by removing some duplication. Instead of us calling `document.getElementById('root')` multiple times in this file, let's replace it with `rootElement` constant we define at the top of the file. You may also remove the duplication of the 'render' function, but can do that on your own time!
 
 So, now our *src/index.js* file looks like this:
 ```
@@ -381,25 +378,20 @@ import createApplicationStore from './state/createApplicationStore';
 import routes from './pages/routes';
 import Main from './Main';
 
-const store = createApplicationStore();
+const store = createApplicationStore(); //create Redux store
 const rootElement = document.getElementById('root');
 
 render(<AppContainer>
-            <Main routes={routes} store={store} />
+            <Main routes={routes} store={store} /> //add store to props
         </AppContainer>,
         rootElement);
 
 if(process.env.NODE_ENV === 'development' && module.hot) {
-    module.hot.accept('./state/', () => {
-        const nextReducer = require('./state').default;
-        store.replaceReducer(nextReducer);
-    });
-
     module.hot.accept('./pages/routes', () => {
         const updatedRoutes = require('./pages/routes').default;
         render(
             <AppContainer>
-                <Main routes={updatedRoutes} store={store} />
+                <Main routes={updatedRoutes} store={store} /> //add store to props
             </AppContainer>,
             rootElement
         );
