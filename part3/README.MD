@@ -4,7 +4,7 @@ So far, we've defined a project build that should only be used in development. L
 Next, we'll add a testing framework to our application so we can be sure our code is solid when it gets deployed to production!
 
 ## Milestone 1: Production build
-So far, we've had only one config file for our build - the development build. Let's modify our config to support production as well! Let's also split out our framework code from our application code during the build. We do this in order to cache the framework code on the client's browser so we don't have to pull it in every time they visit our app! This will lead to a significantly smaller download for our users on subsequent loads of our website. We had set up a very rudimentary version of caching in part 1. Throught this part of the tutorial, we'll make caching more fine-grained and even more useful.
+So far, we've had only one config file for our build - the development build. Let's modify our config to support production as well! Let's also split out our framework code from our application code during the build. We do this in order to cache the framework code on the client's browser so we don't have to pull it in every time they visit our app! This will lead to a significantly smaller download for our users on subsequent loads of our website. We had set up a very rudimentary version of caching in part 1. In this part of the tutorial, we'll make caching more fine-grained and even more useful.
 
 Let's organize our configs inside a 'config' folder. In the root of our app, create a *config* folder and create three files:
 * *webpack.base.config.js*
