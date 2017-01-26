@@ -300,11 +300,11 @@ In Redux, there is a global state object (the 'store') in which we *store* our a
 Let's install and setup Redux in our application.
 
 ```
-npm install --save redux react-redux redux-thunk
+npm install --save redux react-redux redux-thunk redux-form
 npm install --save-dev redux-logger
 ```
 
-These libraries are installed as regular 'dependency's because the browser needs them to manage application state. **React-Redux** is a library that includes useful bindings for more easily using Redux and React together. It's not necessary, but it makes development much nicer. **Redux-Logger** is a very useful middleware we can use during development to output our current store to the console in our browser's debugger.
+These libraries are installed as regular 'dependency's because the browser needs them to manage application state. **React-Redux** is a library that includes useful bindings for more easily using Redux and React together. It's not necessary, but it makes development much nicer. **Redux-Logger** is a very useful middleware we can use during development to output our current store to the console in our browser's debugger. **Redux-Form** is a library we'll be setting up later to easily create and manage forms.
 
 We'll also need another middleware called [**Redux-Thunk**]( so we can write clean, asynchronous actions in Redux. We need asynchronous actions to make calls to our back-end. Check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/) for the reasoning behind it. To summarize, writing asynchronous actions while obeying the laws of 'pure functions' can get ugly. The 'redux-thunk' middleware makes it slightly less ugly. Easy-peasy. Note that there are a dozen ways to create asyncrhonous actions in Redux. If you don't like Redux-Thunk, check out the alternatives listed [here](https://medium.com/@jtbennett/asynchronous-actions-in-redux-8412cf92a26f#.aib0dex2g)
 
@@ -331,7 +331,7 @@ Main.propTypes = {
 export default Main;
 ```
 
-Now, let's create the store and pass it in to Provider. Our store will have different functionality depending on if we're in development or production. Rather than polluting our 'main' project files, let's abstract this logic into its own file. Create a *src/state* folder and a *createApplicationStore.js* file that lives within it. `import { createStore } from 'redux';`. This is the library function we will use to create our store. It accepts a root reducer as a parameter. Let's quickly create a placeholder 'rootReducer'. Inside *src/state*, create a *rootReducer.js* file that simply contains `export default () => {};` as a placeholder empty reducer.
+Now, let's create the store and pass it in to Provider. Our store will have different functionality depending on if we're in development or production. Rather than polluting our 'main' project files, let's abstract this logic into its own file. Create a *src/state* folder and a *createApplicationStore.js* file that lives within it. `import { createStore } from 'redux';`. This is the library function we will use to create our store. It accepts a root reducer as a parameter. Let's quickly create a placeholder 'rootReducer'. Inside *src/state*, create a *rootReducer.js* file that simply contains `export default () => {};` as a placeholder empty reducer. We'll replace this with something more concrete in a bit.
 
 Now, back in *createApplicationStore.js*, we'll need to `import { applyMiddleware } from 'redux';`, which tells the Redux store we'll be using some middleware that we'll pass in as parameters. We'll add Redux-Thunk and Redux-Logger middleware (`import thunk from 'redux-thunk';` and `import createLogger from 'redux-logger';`) as parameters to `applyMiddleware`. Keep in mind that for Redux-Logger to work properly, it has to be the last middleware in the chain. We don't want Redux-Logger in our production build, so we only apply it if we're in 'development'.
 
@@ -342,8 +342,9 @@ import { createStore, applyMiddleware } from 'redux';
 import createLogger from 'redux-logger';
 import thunk from 'redux-thunk';
 
+import rootReducer from './rootReducer';
+
 export default function createApplicationStore() {
-    const rootReducer = () => {};
     let middleware = [];
 
     if(process.env.NODE_ENV !== 'development') {
@@ -406,14 +407,14 @@ Now, we have our Redux and our middleware set up. Let's actually do some cool st
 ### Actions, Reducers, and State Shape
 Now that we have a store and middleware set up, we need our store to do something useful. What do we want our store to keep track of?
 
-Let's think about the website we want to create to demonstrate our framework's features. At minimum, we'd like the following capabilities:
+Let's think about the website we want to create. At minimum, we'd like the following capabilities:
 
 * Register
 * Sign-in
 * Sign-out
 * Edit profile
 
-These are pretty standard features for any website. These features are essentially 'actions' that a user can perform by clicking a button or submitting a form. These will match with the API calls we can make to the server. What is a user? We defined our user in the Express.js backend code we created!
+These are pretty standard features for any website. They are essentially 'actions' that a user can perform by clicking a button or submitting a form. What is a user? We defined our user in the Express.js backend code we created:
 
 ```
 {
@@ -421,19 +422,20 @@ These are pretty standard features for any website. These features are essential
 }
 ```
 
-Our users will interact with the backend via forms. How do forms fit in the Redux ecosystem?
+We'll store this data in our Redux store when we recieve it from our 'signIn' API. Of course the possiblity of it becoming out-of-date arises if, for example, our user were to modify their data in a hypotheitcal mobile app version of our website. Syncing state is an interesting topic outside the scope of this tutorial, but here are two links to get you thinking about this possibility: [link one](https://tonyhb.gitbooks.io/redux-without-profanity/content/ch1.1-syncing-data.html) and [link two](https://blog.yld.io/2015/11/30/building-realtime-collaborative-offline-first-apps-with-react-redux-pouchdb-and-web-sockets/#.WImA4rYrJE4)
 
-Let's step back and ask ourselves: When is it right to store state in Redux? When should we use `ReactComponent.setState()`? Can we use both? When creating components, we should consider if other parts of the application need access to the component's state. Will other parts of the application affect the state of this component? Will the state of the component need to be kept after the it's unmounted from the DOM? If the answer to these questions is no, we can get away with just using `ReactComponent.setState()` for component-level state.
+Our users will interact with the backend via forms to register, sign-in, edit data, and sign-out. How do forms fit in the Redux ecosystem?
 
-However, this isn't set in stone. There are many reasons for keeping all of your state in Redux. However, the flip-side isn't true. You shouldn't store all of your state in your components. That's the whole reason we're using Redux in the first place! The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll use **Redux-Form** to manage our form state, so naturally it will be kept in Redux. We will use `ReactComponent.setState()` where it makes sense. This will become clear with experience.
+Let's step back and ask ourselves: When is it right to store state in Redux? When should we use `ReactComponent.setState()`? Can we use both? When creating components, we should consider if other parts of the application need access to the component's state. Will other parts of the application affect the state of this component? Will the state of the component need to be kept after the it's unmounted from the DOM? If the answer to these questions is no, we can get away with just using `ReactComponent.setState()` for component-level state. Generally this reduces to the following - use Redux for your application state and `setState` for your UI state.
+
+However, this isn't set in stone. There are many reasons for you can keep all of your state in Redux. However, the flip-side isn't true. You shouldn't store all of your state in your components. That's the whole reason we're using Redux in the first place! The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll use **Redux-Form** to manage our form state, so naturally it will be kept in Redux. We will use `ReactComponent.setState()` where it makes sense. This will become clear with experience. For a more detailed discussion, visit this [link](https://medium.freecodecamp.com/where-do-i-belong-a-guide-to-saving-react-component-data-in-state-store-static-and-this-c49b335e2a00).
 
 ### User state
 Inside of *src/state*, create the following:
 
-1. *rootReducer.js*, where our root reducer will live
-2. *user* folder, where our user related state management will live
-3. *user/InitialUserState.js*, an object the describes the shape of the 'user' state
-4. *user/index.js*, where all of our user related actions, action creators, and reducers live
+1. *user* folder, where our user related state management will live
+2. *user/InitialUserState.js*, an object the describes the shape of the 'user' state
+3. *user/index.js*, where all of our user related actions, action creators, and reducers live
 
 Note that we will be using a Redux 'philosophy' called '[Ducks](https://github.com/erikras/ducks-modular-redux)'. 'Ducks' keeps the Redux boiler-plate self-contained and easier to manage. The alternative is to define actions and reducers in separate folders/files, which gets tedious when you need access to related files.
 
@@ -458,7 +460,7 @@ export default {
 };
 ```
 
-A default user should have no firstName, lastName, userName, email, or role - signifying they are not signed in.
+A default user should have no firstName, lastName, userName, email, or role - signifying they are not signed in. I like keeping the initial state in a separate file from the rest of the related Redux code, but this is simply personal preference.  
 
 #### src/state/user/index.js
 ```
@@ -505,9 +507,9 @@ export default (state = InitialUserState, action) => {
 };
 ```
 
-To get us started, let's create the sign-in functionality. We define two actions: `setUserData`, a pure Redux action creator, and `signIn`, an asynchronous 'thunk' action (an action that returns a function). When the `signIn` action is dispatched, our AuthenticationService's `signIn` function is called so we can sign the user in. When it succeeds, we dispatch `setUserData`, with the user's data we retrieved from the backend. The reducer then takes this data and stuffs it into the state.
+We define two actions: `setUserData`, a pure Redux action and constant, and `signIn`, an asynchronous 'thunk' action. When the `signIn` action is dispatched, our AuthenticationService's `signIn` function is called so we can sign the user in. When it succeeds, we dispatch `setUserData`, with the user's data we retrieved from the backend. The reducer then takes this data and stuffs it into the state.
 
-Now that we have our user reducer and initial state defined, let's define our root reducer. In the *state* folder, create a file called *rootReducer.js*:
+Now that we have our user reducer and initial state defined, let's define our root reducer. In the *src/state* folder, open the *rootReducer.js* file and clear out the old placeholder code. Add the following:
 
 ```
 import { combineReducers } from 'redux';
@@ -518,40 +520,12 @@ export default combineReducers({
 });
 ```
 
-This is our root reducer - a reducer that contains all of our other reducers. As we define more reducers, we'll add them to this file. Finally, let's add this root reducer to our createStore function in *src/state/createApplicationStore.js*. Remember that the rootReducer is the first parameter to Redux's `createStore` library function. Let's also get rid of the placeholder do-nothing rootReducer we had in the file before. When we're done, our file will look like this:
-
-```
-import { createStore, applyMiddleware } from 'redux';
-import createLogger from 'redux-logger';
-import thunk from 'redux-thunk';
-
-import rootReducer from './rootReducer';
-
-export default function createApplicationStore() {
-    let middleware = [];
-
-    if(process.env.NODE_ENV !== 'development') {
-        middleware = [...middleware, thunk];
-    } else {
-        middleware = [...middleware, createLogger()];
-    }
-
-    const store = createStore(rootReducer, applyMiddleware(...middleware));
-
-    if(process.env.NODE_ENV === 'development' && module.hot) {
-        module.hot.accept('./rootReducer', () => {
-            store.replaceReducer(require('./rootReducer').default);
-        });
-    }
-
-    return store;
-}
-```
+This is our root reducer - a reducer that combines all of our other reducers used to initialize our store. As we define more reducers, we'll add them to this file. 
 
 Now, we've got our reducer hooked up to our store. If we run our application, nothing useful will happen because we're not calling our `signIn` function any where! Let's fix that in the next section.
 
 ### Setting up Redux-Form
-We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our signIn API and page, let's create a 'sign-in' form. We need to set up Redux-Form. Redux-Form has its own reducer that we need to add to our applications root reducer. In *src/state/index.js*, `import { reducer as form } from 'redux-form';`. Next, add `form` to our `combineReducers` function. After we're done, *src/state/index.js* should look like this:
+We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our signIn API and page, let's create a 'sign-in' form. We need to set up Redux-Form. Redux-Form has its own reducer that we need to add to our applications root reducer. In *src/state/rootReducer.js*, `import { reducer as form } from 'redux-form';`. Next, add `form` to our `combineReducers` function. After we're done, *src/state/rootReducer.js* should look like this:
 
 ```
 import { combineReducers } from 'redux';
@@ -565,7 +539,7 @@ export default combineReducers({
 });
 ```
 
-Now, the infrastructure for Redux-Form is all set up! Let's get started creating an actual form. In the root of our application, create a *src/forms* folder. Within this folder, create a *SignInForm.js* file:
+Now, the infrastructure for Redux-Form is all set up! Notice were using shorthand for 'user: user' and 'form: form'. The Redux-Form reducer must be named 'form' for it to function correctly. Let's get started creating an actual form. In the root of our application, create a *src/forms* folder. Within this folder, create a *SignInForm.js* file:
 
 ```
 import React from 'react';
@@ -621,7 +595,7 @@ SignInForm.propTypes = {
 export default reduxForm({ form: 'signInForm', validate })(SignInForm);
 ```
 
-This is a fairly barebones 'Redux-Form' form. To understand this better, check out the Redux-Form documentation and examples [here](http://redux-form.com/6.4.3/docs/GettingStarted.md/). The main things to note are that `error`, `handleSubmit`, `pristine`, and `submitting` are all provided to us by Redux-Form and inform us about the current state of the form via props. We decorate our form component in the `export` with `reduxForm` to transform our plain old React Component form into one decorated with Redux-Form.
+This is a fairly barebones 'Redux-Form' form. To understand this better, check out the Redux-Form documentation and examples [here](http://redux-form.com/6.4.3/docs/GettingStarted.md/). The main things to note are that `error`, `handleSubmit`, `pristine`, and `submitting` are all provided to us by Redux-Form and inform us about the current state of the form via props. We decorate our form component in the `export` with `reduxForm` to transform our plain old React Component form into one decorated with Redux-Form. When our form is submitted, the `signIn` thunk action we defined in the previous section will be called and a request to the backend is made.
 
 We don't check username or password length, but that should be fairly trivial to implement on your own. Notice that there is zero state being kept in this component. Everything it needs will be passed in by props.
 
@@ -695,7 +669,7 @@ const mapStateToProps = (state) => {
 export default connect(mapStateToProps)(Home);
 ```
 
-If the user exists and has a role (meaning they've signed in), we will display a 'Welcome, <username>' message to them.
+If the user exists and has a role (meaning they've signed in), we will display a 'Welcome, *username*' message to them.
 
 ### Configuration updates
 Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, and Redux-Thunk to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
