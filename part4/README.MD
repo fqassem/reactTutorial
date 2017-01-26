@@ -1,15 +1,15 @@
 # Part 4: Back-end, State Management, Forms, and Sign-in
-In this part, we will create a simple Express.js backend for our application to make real REST API calls. We won't create an actual database component, but it should be simple enough to add if you wanted to (see an example [here](https://blog.risingstack.com/node-js-database-tutorial/).
+In this part, we will create an Express.js backend so we can make real REST API calls. We won't utilize a true database component, but it should be simple enough to add if you wanted to (for an example, check this [link](https://blog.risingstack.com/node-js-database-tutorial/)).
 
 Next, we'll focus on adding state management to our application using [Redux](http://redux.js.org/). Redux is a popular and very powerful state management library based on [Flux](https://facebook.github.io/flux/), an application architecture popularized by Facebook. We'll also want a way to manage our application's forms, so we will use [Redux-Form](http://redux-form.com/6.4.3/) to make creating, updating, and using forms quick and easy.
 
-Finally, we'll create the first part of our sample application's auth flow: sign-in. It will demonstrate Redux's capabilities and also how to make API calls to our backend. After we are signed-in, we'll be able to see some restricted resources that only signed in users can access. Let's get started!
+Finally, we'll create the first part of our sample application's auth flow: sign-in. It will demonstrate Redux's capabilities and also how to make calls to our backend. After we are signed-in, we'll be able to see some restricted resources that only signed in users can access. Let's get started!
 
 ## Milestone 1: An Express.js Backend
 ### Big picture
-Let's step back a bit. So far, we've been creating a framework from scratch. Along the way, we made a very simple application to demonstrate some features of the framework and to test that it was really working. We coded up a few pages that don't really do much. There's a nav-bar and two pages that just print out 'Home' or 'Sign-in' to the screen depending on your current route. As we add new technologies, we'll create features that demonstrate how to use them in our application. Remember, the focus of this tutorial is more on creating the framework rather than creating the application, but it's worth talking some about both.
+Let's step back a bit. So far, we've been creating a framework from scratch. Along the way, we made a very simple application to demonstrate some features of the framework and to test that it was behaving as expected. We coded up a few pages that don't really do much. There's a nav-bar and two pages that just print out either 'Home' or 'Sign-in' to the screen depending on your current route. As we add new technologies, we'll create features that demonstrate how to use them in our application and prove they're working as we expect.
 
-Let's expand on what we've created so far by adding authentication to our application! Authentication is a huge pain in the backside. It's one of the tougher aspects of creating an application that lives client-side. There are a few server-side libraries to help make authentication a bit easier to implement, such as [Passport.js](http://passportjs.org/). We will use [JWT](https://jwt.io/) (JSON Web Tokens) to provide authentication for our users. JWTs are simple in concept, but very powerful.
+Let's expand on what we've created so far by adding authentication to our application. Authentication is a very big topic. It's one of the tougher aspects of creating a modern web application. There are a few server-side libraries to help make authentication a bit easier to implement, such as [Passport.js](http://passportjs.org/). We will use JSON Web Tokens ([JWTs](https://jwt.io/)) to provide authentication for our users. JWTs are simple in concept, but very powerful.
 
 We'll also need to create forms so the user can perform the authentication flow: register, sign-in, editing profile information, and sign-out. Forms are a large topic and can become unwieldy if you let them. Forms are arguably one of the more complicated pieces of client-side web development, so we'll use the Redux-Form library to make our lives a bit easier. We'll focus on the sign-in portion of the auth flow in this part of the tutorial. We'll add the rest in a later part.
 
@@ -19,7 +19,7 @@ When we finish this part of the tutorial, we will have set up state management w
 In a real application, you should create a separate project to house your server code. We don't do this here to keep our tutorial compact, but it's something to keep in mind for production projects. One project/build for your client-side code and a separate project/build for your server-side code should be the goal for real applications.
 
 ### Setting up the back-end
-Server code - not everyone's cup of tea. You're welcome to skip this part if you aren't interested in writing server-side JavaScript. You're also welcome to substitute this server with one you've already written, or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
+Server-side code is not everyone's cup of tea. You're welcome to skip this part if you aren't interested in writing server-side JavaScript. You're also welcome to substitute this server with one you've already written, or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
 
 In the root of our application, let's create a file called *apiServer.js*. This file will hold all of the code for our back-end server. Let's piece it together:
 
@@ -53,7 +53,7 @@ api.use('/api', router);
 export default api;
 ```
 
-This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our API calls. We turn off the ESLint rule 'consistent-return' because our '/signIn' API's actual return will be nested in an asynchronous function.
+This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our routing for API calls. We turn off the ESLint rule 'consistent-return' because our '/signIn' API's actual return will be nested in an asynchronous function. 
 
 Next, we create two simple sample 'test' APIs - a GET and a POST. We also add some CORS configuration so that the server and client play nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues, so using this config in production would necessitate some [changes](https://www.w3.org/wiki/CORS_Enabled).
 
@@ -67,7 +67,7 @@ Let's install **express-http-proxy** so we can set up a proxy from our dev serve
 npm install --save-dev express-http-proxy
 ```
 
-Now, in *devServer.js*, `import proxy from 'express-http-proxy';`, and add the following code to create and use the proxy:
+Now, in *devServer.js*, `import proxy from 'express-http-proxy';`. We also want the actual api server implementation, so `import api from './apiServer';` and add the following code to create and use the proxy:
 
 ```
 const apiProxy = proxy('http://localhost:8002/', {
@@ -79,7 +79,7 @@ const apiProxy = proxy('http://localhost:8002/', {
 app.use('/api/*', apiProxy);
 ```
 
-Now, if you go to 'localhost:8001/api/testGet' in your browser, you should see 'Hello!'. Notice that our backend server is actually running on port 800*2*, so our dev server is proxying correctly! You can also test the POST request in a REST client and see it return a 200.
+And at the end of the file, `api.listen(8002, 'localhost');` to start up our API server. Our development server is running on port 8001 and our API server is running on port 8002. Now, if you go to 'localhost:8001/api/testGet' in your browser, you should see 'Hello!'. We've just made a GET call to our backend proxied through our development server. You can also test the POST request in a REST client and see it return a 200.
 
 ### APIs
 Let's replace our test APIs with something a bit more useful. Our users will need to be able to sign-in, sign-out, register, and modify their data. Before we go further, let's create a simple map containing users so we can test and see the sign-in API is working correctly. We'll also add password hashing so we don't store passwords in plain-text. Obviously, a real implementation would utilize a database so data isn't volatile. If you wish to add a database component, that's up to you, but this should suffice for our purposes.
