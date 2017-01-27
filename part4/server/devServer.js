@@ -8,7 +8,7 @@ import hotMiddleware from 'webpack-hot-middleware';
 import proxy from 'express-http-proxy';
 
 import api from './apiServer';
-import webpackConfig from './config/webpack.development.config';
+import webpackConfig from '../config/webpack.development.config';
 
 const app = express();
 const compiler = webpack(webpackConfig);
