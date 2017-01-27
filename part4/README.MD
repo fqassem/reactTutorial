@@ -16,7 +16,7 @@ We'll also need to create forms so the user can perform the authentication flow:
 When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end. We will use these forms to authenticate our user and access 'restricted' resources!
 
 ### Side note
-In a real application, you should create a separate project to house your server code. We don't do this here to keep our tutorial compact, but it's something to keep in mind for production projects. You could create a separate *server* folder for your server code. You could even create another project for your server code. It's important to separate them to keep your project clean.
+In a real application, it would be good to separate your server code from your client code. At then end of this part of the tutorial, we'll clean-up our framework by re-organizing our server code into its own folder and updating our *package.json* dependencies to reflect the current state of the project. 
 
 ### Setting up the back-end
 Server-side code is not everyone's cup of tea. You're welcome to skip this part if you aren't interested in writing server-side JavaScript. You're also welcome to substitute this server with one you've already written or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
@@ -697,7 +697,7 @@ Let's make our project a bit cleaner by moving all of our server code into its o
 
 And that should do it! Now, strictly speaking, a lot of the server dependencies are no longer just `devDependency`s - they're actual `dependency`s our project needs to run. While this is a minor point, it's worth cleaning up. For an updated *package.json*, checkout [*part4/package.json*](https://github.com/precorFadiQassem/reactTutorial/blob/master/part4/package.json) in this project's Github repo.
 
-### Drawbacks
+### Shortcomings
 If you try to hot-reload a page that is using a Redux-Form component, it won't work completely. For some reason, Redux-Form doesn't understand how to 'reset' itself during a hot reload. For example, run the project, navigate to the SignIn page, and type something into the sign-in form. Change `<h1>Sign In</h1>` to any string and save *SignIn.js* to hot-reload the component. When you try to modify the Redux-Form, it won't respond. I've created an issue to track this, but for now we'll have to live with it. To get around it, navigate to the Home page and back to SignIn, or refresh the page.
 
 ### Summary
