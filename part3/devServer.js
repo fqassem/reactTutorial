@@ -1,4 +1,4 @@
-import webpack from 'webpack';// webpack = require('webpack');
+import webpack from 'webpack';
 import express from 'express';
 import historyApiFallback from 'connect-history-api-fallback';
 
