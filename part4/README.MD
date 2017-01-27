@@ -689,6 +689,14 @@ Notice that we've added quite a few libraries as 'dependency's. We'll need to ad
     ...
 ```
 
+### Cleanup
+Let's make our project a bit cleaner by moving all of our server code into its own folder. Create a *server* folder that lives above *src* and move over *apiServer.js* and *devServer.js*. Let's also move our *karma.conf.js* file into our *config* folder so all of our configuration files live in one folder. We'll need to update some file locations as well:
+
+1. Update the relative path for *webpack.development.config.js* inside of *devServer.js*
+2. In *package.json*, update the `"test"` command to look like: `"test": "./node_modules/.bin/karma start ./config/karma.conf.js"`
+
+And that should do it! Now, strictly speaking, a lot of the server dependencies are no longer just `devDependency`s - they're actual `dependency`s our project needs to run. For an updated *package.json*, checkout [*part4/package.json*](https://github.com/precorFadiQassem/reactTutorial/blob/master/part4/package.json) in this project's Github repo.
+
 ### Summary
 That was a lot of stuff! To recap:
 
