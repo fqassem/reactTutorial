@@ -5,10 +5,10 @@ import thunk from 'redux-thunk';
 import rootReducer from './rootReducer';
 
 export default function createApplicationStore() {
-    let middleware = [];
+    let middleware = [thunk];
 
     if(process.env.NODE_ENV !== 'development') {
-        middleware = [...middleware, thunk];
+        middleware = [...middleware];
     } else {
         middleware = [...middleware, createLogger()];
     }
