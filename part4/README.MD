@@ -1,7 +1,7 @@
 # Part 4: Back-end, State Management, Forms, and Sign-in
 In this part, we will create an Express.js backend so we can make real REST API calls. We won't utilize a true database component, but it should be simple enough to add if you wanted to (for an example, check this [link](https://blog.risingstack.com/node-js-database-tutorial/)).
 
-Next, we'll focus on adding state management to our application using [Redux](http://redux.js.org/). Redux is a popular and very powerful state management library based on [Flux](https://facebook.github.io/flux/), an application architecture popularized by Facebook. We'll also want a way to manage our application's forms, so we will use [Redux-Form](http://redux-form.com/6.4.3/) to make creating, updating, and using forms quick and easy.
+Next, we'll add state management to our application using [Redux](http://redux.js.org/). Redux is a popular and very powerful state management library based on [Flux](https://facebook.github.io/flux/), an application architecture popularized by Facebook. We'll also want a way to manage our application's forms, so we will use [Redux-Form](http://redux-form.com/6.4.3/) to make creating, updating, and using forms quick and easy.
 
 Finally, we'll create the first part of our sample application's auth flow: sign-in. It will demonstrate Redux's capabilities and also how to make calls to our backend. After we are signed-in, we'll be able to see some restricted resources that only signed in users can access. Let's get started!
 
@@ -11,15 +11,15 @@ Let's step back a bit. So far, we've been creating a framework from scratch. Alo
 
 Let's expand on what we've created so far by adding authentication to our application. Authentication is a very big topic. It's one of the tougher aspects of creating a modern web application. There are a few server-side libraries to help make authentication a bit easier to implement, such as [Passport.js](http://passportjs.org/). We will use JSON Web Tokens ([JWTs](https://jwt.io/)) to provide authentication for our users. JWTs are simple in concept, but very powerful.
 
-We'll also need to create forms so the user can perform the authentication flow: register, sign-in, editing profile information, and sign-out. Forms are a large topic and can become unwieldy if you let them. Forms are arguably one of the more complicated pieces of client-side web development, so we'll use the Redux-Form library to make our lives a bit easier. We'll focus on the sign-in portion of the auth flow in this part of the tutorial. We'll add the rest in a later part.
+We'll also need to create forms so the user can perform the authentication flow: register, sign-in, editing profile information, and sign-out. Forms are a large topic and can become unwieldy if you let them. Forms are arguably one of the more complicated pieces of client-side web development, so we'll use the Redux-Form library to make our lives a bit easier. We'll focus create just the sign-in portion of the auth flow in this part of the tutorial. We'll add regsiter, sign-out, and edit-profile in a later part.
 
 When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end. We will use these forms to authenticate our user and access 'restricted' resources!
 
 ### Side note
-In a real application, you should create a separate project to house your server code. We don't do this here to keep our tutorial compact, but it's something to keep in mind for production projects. One project/build for your client-side code and a separate project/build for your server-side code should be the goal for real applications.
+In a real application, you should create a separate project to house your server code. We don't do this here to keep our tutorial compact, but it's something to keep in mind for production projects. You could create a separate *server* folder for your server code. You could even create another project for your server code. It's important to separate them to keep your project clean.
 
 ### Setting up the back-end
-Server-side code is not everyone's cup of tea. You're welcome to skip this part if you aren't interested in writing server-side JavaScript. You're also welcome to substitute this server with one you've already written, or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
+Server-side code is not everyone's cup of tea. You're welcome to skip this part if you aren't interested in writing server-side JavaScript. You're also welcome to substitute this server with one you've already written or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
 
 In the root of our application, let's create a file called *apiServer.js*. This file will hold all of the code for our back-end server. Let's piece it together:
 
@@ -53,13 +53,13 @@ api.use('/api', router);
 export default api;
 ```
 
-This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our routing for API calls. We turn off the ESLint rule 'consistent-return' because our '/signIn' API's actual return will be nested in an asynchronous function. 
+This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our routing for API calls. We turn off the ESLint rule 'consistent-return' for this file because our '/signIn' API's actual return will be nested in an asynchronous function. 
 
 Next, we create two simple sample 'test' APIs - a GET and a POST. We also add some CORS configuration so that the server and client play nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues, so using this config in production would necessitate some [changes](https://www.w3.org/wiki/CORS_Enabled).
 
 Then, we tell our server to use '/api' as the path to resolve requests. When we run our devServer, we'll also run our API server alongside it. Any requests made to '/api' will be handled by the API server. Any other requests will be handled by the devServer.
 
-Finally, we simply export the API server. Now, let's modify our *devServer.js* to run the apiServer alongside it. To make this cleaner, we'll have our development server use a proxy to communicate to our backend server. That way we have less to keep track of during development - just a single endpoint that we hit to both serve our assets and make API calls. Neat!
+Finally, we simply export the API server. Now, let's modify our *devServer.js* to initialize and run the apiServer alongside it. To make this cleaner, we'll have our development server use a proxy to communicate to our backend server. That way we have less to keep track of during development - just a single endpoint that we hit to both serve our assets and make API calls. Neat!
 
 Let's install **express-http-proxy** so we can set up a proxy from our dev server to our backend server.
 
@@ -67,7 +67,8 @@ Let's install **express-http-proxy** so we can set up a proxy from our dev serve
 npm install --save-dev express-http-proxy
 ```
 
-Now, in *devServer.js*, `import proxy from 'express-http-proxy';`. We also want the actual api server implementation, so `import api from './apiServer';` and add the following code to create and use the proxy:
+Now, in *devServer.js*, `import proxy from 'express-http-proxy';`. We also want the actual api server implementation, so `import api from './apiServer';` and add the following code to create and use the proxy. It's important that you place `app.use('/api/*', apiProxy);
+` before `app.use( historyApiFallback());`. If we don't do this, *historyApiFallback* will be run before our API proxy which will cause our application to ignore our API requests!
 
 ```
 const apiProxy = proxy('http://localhost:8002/', {
@@ -77,6 +78,11 @@ const apiProxy = proxy('http://localhost:8002/', {
 });
 
 app.use('/api/*', apiProxy);
+
+app.use(
+    historyApiFallback() //route requests through index.html
+);
+...
 ```
 
 And at the end of the file, `api.listen(8002, 'localhost');` to start up our API server. Our development server is running on port 8001 and our API server is running on port 8002. Now, if you go to 'localhost:8001/api/testGet' in your browser, you should see 'Hello!'. We've just made a GET call to our backend proxied through our development server. You can also test the POST request in a REST client and see it return a 200.
@@ -175,6 +181,7 @@ router.get('/testGet', (req, res) => {
     res.send('Hello!');
 });
 
+//Sample POST API
 router.post('/testPost', (req, res) => {
     res.send('Hello!');
 });
@@ -306,9 +313,9 @@ npm install --save-dev redux-logger
 
 These libraries are installed as regular 'dependency's because the browser needs them to manage application state. **React-Redux** is a library that includes useful bindings for more easily using Redux and React together. It's not necessary, but it makes development much nicer. **Redux-Logger** is a very useful middleware we can use during development to output our current store to the console in our browser's debugger. **Redux-Form** is a library we'll be setting up later to easily create and manage forms.
 
-We'll also need another middleware called [**Redux-Thunk**]( so we can write clean, asynchronous actions in Redux. We need asynchronous actions to make calls to our back-end. Check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/) for the reasoning behind it. To summarize, writing asynchronous actions while obeying the laws of 'pure functions' can get ugly. The 'redux-thunk' middleware makes it slightly less ugly. Easy-peasy. Note that there are a dozen ways to create asyncrhonous actions in Redux. If you don't like Redux-Thunk, check out the alternatives listed [here](https://medium.com/@jtbennett/asynchronous-actions-in-redux-8412cf92a26f#.aib0dex2g)
+We'll also need another middleware called [**Redux-Thunk**](https://github.com/gaearon/redux-thunk)so we can write clean, asynchronous actions in Redux. We need asynchronous actions to make calls to our back-end. Check out this quick [tutorial](http://blog.nojaf.com/2015/12/06/redux-thunk/) for the reasoning behind it. To summarize, writing asynchronous actions while obeying the laws of 'pure functions' can get ugly. The 'Redux-Thunk' middleware makes it slightly less ugly. Easy-peasy. Note that there are a dozen ways to create asyncrhonous actions in Redux. If you don't like Redux-Thunk, check out the alternatives listed [here](https://medium.com/@jtbennett/asynchronous-actions-in-redux-8412cf92a26f#.aib0dex2g)
 
-Let's first set up the Redux store. Open up *src/Main.js*. Let's `import { Provider } from 'react-redux';` and add it to our app. 'Provider' connects our React components to the Redux store. We'll only have to set it up here at the root component of our app. 'Provider' accepts a 'store' prop, which we will pass in from *index.js* much like we do for the `routes` prop. Your *Main.js* file should look like this now after we wrap 'Router' with 'Provider' and add 'store' to the propTypes.
+Let's first set up the Redux store. Open up *src/Main.js*. Let's `import { Provider } from 'react-redux';` and add it to our app. 'Provider' wraps our application and allows us to connect our React components to the Redux store. We'll only have to set it up once here at the root component of our app. Any component that needs to be `connect`ed to the store should call the React-Redux `connect` function which we'll see in a later section of this tutorial. 'Provider' accepts a 'store' prop, which we will pass in from *index.js* much like we do for the `routes` prop. Your *Main.js* file should look like this now after we wrap 'Router' with 'Provider' and add 'store' to the propTypes.
 
 ```
 import React from 'react';
@@ -331,9 +338,9 @@ Main.propTypes = {
 export default Main;
 ```
 
-Now, let's create the store and pass it in to Provider. Our store will have different functionality depending on if we're in development or production. Rather than polluting our 'main' project files, let's abstract this logic into its own file. Create a *src/state* folder and a *createApplicationStore.js* file that lives within it. `import { createStore } from 'redux';`. This is the library function we will use to create our store. It accepts a root reducer as a parameter. Let's quickly create a placeholder 'rootReducer'. Inside *src/state*, create a *rootReducer.js* file that simply contains `export default () => {};` as a placeholder empty reducer. We'll replace this with something more concrete in a bit.
+Now, let's create the store and pass it in to `Provider`. Our store will have different functionality depending on if we're in development or production. Rather than polluting our 'main' project files, let's abstract this logic into its own file. Create a *src/state* folder and a *createApplicationStore.js* file inside it. `import { createStore } from 'redux';`. This is the library function we will use to create our store. It accepts a root reducer as a parameter. Let's quickly create a placeholder 'rootReducer' so we can run our application without errors. Inside *src/state*, create a *rootReducer.js* file that simply contains `export default () => {};` as a placeholder empty reducer. We'll replace this with something more concrete in a bit.
 
-Now, back in *createApplicationStore.js*, we'll need to `import { applyMiddleware } from 'redux';`, which tells the Redux store we'll be using some middleware that we'll pass in as parameters. We'll add Redux-Thunk and Redux-Logger middleware (`import thunk from 'redux-thunk';` and `import createLogger from 'redux-logger';`) as parameters to `applyMiddleware`. Keep in mind that for Redux-Logger to work properly, it has to be the last middleware in the chain. We don't want Redux-Logger in our production build, so we only apply it if we're in 'development'.
+Now, back in *createApplicationStore.js*, we'll need to `import { applyMiddleware } from 'redux';`, which tells the Redux store we'll be using some middleware that will be passed in with parameters. We'll add Redux-Thunk and Redux-Logger middleware (`import thunk from 'redux-thunk';` and `import createLogger from 'redux-logger';`) as parameters to `applyMiddleware`. Keep in mind that for Redux-Logger to work properly, it has to be the last middleware in the chain. We don't want Redux-Logger in our production build, so we only apply it if we're in 'development'.
 
 Our *createApplicationStore.js* should look like this:
 
@@ -345,10 +352,10 @@ import thunk from 'redux-thunk';
 import rootReducer from './rootReducer';
 
 export default function createApplicationStore() {
-    let middleware = [];
+    let middleware = [thunk];
 
     if(process.env.NODE_ENV !== 'development') {
-        middleware = [...middleware, thunk];
+        middleware = [...middleware];
     } else {
         middleware = [...middleware, createLogger()];
     }
@@ -401,9 +408,7 @@ if(process.env.NODE_ENV === 'development' && module.hot) {
 }
 ```
 
-Run `npm run start` and notice that we get no errors. We have a store set up now! Before we continue, we need just a little bit more setup.
-
-Now, we have our Redux and our middleware set up. Let's actually do some cool stuff!
+Run `npm run start` and notice that we get no errors. We have a store set up now! Now, we have our Redux and our middleware configured, let's actually do some cool stuff!
 
 ### Actions, Reducers, and State Shape
 Now that we have a store and middleware set up, we need our store to do something useful. What do we want our store to keep track of?
@@ -423,7 +428,9 @@ These are pretty standard features for any website. They are essentially 'action
 }
 ```
 
-We'll store this data in our Redux store when we recieve it from our 'signIn' API. Of course the possiblity of it becoming out-of-date arises if, for example, our user were to modify their data in a hypotheitcal mobile app version of our website. Syncing state is an interesting topic outside the scope of this tutorial, but here are two links to get you thinking about this possibility: [link one](https://tonyhb.gitbooks.io/redux-without-profanity/content/ch1.1-syncing-data.html) and [link two](https://blog.yld.io/2015/11/30/building-realtime-collaborative-offline-first-apps-with-react-redux-pouchdb-and-web-sockets/#.WImA4rYrJE4)
+We'll store this data in our Redux store when we recieve it from our 'signIn' API. Of course the possiblity of it becoming out-of-date arises if, for example, our user were to modify their data in a hypotheitcal mobile app version of our website. Syncing state is an interesting topic outside the scope of this tutorial, but here are two links to get you thinking about this possibility: [link one](https://tonyhb.gitbooks.io/redux-without-profanity/content/ch1.1-syncing-data.html) and [link two](https://blog.yld.io/2015/11/30/building-realtime-collaborative-offline-first-apps-with-react-redux-pouchdb-and-web-sockets/#.WImA4rYrJE4).
+
+What if we add a field to our user object and forget to update our Redux state code? While that's mostly outside of the scope of this tutorial, you can check out this [tutorial](http://blog.isquaredsoftware.com/2016/10/practical-redux-part-1-redux-orm-basics/) for further discussion about normalized data storage in Redux.
 
 Our users will interact with the backend via forms to register, sign-in, edit data, and sign-out. How do forms fit in the Redux ecosystem?
 
@@ -495,7 +502,7 @@ export const signIn = (values, dispatch) => {
     });
 };
 
-//Reducer
+//Reducers
 export default (state = InitialUserState, action) => {
     switch(action.type) {
         case SET_USER_DATA: {
@@ -521,12 +528,12 @@ export default combineReducers({
 });
 ```
 
-This is our root reducer - a reducer that combines all of our other reducers used to initialize our store. As we define more reducers, we'll add them to this file. 
+This is our root reducer - a reducer that combines all of our other reducers used to initialize our store. As we define more reducers, we'll add them to this file. Each reducer will 'manage' a subset of our application state.
 
 Now, we've got our reducer hooked up to our store. If we run our application, nothing useful will happen because we're not calling our `signIn` function any where! Let's fix that in the next section.
 
 ### Setting up Redux-Form
-We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our signIn API and page, let's create a 'sign-in' form. We need to set up Redux-Form. Redux-Form has its own reducer that we need to add to our applications root reducer. In *src/state/rootReducer.js*, `import { reducer as form } from 'redux-form';`. Next, add `form` to our `combineReducers` function. After we're done, *src/state/rootReducer.js* should look like this:
+We have our state infrastructure defined, but there's nothing that uses it yet. Because we've already defined our 'signIn' API and page, let's create a 'sign-in' form. We need to set up Redux-Form. Redux-Form has its own reducer that we need to add to our applications root reducer. In *src/state/rootReducer.js*, `import { reducer as form } from 'redux-form';`. Next, add `form` to our `combineReducers` function. After we're done, *src/state/rootReducer.js* should look like this:
 
 ```
 import { combineReducers } from 'redux';
@@ -540,7 +547,7 @@ export default combineReducers({
 });
 ```
 
-Now, the infrastructure for Redux-Form is all set up! Notice were using shorthand for 'user: user' and 'form: form'. The Redux-Form reducer must be named 'form' for it to function correctly. Let's get started creating an actual form. In the root of our application, create a *src/forms* folder. Within this folder, create a *SignInForm.js* file:
+Now, the infrastructure for Redux-Form is all set up! Notice were using object shorthand for 'user: user' and 'form: form'. The Redux-Form reducer must be named 'form' for it to function correctly. Let's get started creating an actual form. In the root of our application, create a *src/forms* folder. Within this folder, create a *SignInForm.js* file:
 
 ```
 import React from 'react';
@@ -598,7 +605,7 @@ export default reduxForm({ form: 'signInForm', validate })(SignInForm);
 
 This is a fairly barebones 'Redux-Form' form. To understand this better, check out the Redux-Form documentation and examples [here](http://redux-form.com/6.4.3/docs/GettingStarted.md/). The main things to note are that `error`, `handleSubmit`, `pristine`, and `submitting` are all provided to us by Redux-Form and inform us about the current state of the form via props. We decorate our form component in the `export` with `reduxForm` to transform our plain old React Component form into one decorated with Redux-Form. When our form is submitted, the `signIn` thunk action we defined in the previous section will be called and a request to the backend is made.
 
-We don't check username or password length, but that should be fairly trivial to implement on your own. Notice that there is zero state being kept in this component. Everything it needs will be passed in by props.
+We don't check username or password length, but that should be fairly trivial to implement on your own. Notice that there is zero local state being kept in this component. Everything it needs will be passed in by props.
 
 Also notice that we have a placeholder div that contains the words 'Loading gif' that shows when `isFetching` is true. When we update our application with CSS, we'll replace with something nicer, but it will do for now.
 
@@ -639,10 +646,10 @@ export default connect(mapStateToProps)(SignIn);
 
 In the `render` function, we define our *SignInForm* component.
 
-Notice that we've added a `componentWillReceiveProps`. When the 'signIn' action is dispatched and the reducer modifies the global state, all components that are both connected to the store and are 'listening' for the part of the state that was modified (ie those that called `mapStateToProps`) will receive new props. In *SignIn.js*, we will receive the 'user' state as a prop, which we check and make sure that the user exists and their role is now 'USER' or 'ADMIN'. If that's the case, we know they are signed in, and we forward them to the *Home* page ('/')!
+Notice that we've added a `componentWillReceiveProps` React function. When the 'signIn' action is dispatched and the reducer modifies the global state, all components that are both connected to the store and are 'listening' for the part of the state that was modified (ie those that called `mapStateToProps`) will receive new props. In *SignIn.js*, we will receive the 'user' state as a prop, which we check in `componentWillReceiveProps`. We make sure that the user exists and their role is now 'USER' or 'ADMIN'. If that's the case, we know they are signed in, and we forward them to the *Home* page ('/')!
 
 ### Adding 'hidden' content
-Now that we have a way to sign in, let's greet the signed-in user on the home page. Let's start with something simple to demonstrate the concept. In *Home.js* , let's connect the page to Redux so it knows about the application state. If the user is signed in, we'll display a welcome message containing their username. After connecting our component and adding the display username (if the user is signed in), our component looks like this:
+Now that we have a way to sign in, let's greet the signed-in user on the home page. Let's start with something simple to demonstrate the concept. In *Home.js* , let's connect the page to Redux so it knows about the application state. If the user is signed in, we'll display a welcome message containing their username. After adding the display username (if the user is signed in) and connecting our component to the Redux store (`connect`), our component looks like this:
 
 ```
 import React from 'react';
@@ -670,7 +677,7 @@ const mapStateToProps = (state) => {
 export default connect(mapStateToProps)(Home);
 ```
 
-If the user exists and has a role (meaning they've signed in), we will display a 'Welcome, *username*' message to them.
+`{ user && user.role && <p>Welcome, {user.username}</p>}` is simply shorthand for saying: if there is a user and that user has a role (they are signed in), then display a 'Welcome, *username*' message to them.
 
 ### Configuration updates
 Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, and Redux-Thunk to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
