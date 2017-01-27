@@ -677,7 +677,7 @@ Notice that we've added quite a few libraries as 'dependency's. We'll need to ad
 
 ```
     entry: {
-        vendor: ['react', 'react-dom', 'react-router', 'redux', 'react-redux', 'redux-thunk']
+        vendor: ['react', 'react-dom', 'react-router', 'babel-polyfill', 'redux', 'react-redux', 'redux-thunk']
     },
     ...
 ```
