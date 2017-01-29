@@ -1,3 +1,6 @@
+import { SubmissionError } from 'redux-form';
+
+import AuthenticationService from '../../services/AuthenticationService';
 import InitialUserState from './InitialUserState';
 
 //Action constants
@@ -8,41 +11,20 @@ export const setUserData = (userData) => {
     return { type: SET_USER_DATA, userData };
 };
 
-export const signIn = (credentials) => {
-    return (dispatch) => {
-        return new Promise(
-            (resolve, reject) => {
-                setTimeout(() => {
-                    if(credentials.username !== 'fail') {
-                        dispatch(setUserData({
-                            id: 1,
-                            firstName: 'Tom',
-                            lastName: 'Jones',
-                            username: 'tomjones',
-                            email: 'tomjones@gmail.com',
-                            role: 'MEMBER'
-                        }));
-                        resolve();
-                    } else {
-                        reject(Error('Bad Creds'));
-                    }
-                }, 2000);
-            }
-        );
-    };
-};
+export const signIn = (values, dispatch) => {
+    const { username, password } = values;
 
-export const signOut = () => {
-    return (dispatch) => {
-        return new Promise(
-            (resolve) => {
-                setTimeout(() => {
-                    dispatch(setUserData(InitialUserState));
-                    resolve();
-                }, 2000);
-            }
-        );
-    };
+    return AuthenticationService.signIn(username, password)
+    .then((response) => {
+        if(response.ok) {
+            response.json().then((json) => {
+                dispatch(setUserData(json.userData));
+                AuthenticationService.storeToken(json.token);
+            });
+        } else {
+            throw new SubmissionError({ _error: 'Invalid Credentials' });
+        }
+    });
 };
 
 //Reducer
@@ -50,7 +32,7 @@ export default (state = InitialUserState, action) => {
     switch(action.type) {
         case SET_USER_DATA: {
             const userData = action.userData;
-            return Object.assign({}, state, userData);
+            return { ...state, ...userData };
         }
         default:
             return state;

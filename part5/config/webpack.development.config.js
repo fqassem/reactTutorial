@@ -5,7 +5,7 @@ import webpackMerge from 'webpack-merge';
 import baseConfig from './webpack.base.config';
 
 export default webpackMerge(baseConfig, {
-    devtool: 'source-map',
+    devtool: 'eval-source-map',
     entry: {
         app: [
              // activate HMR for React

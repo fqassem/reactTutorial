@@ -4,7 +4,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 export default {
     entry: {
-        vendor: ['react', 'react-dom', 'react-router', 'redux', 'react-redux']
+        vendor: ['react', 'react-dom', 'react-router', 'babel-polyfill']
     },
     output: {
         publicPath: '/'
@@ -28,7 +28,7 @@ export default {
         new webpack.EnvironmentPlugin([
             'NODE_ENV'
         ]),
-        new webpack.NoErrorsPlugin(),
+        new webpack.NoEmitOnErrorsPlugin(),
         new webpack.NamedModulesPlugin(),
         new HtmlWebpackPlugin({
             template: path.join(__dirname, '../index.ejs'),
