@@ -428,15 +428,18 @@ These are pretty standard features for any website. They are essentially 'action
 }
 ```
 
-We'll store this data in our Redux store when we recieve it from our 'signIn' API. Of course the possiblity of it becoming out-of-date arises if, for example, our user were to modify their data in a hypotheitcal mobile app version of our website. Syncing state is an interesting topic outside the scope of this tutorial, but here are two links to get you thinking about this possibility: [link one](https://tonyhb.gitbooks.io/redux-without-profanity/content/ch1.1-syncing-data.html) and [link two](https://blog.yld.io/2015/11/30/building-realtime-collaborative-offline-first-apps-with-react-redux-pouchdb-and-web-sockets/#.WImA4rYrJE4).
-
-What if we add a field to our user object and forget to update our Redux state code? While that's mostly outside of the scope of this tutorial, you can check out this [tutorial](http://blog.isquaredsoftware.com/2016/10/practical-redux-part-1-redux-orm-basics/) for further discussion about normalized data storage in Redux.
+We'll store this data in our Redux store when we recieve it from our 'signIn' API. 
 
 Our users will interact with the backend via forms to register, sign-in, edit data, and sign-out. How do forms fit in the Redux ecosystem?
 
 Let's step back and ask ourselves: When is it right to store state in Redux? When should we use `ReactComponent.setState()`? Can we use both? When creating components, we should consider if other parts of the application need access to the component's state. Will other parts of the application affect the state of this component? Will the state of the component need to be kept after the it's unmounted from the DOM? If the answer to these questions is no, we can get away with just using `ReactComponent.setState()` for component-level state. Generally this reduces to the following - use Redux for your application state and `setState` for your UI state.
 
 However, this isn't set in stone. There are many reasons for you can keep all of your state in Redux. However, the flip-side isn't true. You shouldn't store all of your state in your components. That's the whole reason we're using Redux in the first place! The general rule is to just go with what's easiest to understand and takes the least amount of code. If you find you can keep the whole app state in Redux in a clean manner, then go for it. In this tutorial, we'll use **Redux-Form** to manage our form state, so naturally it will be kept in Redux. We will use `ReactComponent.setState()` where it makes sense. This will become clear with experience. For a more detailed discussion, visit this [link](https://medium.freecodecamp.com/where-do-i-belong-a-guide-to-saving-react-component-data-in-state-store-static-and-this-c49b335e2a00).
+
+#### Side Note: Data Syncing and ORMs
+Tthe possiblity of our Redux store's data becoming out-of-date arises if, for example, our user were to modify their data in a hypothetical mobile app version of our website while still logged into the desktop site. Syncing state is an interesting topic outside the scope of this tutorial, but here are two links to get you thinking about this scenario: [link one](https://tonyhb.gitbooks.io/redux-without-profanity/content/ch1.1-syncing-data.html) and [link two](https://blog.yld.io/2015/11/30/building-realtime-collaborative-offline-first-apps-with-react-redux-pouchdb-and-web-sockets/#.WImA4rYrJE4).
+
+What if we add a field to our user object and forget to update our Redux state code? While that's mostly outside of the scope of this tutorial, you can check out this [tutorial](http://blog.isquaredsoftware.com/2016/10/practical-redux-part-1-redux-orm-basics/) for further discussion about normalized data storage in Redux.
 
 ### User state
 Inside of *src/state*, create the following:
