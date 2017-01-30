@@ -1,7 +1,9 @@
 # React Tutorial
 Throughout this tutorial, we will be creating a modern, single-page, progressive web-application framework and sample app. Each 'part' of the project is self-contained inside its own folder with its own *index.html*, *package.json*, and source files. Subsequent parts will iterate on each other.
 
-The application we build will be simple, but will demonstrate the notable aspects of a modern, progressive web application. It will have a home page and a sign-in page and barebones authentication.
+The application we build will be a simple, modern, progressive web application. It will have a home page and a sign-in page and barebones authentication.
+
+**Parts 5 - 7 are not yet complete **
 
 This tutorial will utilize the following libraries and features:
 
