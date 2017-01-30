@@ -33,25 +33,25 @@ This tutorial will utilize the following libraries and features:
 * Service Workers - update our application and cache in the background for faster page loads
 
 # Tutorial summary (subject to change)
-## [Part 1](https://github.com/precorFadiQassem/reactTutorial/tree/master/part1)
+## [Part 1](https://github.com/fqassem/reactTutorial/tree/master/part1)
 Setting up NPM, Webpack, Babel, React, and Express.js development server
 
-## [Part 2](https://github.com/precorFadiQassem/reactTutorial/tree/master/part2)
+## [Part 2](https://github.com/fqassem/reactTutorial/tree/master/part2)
 ESLint, Routing, and Hot-Loading
 
-## [Part 3](https://github.com/precorFadiQassem/reactTutorial/tree/master/part3)
+## [Part 3](https://github.com/fqassem/reactTutorial/tree/master/part3)
 Production Build and Testing
 
-## [Part 4](https://github.com/precorFadiQassem/reactTutorial/tree/master/part4)
+## [Part 4](https://github.com/fqassem/reactTutorial/tree/master/part4)
 Back-end, State Management, Forms, and Sign-in
 
-## [Part 5](https://github.com/precorFadiQassem/reactTutorial/tree/master/part5)
+## [Part 5](https://github.com/fqassem/reactTutorial/tree/master/part5)
 Protected Routes, Sign-out, Edit Profile, and Register
 
-## [Part 6](https://github.com/precorFadiQassem/reactTutorial/tree/master/part6)
+## [Part 6](https://github.com/fqassem/reactTutorial/tree/master/part6)
 Navbar, Localization, SASS support, and Susy
 
-## [Part 7](https://github.com/precorFadiQassem/reactTutorial/tree/master/part7)
+## [Part 7](https://github.com/fqassem/reactTutorial/tree/master/part7)
 Progressive Web App Overview, Service Workers
 
 #Useful Links

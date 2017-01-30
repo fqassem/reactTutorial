@@ -698,7 +698,7 @@ Let's make our project a bit cleaner by moving all of our server code into its o
 1. Update the relative path for *webpack.development.config.js* inside of *devServer.js*
 2. In *package.json*, update the `"test"` command to look like: `"test": "./node_modules/.bin/karma start ./config/karma.conf.js"`
 
-And that should do it! Now, strictly speaking, a lot of the server dependencies are no longer just `devDependency`s - they're actual `dependency`s our project needs to run. While this is a minor point, it's worth cleaning up. For an updated *package.json*, checkout [*part4/package.json*](https://github.com/precorFadiQassem/reactTutorial/blob/master/part4/package.json) in this project's Github repo.
+And that should do it! Now, strictly speaking, a lot of the server dependencies are no longer just `devDependency`s - they're actual `dependency`s our project needs to run. While this is a minor point, it's worth cleaning up. For an updated *package.json*, checkout [*part4/package.json*](https://github.com/fqassem/reactTutorial/blob/master/part4/package.json) in this project's Github repo.
 
 ### Shortcomings
 If you try to hot-reload a page that is using a Redux-Form component, it won't work completely. For some reason, Redux-Form doesn't understand how to 'reset' itself during a hot reload. For example, run the project, navigate to the SignIn page, and type something into the sign-in form. Change `<h1>Sign In</h1>` to any string and save *SignIn.js* to hot-reload the component. When you try to modify the Redux-Form, it won't respond. I've created an issue to track this, but for now we'll have to live with it. To get around it, navigate to the Home page and back to SignIn, or refresh the page.
