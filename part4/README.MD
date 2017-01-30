@@ -40,13 +40,6 @@ router.post('/testPost', (req, res) => {
     res.sendStatus(200);
 });
 
-//CORS
-api.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
-});
-
 // Resolve '/api' prefixed routes
 api.use('/api', router);
 
@@ -55,7 +48,7 @@ export default api;
 
 This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our routing for API calls. We turn off the ESLint rule 'consistent-return' for this file because our '/signIn' API's actual return will be nested in an asynchronous function. 
 
-Next, we create two simple sample 'test' APIs - a GET and a POST. We also add some CORS configuration so that the server and client play nice. Note that this is NOT a production CORS config. Wildcard origins can cause security issues, so using this config in production would necessitate some [changes](https://www.w3.org/wiki/CORS_Enabled).
+Next, we create two simple sample 'test' APIs - a GET and a POST. If this was a stand-alone server, we would need some [CORS](https://www.w3.org/wiki/CORS_Enabled) configuration. However, we're going to proxy this server through our development server (which hosts our application) to simplify things. Since we'll be using a proxy, there's no need for CORS (unless we want to hit the API server directly, which we don't).
 
 Then, we tell our server to use '/api' as the path to resolve requests. When we run our devServer, we'll also run our API server alongside it. Any requests made to '/api' will be handled by the API server. Any other requests will be handled by the devServer.
 
@@ -184,13 +177,6 @@ router.get('/testGet', (req, res) => {
 //Sample POST API
 router.post('/testPost', (req, res) => {
     res.send('Hello!');
-});
-
-//CORS
-api.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
 });
 
 // Resolve '/api' prefixed routes
