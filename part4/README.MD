@@ -16,7 +16,7 @@ We'll also need to create forms so the user can perform the authentication flow:
 When we finish this part of the tutorial, we will have set up state management within our application. We'll have also implemented a clean, easy-to-use method for creating forms that make requests to our back-end. We will use these forms to authenticate our user and access 'restricted' resources!
 
 ### Side note
-In a real application, it would be good to separate your server code from your client code. At then end of this part of the tutorial, we'll clean-up our framework by re-organizing our server code into its own folder and updating our *package.json* dependencies to reflect the current state of the project. 
+In a real application, it would be good to separate your server code from your client code. At then end of this part of the tutorial, we'll clean-up our framework by re-organizing our server code into its own folder and updating our *package.json* dependencies to reflect the current state of the project.
 
 ### Setting up the back-end
 Server-side code is not everyone's cup of tea. You're welcome to skip this part if you aren't interested in writing server-side JavaScript. You're also welcome to substitute this server with one you've already written or some off the shelf implementation. If you choose to use the server we create in this section, be sure to add *apiServer.js* to your application and to modify *./devServer.js* so you have the server set up and ready to accept API calls. Grab those files from the repo and you should be good to go. For the more adventurous of you, continue on.
@@ -46,7 +46,7 @@ api.use('/api', router);
 export default api;
 ```
 
-This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our routing for API calls. We turn off the ESLint rule 'consistent-return' for this file because our '/signIn' API's actual return will be nested in an asynchronous function. 
+This should look somewhat familiar. It's very similar to the code we wrote to get our devServer running. We create an 'express' instance and, because we need explicit control over routing, we'll also create a `Router` instance to handle our routing for API calls. We turn off the ESLint rule 'consistent-return' for this file because our '/signIn' API's actual return will be nested in an asynchronous function.
 
 Next, we create two simple sample 'test' APIs - a GET and a POST. If this was a stand-alone server, we would need some [CORS](https://www.w3.org/wiki/CORS_Enabled) configuration. However, we're going to proxy this server through our development server (which hosts our application) to simplify things. Since we'll be using a proxy, there's no need for CORS (unless we want to hit the API server directly, which we don't).
 
@@ -126,7 +126,7 @@ Because the user can change anything, they can even change their JWT. When the u
 What do we gain from using JWTs instead of server sessions? Check this [link](https://ponyfoo.com/articles/json-web-tokens-vs-session-cookies) for more discussion.
 
 ### Regularly Scheduled Program
-We'll need to define a secret JWT signing key in our server code. Let's also create a 'generateToken' function to create the JWT from user data and give it an expiration time. Inside of *apiServer.js*, add: 
+We'll need to define a secret JWT signing key in our server code. Let's also create a 'generateToken' function to create the JWT from user data and give it an expiration time. Inside of *apiServer.js*, add:
 
 ```
 import jwt from 'jsonwebtoken';
@@ -414,7 +414,7 @@ These are pretty standard features for any website. They are essentially 'action
 }
 ```
 
-We'll store this data in our Redux store when we recieve it from our 'signIn' API. 
+We'll store this data in our Redux store when we recieve it from our 'signIn' API.
 
 Our users will interact with the backend via forms to register, sign-in, edit data, and sign-out. How do forms fit in the Redux ecosystem?
 
@@ -669,11 +669,11 @@ export default connect(mapStateToProps)(Home);
 `{ user && user.role && <p>Welcome, {user.username}</p>}` is simply shorthand for saying: if there is a user and that user has a role (they are signed in), then display a 'Welcome, *username*' message to them.
 
 ### Configuration updates
-Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, and Redux-Thunk to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
+Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, Redux-Thunk, and Redux-Form to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
 
 ```
     entry: {
-        vendor: ['react', 'react-dom', 'react-router', 'babel-polyfill', 'redux', 'react-redux', 'redux-thunk']
+        vendor: ['react', 'react-dom', 'react-router', 'babel-polyfill', 'redux', 'react-redux', 'redux-thunk', 'redux-form']
     },
     ...
 ```
