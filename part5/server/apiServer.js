@@ -73,13 +73,6 @@ router.post('/signIn', urlencodedParser, (req, res) => {
     });
 });
 
-//CORS
-api.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
-});
-
 // Resolve '/api' prefixed routes
 api.use('/api', router);
 
