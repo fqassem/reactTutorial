@@ -73,6 +73,43 @@ router.post('/signIn', urlencodedParser, (req, res) => {
     });
 });
 
+router.post('/register', urlencodedParser, (req, res) => {
+    const userInfo = req.body;
+
+    if(!userInfo) {
+        return res.sendStatus(400).send('User info not supplied');
+    }
+
+    if(!userInfo.username || !userInfo.password || !userInfo.firstName || !userInfo.lastName || !userInfo.email) {
+        return res.status(400).send('Missing required field');
+    }
+
+    if(userInfo.password.length < 5) {
+        return res.status(400).send('Password is less than 5 characters long');
+    }
+
+    const user = users[userInfo.username];
+    if(user) {
+        return res.status(400).send('User already exists!');
+    }
+
+    bcrypt.hash(userInfo.password, 10, (err, hashedPassword) => {
+        if(err) throw err;
+        if(hashedPassword) {
+            users[userInfo.username] = {
+                username: userInfo.username,
+                password: hashedPassword,
+                email: userInfo.email,
+                firstName: userInfo.firstName,
+                lastName: userInfo.lastName,
+                role: 'USER'
+            };
+            return res.status(200).send();
+        }
+        return res.status(400).send();
+    });
+});
+
 // Resolve '/api' prefixed routes
 api.use('/api', router);
 
