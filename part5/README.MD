@@ -5,6 +5,8 @@ In this part, we will expand on our authentication flow by creating the APIs, pa
 ## Milestone 1: Register, Sign-out, and Edit Profile APIs
 In the last part, we added the sign-in API. In this tutorial section, we will do the same for the rest of our auth flow APIs, starting with register.
 
+While we don't add much to our framework in this section, we expand on our application's functionality.
+
 ### Register
 In *server/apiServer.js*, let's add the register API:
 
@@ -56,8 +58,46 @@ A second approach is to blacklist tokens for signed-out users. When the user sig
 You can read more about the process [here](https://auth0.com/blog/blacklist-json-web-token-api-keys/) and [here](https://dadario.com.br/revoking-json-web-tokens/). There are some who don't think revoking token is worth the extra [complexity](https://www.dinochiesa.net/?p=1388). For our app, we'll keep things simple and just remove the token on the client-side, so we won't create an actual API for it. However, be aware of the options and their pros and cons.
 
 ### Edit Profile
-The 'Edit Profile' call will look like a simplified version of our `register` call. We will accept multiple fields in the 'editProfile' API along with the users's token. We will validate the token is valid so we're sure the user attempting to edit their profile is who they say they are.
+The 'Edit Profile' call will look like a simplified version of our `register` call. We will accept multiple fields in the 'editProfile' API along with the users's token. We will validate the token is valid so we're sure the user attempting to edit their profile is who they say they are. We'll allow the user to change their firstName, lastName, and email address. The code for this API is as follows:
 
-##Milestone 2:
+```
+router.post('/editProfile', urlencodedParser, (req, res) => {
+    const profileInfo = req.body;
+    const token = profileInfo.token;
+
+    //validate token
+
+    if(!token || !profileInfo) {
+        return res.sendStatus(400).send('Profile info or token not supplied');
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if(err) {
+            return res.sendStatus(401).send('Invalid token');
+        } else {
+            const currentUsername = decoded.username;
+            const user = users[currentUsername];
+            if(user) {
+                const { firstName, lastName, email } = profileInfo;
+                if(firstName) {
+                    user.firstName = firstName;
+                }
+                if(lastName) {
+                    user.lastName = lastName;
+                }
+                if(email) {
+                    user.email = email;
+                }
+            } else {
+                return res.sendStatus(401).send('User not found');
+            }
+        }
+    });
+});
+```
+
+Now that the APIs are in place, let's create the forms and modify the pages!
+
+##Milestone 2: Registration and Edit Profile forms
 ##Milestone 3:
 ##Milestone 4:
