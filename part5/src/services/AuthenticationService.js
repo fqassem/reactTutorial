@@ -12,6 +12,30 @@ class AuthenticationService {
         });
     }
 
+    static register(userInfo) {
+        return fetch(`${API_ENDPOINT}/signIn`, {
+            method: 'POST',
+            body: `userInfo=${userInfo}`,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+    }
+
+    static editProfile(userInfo, token) {
+        return fetch(`${API_ENDPOINT}/signIn`, {
+            method: 'POST',
+            body: `userInfo=${userInfo}&token=${token}`,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+    }
+
+    static removeToken() {
+        sessionStorage.removeItem(TOKEN_KEY);
+    }
+
     static storeToken(token) {
         sessionStorage.setItem(TOKEN_KEY, token);
     }

@@ -49,23 +49,22 @@ router.post('/editProfile', urlencodedParser, (req, res) => {
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if(err) {
             return res.sendStatus(401).send('Invalid token');
-        } else {
-            const currentUsername = decoded.username;
-            const user = users[currentUsername];
-            if(user) {
-                const { firstName, lastName, email } = profileInfo;
-                if(firstName) {
-                    user.firstName = firstName;
-                }
-                if(lastName) {
-                    user.lastName = lastName;
-                }
-                if(email) {
-                    user.email = email;
-                }
-            } else {
-                return res.sendStatus(401).send('User not found');
+        }
+        const currentUsername = decoded.username;
+        const user = users[currentUsername];
+        if(user) {
+            const { firstName, lastName, email } = profileInfo;
+            if(firstName) {
+                user.firstName = firstName;
             }
+            if(lastName) {
+                user.lastName = lastName;
+            }
+            if(email) {
+                user.email = email;
+            }
+        } else {
+            return res.sendStatus(401).send('User not found');
         }
     });
 });
