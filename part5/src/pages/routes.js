@@ -3,6 +3,8 @@ import Container from './Container';
 if(process.env.NODE_ENV === 'development' && module.hot) {
     require('./Home');
     require('./SignIn');
+    require('./Register');
+    require('./EditProfile');
 }
 
 function errorLoading(error) {
@@ -28,6 +30,22 @@ export default {
             path: 'signIn',
             getComponent(location, cb) {
                 System.import('./SignIn')
+                .then(loadRoute(cb, false))
+                .catch(errorLoading);
+            }
+        },
+        {
+            path: 'register',
+            getComponent(location, cb) {
+                System.import('./Register')
+                .then(loadRoute(cb, false))
+                .catch(errorLoading);
+            }
+        },
+        {
+            path: 'editProfile',
+            getComponent(location, cb) {
+                System.import('./editProfile')
                 .then(loadRoute(cb, false))
                 .catch(errorLoading);
             }

@@ -1,4 +1,5 @@
 import { SubmissionError } from 'redux-form';
+import { browserHistory } from 'react-router';
 
 import AuthenticationService from '../../services/AuthenticationService';
 import InitialUserState from './InitialUserState';
@@ -25,6 +26,37 @@ export const signIn = (values, dispatch) => {
             throw new SubmissionError({ _error: 'Invalid Credentials' });
         }
     });
+};
+
+export const register = (userInfo) => {
+    return AuthenticationService.register(userInfo)
+    .then((response) => {
+        if(response.ok) {
+            browserHistory.push('/signIn');
+        } else {
+            throw new SubmissionError({ _error: 'Registration Error' });
+        }
+    });
+};
+
+export const editProfile = (values, dispatch) => {
+    const { userInfo, token } = values;
+
+    return AuthenticationService.editProfile(userInfo, token)
+    .then((response) => {
+        if(response.ok) {
+            response.json().then((json) => {
+                dispatch(setUserData(json.userData));
+            });
+        } else {
+            throw new SubmissionError({ _error: 'Edit Profile Error' });
+        }
+    });
+};
+
+export const signOut = (dispatch) => {
+    AuthenticationService.removeToken();
+    dispatch(setUserData, {});
 };
 
 //Reducer

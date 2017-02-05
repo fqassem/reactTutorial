@@ -131,14 +131,19 @@ Now that our let's create the Redux actions that call these APIs!
 In the same way we created the Sign In action, let's also create the other actions our user can perform. In *src/state/user/index.js*, let's add these actions one-by-one.
 
 ### Register
-Not a lot happens during registration. We simply call the 'register' API and handle any errors that might come back from the backend. If we receive a 200, we know our registration was successful. There isn't any explicit state modification being done here, only a call to the backend. If it fails, we throw an error so that Redux Form can display something went wrong.
+Not a lot happens during registration. We simply call the 'register' API and handle any errors that might come back from the backend. If we receive a 200, we know our registration was successful. In the SignIn page, we listen for props to know when the user sign-in was successful and we forward the user to the home page. To demonstrate another way of redirecting the user, we will forward the user to the Sign-in page based on the result of the API call directly in the action. If you wanted, you could make this more generic by passing in a redirect url instead of hardcoding a URL. You can see how this can be useful if you want to redirect a user based on their previous location.
+
+There isn't any explicit state modification being done here, only a call to the backend. If it fails, we throw an error so that Redux Form can display something went wrong.
 
 ```
-export const register = (userInfo) => {
+import { browserHistory } from 'react-router';
+...
+
+export const register = (userInfo, redirectUrl) => {
     return AuthenticationService.register(userInfo)
     .then((response) => {
         if(response.ok) {
-            console.log('Successful Registration');
+            browserHistory.push('/signIn');
         } else {
             throw new SubmissionError({ _error: 'Registration Error' });
         }
@@ -160,10 +165,32 @@ On sign-out, we'll need to reset the user data so that it's no longer stored in 
 
 That completes the state management code. Now, let's create the forms that call these actions and allow the user to register, edit their profile, and sign out!
 
-##Milestone 3: Registration and Edit Profile Forms
+##Milestone 3: Registration and Edit Profile Forms and Pages
 Let's start by creating the register form. It'll be similar in structure to the *src/forms/SignInForm.js* that we created earlier, but with a few more fields.
 
 ```
 ```
+
+Now the form is created, let's add create the *src/pages/Register.js* page that contains the form.
+
+```
+```
+
+That completes the Registration flow. Now let's add the Edit Profile Flow. Let's add an *src/forms/EditProfileForm.js* to our application:
+
+```
+```
+
+and the *src/pages/EditProfile.js* page:
+
+```
+```
+
+That's all the hard work done. Now, we have just one small thing left to do: add these pages to our *src/pages/routes.js* file:
+
+```
+```
+
+And that should do it! We've just added Registration and Edit Profile flows to our application.
 
 ##Milestone 4: Sign-Out Link and Protected Routes
