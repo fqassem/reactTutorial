@@ -298,7 +298,46 @@ Remember, our routing is on the client side. That means the user can basically a
 
 As you can see, 'protecting' a route is essentially a gentleman's agreement. However, it's worth doing because it improves the user experience and prevents inadvertent page navigation. We can protect routes two ways: through React or through React-Router. In a small application, doing it through React is fine. However, in a larger application where the 'is signed in' logic is reused on multiple pages, React-Router allows you to reuse the logic. Let's examine these options:
 
-1. Using React, we can check to see if the user is logged-in like we do for the conditional rendering logic in the *SignIn.js* and *Container* pages. Before the component mounts, we can check the user's state (using `componentWillMount`). If they're not logged in, we'll redirect the user to some page. If they are, then we let the component mount as normal. 
+1. Using React, we can check to see if the user is logged-in like we do for the conditional rendering logic in the *SignIn.js* and *Container* pages. Before the component mounts, we can check the user's state (using `componentWillMount`). If they're not logged in, we'll redirect the user to some page. If they are, then we let the page component mount as normal.
 2. In React-Router, we have two options. We can define an 'onEnter' callback that can be defined on routes. When a route is requested, the onEnter callback is fired, and does some checks. If those checks don't pass, we can 'replace' the route with a fallback route, signifying the user is not authorized. [Here's](https://github.com/ReactTraining/react-router/tree/master/examples/auth-flow) an example of an app that does this.
 
 We can also do this by wrapping routes that need authentication a component like in this [example](https://medium.com/the-many/adding-login-and-authentication-sections-to-your-react-or-react-native-app-7767fd251bd1#.pyfrxelql).
+
+To fix this in our application, let's add an 'onEnter' check to our Edit Profile route. How can we check if the user is logged? Our AuthenticationService is outside the scope of Redux. It's not a component we can connect to Redux. Lucky for us, we can simply check if a token is set for the user. If it's not, then we know the user is logged out.
+
+We can also fix this by using the **Reselect** library, which allows us access to this data from anywhere by calling a 'selector' function. A selector simply returns computed information from the store. We'll go the simpler route, but it's nice to know that there's another option.
+
+In our *AuthenticationService*, let's add an `isLoggedIn` function:
+
+```
+static isLoggedIn() {
+    return TOKEN_KEY in sessionStorage;
+}
+```
+
+Next, in *routes.js*, let's `import AuthenticationService from '../services/AuthenticationService';`. Next, we'll create the `onEnter` callback function that will be called when the 'editProfile' route is accessed:
+
+```
+function isUserAuthenticated(nextState, replace) {
+    if(!AuthenticationService.isLoggedIn()) {
+        replace('/');
+    }
+}
+```
+
+Finally, let's add this callback to the 'editProfile' route:
+
+```
+...
+{
+    path: 'editProfile',
+    onEnter: isUserAuthenticated,
+    getComponent(location, cb) {
+        System.import('./EditProfile')
+        .then(loadRoute(cb, false))
+        .catch(errorLoading);
+    }
+},
+```
+
+Now, if you go to `localhost:8001/editProfile` when you're logged out, you will be redirected to the login page!

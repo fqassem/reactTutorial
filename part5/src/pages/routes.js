@@ -1,3 +1,4 @@
+import AuthenticationService from '../services/AuthenticationService';
 import Container from './Container';
 
 if(process.env.NODE_ENV === 'development' && module.hot) {
@@ -13,6 +14,12 @@ function errorLoading(error) {
 
 function loadRoute(cb) {
     return module => cb(null, module.default);
+}
+
+function isLoggedIn(nextState, replace) {
+    if(!AuthenticationService.isLoggedIn()) {
+        replace('/');
+    }
 }
 
 export default {
@@ -44,6 +51,7 @@ export default {
         },
         {
             path: 'editProfile',
+            onEnter: isLoggedIn,
             getComponent(location, cb) {
                 System.import('./EditProfile')
                 .then(loadRoute(cb, false))

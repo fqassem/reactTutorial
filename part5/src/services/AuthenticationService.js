@@ -39,5 +39,9 @@ class AuthenticationService {
     static storeToken(token) {
         sessionStorage.setItem(TOKEN_KEY, token);
     }
+
+    static isLoggedIn() {
+        return TOKEN_KEY in sessionStorage;
+    }
 }
 export default AuthenticationService;
