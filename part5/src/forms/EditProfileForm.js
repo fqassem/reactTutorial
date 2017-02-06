@@ -26,7 +26,13 @@ class EditProfileForm extends React.Component {
                 <div>
                     <Field name="firstName" label="First Name" type="text" component={this.renderField} />
                 </div>
-                <button type="submit" disabled={pristine || submitting} >Sign In</button>
+                <div>
+                    <Field name="lastName" label="Last Name" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="email" label="Email" type="text" component={this.renderField} />
+                </div>
+                <button type="submit" disabled={pristine || submitting}>Edit Profile</button>
             </form>
         );
     }

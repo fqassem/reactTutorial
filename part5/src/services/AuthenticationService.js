@@ -1,9 +1,10 @@
 const API_ENDPOINT = 'http://localhost:8001/api/';
-const TOKEN_KEY = 'TUTORIAL_APP_TOKEN_KEY';
 
 class AuthenticationService {
+    static token = null;
+
     static signIn(username, password) {
-        return fetch(`${API_ENDPOINT}/signIn`, {
+        return fetch(`${API_ENDPOINT}signIn`, {
             method: 'POST',
             body: `username=${username}&password=${password}`,
             headers: {
@@ -13,35 +14,43 @@ class AuthenticationService {
     }
 
     static register(userInfo) {
-        return fetch(`${API_ENDPOINT}/signIn`, {
+        return fetch(`${API_ENDPOINT}register`, {
             method: 'POST',
-            body: `userInfo=${userInfo}`,
+            body: JSON.stringify(userInfo),
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json'
             }
         });
     }
 
-    static editProfile(userInfo, token) {
-        return fetch(`${API_ENDPOINT}/signIn`, {
+    static editProfile(userInfo) {
+        const token = AuthenticationService.getToken();
+        return fetch(`${API_ENDPOINT}editProfile`, {
             method: 'POST',
-            body: `userInfo=${userInfo}&token=${token}`,
+            body: JSON.stringify({
+                userInfo,
+                token
+            }),
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json'
             }
         });
     }
 
     static removeToken() {
-        sessionStorage.removeItem(TOKEN_KEY);
+        AuthenticationService.token = null;
     }
 
     static storeToken(token) {
-        sessionStorage.setItem(TOKEN_KEY, token);
+        AuthenticationService.token = token;
+    }
+
+    static getToken() {
+        return AuthenticationService.token;
     }
 
     static isLoggedIn() {
-        return TOKEN_KEY in sessionStorage;
+        return AuthenticationService.token !== null;
     }
 }
 export default AuthenticationService;

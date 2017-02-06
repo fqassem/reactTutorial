@@ -89,19 +89,20 @@ router.post('/editProfile', urlencodedParser, (req, res) => {
                 if(email) {
                     user.email = email;
                 }
-            } else {
-                return res.sendStatus(401).send('User not found');
+                return res.sendStatus(200);
+
             }
+            return res.sendStatus(401).send('User not found');
         }
     });
 });
 ```
 
-Now that the APIs are in place, let's add them to our *src/services/AuthenticationService.js* so we can call them from code easily! We'll also add a 'removeToken' method to be called on sign out.
+Now that the APIs are in place, let's add them to our *src/services/AuthenticationService.js* so we can call them from code easily! We'll also add a `removeToken` method to be called on sign out and a `getToken` convenience method.
 
 ```
 static register(userInfo) {
-    return fetch(`${API_ENDPOINT}/signIn`, {
+    return fetch(`${API_ENDPOINT}register`, {
         method: 'POST',
         body: `userInfo=${userInfo}`,
         headers: {
@@ -110,8 +111,9 @@ static register(userInfo) {
     });
 }
 
-static editProfile(userInfo, token) {
-    return fetch(`${API_ENDPOINT}/signIn`, {
+static editProfile(userInfo) {
+    const token = AuthenticationService.getToken();
+    return fetch(`${API_ENDPOINT}editProfile`, {
         method: 'POST',
         body: `userInfo=${userInfo}&token=${token}`,
         headers: {
@@ -120,12 +122,16 @@ static editProfile(userInfo, token) {
     });
 }
 
+static getToken() {
+    return AuthenticationService.token;
+}
+
 static removeToken() {
-    sessionStorage.removeItem(TOKEN_KEY);
+    AuthenticationService.token = null;
 }
 ```
 
-Now that our let's create the Redux actions that call these APIs!
+Now  let's create the Redux actions that call these APIs!
 
 ## Milestone 2: Register, Edit Profile, and Sign-Out actions
 In the same way we created the Sign In action, let's also create the other actions our user can perform. In *src/state/user/index.js*, let's add these actions one-by-one.
@@ -139,13 +145,13 @@ There isn't any explicit state modification being done here, only a call to the 
 import { browserHistory } from 'react-router';
 ...
 
-export const register = (userInfo, redirectUrl) => {
+export const register = (userInfo) => {
     return AuthenticationService.register(userInfo)
     .then((response) => {
         if(response.ok) {
             browserHistory.push('/signIn');
         } else {
-            throw new SubmissionError({ _error: 'Registration Error' });
+            throw new SubmissionError({ _error: 'Registration Failed' });
         }
     });
 };
@@ -305,13 +311,15 @@ We can also do this by wrapping routes that need authentication a component like
 
 To fix this in our application, let's add an 'onEnter' check to our Edit Profile route. How can we check if the user is logged? Our AuthenticationService is outside the scope of Redux. It's not a component we can connect to Redux. Lucky for us, we can simply check if a token is set for the user. If it's not, then we know the user is logged out.
 
-We can also fix this by using the **Reselect** library, which allows us access to this data from anywhere by calling a 'selector' function. A selector simply returns computed information from the store. We'll go the simpler route, but it's nice to know that there's another option.
+We can also fix this by using the **Reselect** library, which allows us access to this data from anywhere by calling a 'selector' function. A selector simply returns computed information from the store. We can always export the store from where we create it as well.
+
+We'll go the simpler route, but it's nice to know that there's another option.
 
 In our *AuthenticationService*, let's add an `isLoggedIn` function:
 
 ```
 static isLoggedIn() {
-    return TOKEN_KEY in sessionStorage;
+    return AuthenticationService.token !== null;
 }
 ```
 

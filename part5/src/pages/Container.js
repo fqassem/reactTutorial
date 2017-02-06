@@ -15,6 +15,7 @@ class Container extends React.Component {
                         <li><Link to="/">Home</Link></li>
                         { !user.role && <li><Link to="/signIn">Sign In</Link></li> }
                         { !user.role && <li><Link to="/register">Register</Link></li> }
+                        { user && user.role && <li><Link to="/editProfile">Edit Profile</Link></li> }
                         { user && user.role && <li><button onClick={this.props.signOut}>Sign Out</button></li> }
                     </ul>
                 </nav>

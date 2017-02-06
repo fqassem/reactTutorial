@@ -40,22 +40,20 @@ export const register = (userInfo) => {
         if(response.ok) {
             browserHistory.push('/signIn');
         } else {
-            throw new SubmissionError({ _error: 'Registration Error' });
+            throw new SubmissionError({ _error: 'Registration Failed' });
         }
     });
 };
 
 export const editProfile = (values, dispatch) => {
-    const { userInfo, token } = values;
-
-    return AuthenticationService.editProfile(userInfo, token)
+    return AuthenticationService.editProfile(values)
     .then((response) => {
         if(response.ok) {
             response.json().then((json) => {
                 dispatch(setUserData(json.userData));
             });
         } else {
-            throw new SubmissionError({ _error: 'Edit Profile Error' });
+            throw new SubmissionError({ _error: 'Edit Profile Failed' });
         }
     });
 };

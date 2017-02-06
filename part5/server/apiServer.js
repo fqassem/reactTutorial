@@ -20,6 +20,7 @@ const JWT_SECRET = 'SUPER_DUPER_SECURE_SECRET';
 const api = express();
 const router = express.Router();
 const urlencodedParser = bodyParser.urlencoded({ extended: true });
+const jsonParser = bodyParser.json();
 
 const generateToken = (user) => {
     return jwt.sign(user, JWT_SECRET, {
@@ -36,36 +37,38 @@ router.post('/testPost', (req, res) => {
     res.send('Hello!');
 });
 
-router.post('/editProfile', urlencodedParser, (req, res) => {
-    const profileInfo = req.body;
-    const token = profileInfo.token;
-
-    //validate token
+router.post('/editProfile', jsonParser, (req, res) => {
+    const token = req.body.token;
+    const profileInfo = req.body.userInfo;
 
     if(!token || !profileInfo) {
-        return res.sendStatus(400).send('Profile info or token not supplied');
+        return res.status(400).send('Profile info or token not supplied');
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if(err) {
-            return res.sendStatus(401).send('Invalid token');
+            return res.status(401).send('Invalid token');
         }
         const currentUsername = decoded.username;
         const user = users[currentUsername];
         if(user) {
             const { firstName, lastName, email } = profileInfo;
+            const changedUserData = {};
             if(firstName) {
                 user.firstName = firstName;
+                changedUserData.firstName = firstName;
             }
             if(lastName) {
                 user.lastName = lastName;
+                changedUserData.lastName = lastName;
             }
             if(email) {
                 user.email = email;
+                changedUserData.email = email;
             }
-        } else {
-            return res.sendStatus(401).send('User not found');
+            return res.status(200).send({ userData: changedUserData });
         }
+        return res.status(401).send('User not found');
     });
 });
 
@@ -73,7 +76,7 @@ router.post('/signIn', urlencodedParser, (req, res) => {
     const credentials = req.body;
 
     if(!credentials) {
-        return res.sendStatus(400);
+        return res.status(400).send();
     }
 
     if(!credentials.username || !credentials.password) {
@@ -106,11 +109,11 @@ router.post('/signIn', urlencodedParser, (req, res) => {
     });
 });
 
-router.post('/register', urlencodedParser, (req, res) => {
+router.post('/register', jsonParser, (req, res) => {
     const userInfo = req.body;
 
     if(!userInfo) {
-        return res.sendStatus(400).send('User info not supplied');
+        return res.status(400).send('User info not supplied');
     }
 
     if(!userInfo.username || !userInfo.password || !userInfo.firstName || !userInfo.lastName || !userInfo.email) {

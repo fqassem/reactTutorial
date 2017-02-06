@@ -24,9 +24,21 @@ class RegisterForm extends React.Component {
                 { submitting && <div>Loading gif</div> }
                 { error && <div>{ error }</div> }
                 <div>
+                    <Field name="username" label="Username" type="text" component={this.renderField} />
+                </div>
+                <div>
                     <Field name="firstName" label="First Name" type="text" component={this.renderField} />
                 </div>
-                <button type="submit" disabled={pristine || submitting} >Sign In</button>
+                <div>
+                    <Field name="lastName" label="Last Name" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="email" label="Email" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="password" label="Password" type="password" component={this.renderField} />
+                </div>
+                <button type="submit" disabled={pristine || submitting}>Register</button>
             </form>
         );
     }
