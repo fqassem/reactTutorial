@@ -45,7 +45,7 @@ export default {
         {
             path: 'editProfile',
             getComponent(location, cb) {
-                System.import('./editProfile')
+                System.import('./EditProfile')
                 .then(loadRoute(cb, false))
                 .catch(errorLoading);
             }

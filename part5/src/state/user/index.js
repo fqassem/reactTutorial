@@ -6,12 +6,18 @@ import InitialUserState from './InitialUserState';
 
 //Action constants
 export const SET_USER_DATA = 'SET_USER_DATA';
+export const CLEAR_USER_DATA = 'SIGN_OUT';
 
 //Actions
 export const setUserData = (userData) => {
     return { type: SET_USER_DATA, userData };
 };
 
+export const clearUserData = () => {
+    return { type: CLEAR_USER_DATA };
+};
+
+//Async Action
 export const signIn = (values, dispatch) => {
     const { username, password } = values;
 
@@ -54,17 +60,15 @@ export const editProfile = (values, dispatch) => {
     });
 };
 
-export const signOut = (dispatch) => {
-    AuthenticationService.removeToken();
-    dispatch(setUserData, {});
-};
-
 //Reducer
 export default (state = InitialUserState, action) => {
     switch(action.type) {
         case SET_USER_DATA: {
             const userData = action.userData;
             return { ...state, ...userData };
+        }
+        case CLEAR_USER_DATA: {
+            return InitialUserState;
         }
         default:
             return state;
