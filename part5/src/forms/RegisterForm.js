@@ -1,6 +1,5 @@
 import React from 'react';
 import { Field, reduxForm, propTypes } from 'redux-form';
-import { connect } from 'react-redux';
 
 import { register } from '../state/user';
 
@@ -46,9 +45,4 @@ class RegisterForm extends React.Component {
 RegisterForm.propTypes = {
     ...propTypes
 };
-let RegisterReduxForm = reduxForm({ form: 'registerForm' })(RegisterForm);
-export default RegisterReduxForm = connect(
-  state => ({
-      initialValues: state.user
-  })
-)(RegisterReduxForm);
+export default reduxForm({ form: 'registerForm' })(RegisterForm);

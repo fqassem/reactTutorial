@@ -9,14 +9,17 @@ While we don't add much to our framework in this section, we expand on our appli
 In the last part, we added the sign-in API. In this tutorial section, we will do the same for the rest of our auth flow APIs, starting with register.
 
 ### Register
-In *server/apiServer.js*, let's add the register API:
+In *server/apiServer.js*, let's add the register API. When we register a user, we'll send the backend a JSON object instead of a encoded url. We need to create the JSON parser which we'll use for both this API and the Edit Profile API:
 
 ```
-router.post('/register', urlencodedParser, (req, res) => {
+const jsonParser = bodyParser.json();
+
+...
+router.post('/register', jsonParser, (req, res) => {
     const userInfo = req.body;
 
     if(!userInfo) {
-        return res.sendStatus(400).send('User info not supplied');
+        return res.status(400).send('User info not supplied');
     }
 
     if(!userInfo.username || !userInfo.password || !userInfo.firstName || !userInfo.lastName || !userInfo.email) {
@@ -59,41 +62,41 @@ A second approach is to blacklist tokens for signed-out users. When the user sig
 You can read more about the process [here](https://auth0.com/blog/blacklist-json-web-token-api-keys/) and [here](https://dadario.com.br/revoking-json-web-tokens/). There are some who don't think revoking token is worth the extra [complexity](https://www.dinochiesa.net/?p=1388). For our app, we'll keep things simple and just remove the token on the client-side, so we won't create an actual API for it. However, be aware of the options and their pros and cons.
 
 ### Edit Profile
-The 'Edit Profile' call will look like a simplified version of our `register` call. We will accept multiple fields in the 'editProfile' API along with the users's token. We will validate the token is valid so we're sure the user attempting to edit their profile is who they say they are. We'll allow the user to change their firstName, lastName, and email address. The code for this API is as follows:
+The 'Edit Profile' call will look like a simplified version of our `register` call. We will accept multiple fields in the 'editProfile' API along with the users's token. We will validate the token is valid so we're sure the user attempting to edit their profile is who they say they are. We'll allow the user to change their firstName, lastName, and email address. Notice that we're using the JSON parser. The code for this API is as follows:
 
 ```
-router.post('/editProfile', urlencodedParser, (req, res) => {
-    const profileInfo = req.body;
-    const token = profileInfo.token;
-
-    //validate token
+router.post('/editProfile', jsonParser, (req, res) => {
+    const token = req.body.token;
+    const profileInfo = req.body.userInfo;
 
     if(!token || !profileInfo) {
-        return res.sendStatus(400).send('Profile info or token not supplied');
+        return res.status(400).send('Profile info or token not supplied');
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if(err) {
-            return res.sendStatus(401).send('Invalid token');
-        } else {
-            const currentUsername = decoded.username;
-            const user = users[currentUsername];
-            if(user) {
-                const { firstName, lastName, email } = profileInfo;
-                if(firstName) {
-                    user.firstName = firstName;
-                }
-                if(lastName) {
-                    user.lastName = lastName;
-                }
-                if(email) {
-                    user.email = email;
-                }
-                return res.sendStatus(200);
-
-            }
-            return res.sendStatus(401).send('User not found');
+            return res.status(401).send('Invalid token');
         }
+        const currentUsername = decoded.username;
+        const user = users[currentUsername];
+        if(user) {
+            const { firstName, lastName, email } = profileInfo;
+            const changedUserData = {};
+            if(firstName) {
+                user.firstName = firstName;
+                changedUserData.firstName = firstName;
+            }
+            if(lastName) {
+                user.lastName = lastName;
+                changedUserData.lastName = lastName;
+            }
+            if(email) {
+                user.email = email;
+                changedUserData.email = email;
+            }
+            return res.status(200).send({ userData: changedUserData });
+        }
+        return res.status(401).send('User not found');
     });
 });
 ```
@@ -104,9 +107,9 @@ Now that the APIs are in place, let's add them to our *src/services/Authenticati
 static register(userInfo) {
     return fetch(`${API_ENDPOINT}register`, {
         method: 'POST',
-        body: `userInfo=${userInfo}`,
+        body: JSON.stringify(userInfo),
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/json'
         }
     });
 }
@@ -115,9 +118,12 @@ static editProfile(userInfo) {
     const token = AuthenticationService.getToken();
     return fetch(`${API_ENDPOINT}editProfile`, {
         method: 'POST',
-        body: `userInfo=${userInfo}&token=${token}`,
+        body: JSON.stringify({
+            userInfo,
+            token
+        }),
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/json'
         }
     });
 }
@@ -161,6 +167,18 @@ export const register = (userInfo) => {
 When the user requests to edit their profile, we'll need to call the backend with the changes they wish to make. We'll also need to update the user's profile information stored in Redux so we keep the state up-to-date.
 
 ```
+export const editProfile = (values, dispatch) => {
+    return AuthenticationService.editProfile(values)
+    .then((response) => {
+        if(response.ok) {
+            response.json().then((json) => {
+                dispatch(setUserData(json.userData));
+            });
+        } else {
+            throw new SubmissionError({ _error: 'Edit Profile Failed' });
+        }
+    });
+};
 ```
 
 ### Sign Out
@@ -194,24 +212,168 @@ export default (state = InitialUserState, action) => {
 That completes the state management code. Now, let's create the forms that call these actions and allow the user to register, edit their profile, and sign out!
 
 ##Milestone 3: Registration and Edit Profile Forms and Pages
-Let's start by creating the register form. It'll be similar in structure to the *src/forms/SignInForm.js* that we created earlier, but with a few more fields.
+Let's start by creating *src/forms/RegisterForm.js*. It'll be similar in structure to the *src/forms/SignInForm.js* that we created earlier, but with a few more fields.
 
 ```
+import React from 'react';
+import { Field, reduxForm, propTypes } from 'redux-form';
+
+import { register } from '../state/user';
+
+class RegisterForm extends React.Component {
+    renderField = ({ input, label, type, meta: { touched, error } }) => {
+        return (
+            <div>
+                <label>{label}</label>
+                <div>
+                    <input {...input} placeholder={label} type={type} />
+                    {touched && error && <span>{error}</span>}
+                </div>
+            </div>
+        );
+    };
+
+    render() {
+        const { handleSubmit, pristine, submitting, error } = this.props;
+        return (
+            <form onSubmit={handleSubmit(register)}>
+                { submitting && <div>Loading gif</div> }
+                { error && <div>{ error }</div> }
+                <div>
+                    <Field name="username" label="Username" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="firstName" label="First Name" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="lastName" label="Last Name" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="email" label="Email" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="password" label="Password" type="password" component={this.renderField} />
+                </div>
+                <button type="submit" disabled={pristine || submitting}>Register</button>
+            </form>
+        );
+    }
+}
+RegisterForm.propTypes = {
+    ...propTypes
+};
+export default reduxForm({ form: 'registerForm' })(RegisterForm);
 ```
 
 Now the form is created, let's add create the *src/pages/Register.js* page that contains the form.
 
 ```
+import React from 'react';
+import { connect } from 'react-redux';
+
+import RegisterForm from '../forms/RegisterForm';
+
+class Register extends React.Component {
+    render() {
+        return (
+            <div>
+                <h1>Register</h1>
+                <RegisterForm />
+            </div>
+        );
+    }
+}
+Register.propTypes = {
+    user: React.PropTypes.object
+};
+const mapStateToProps = (state) => {
+    return {
+        user: state.user
+    };
+};
+export default connect(mapStateToProps)(Register);
 ```
 
 That completes the Registration flow. Now let's add the Edit Profile Flow. Let's add an *src/forms/EditProfileForm.js* to our application:
 
 ```
+import React from 'react';
+import { Field, reduxForm, propTypes } from 'redux-form';
+import { connect } from 'react-redux';
+
+import { editProfile } from '../state/user';
+
+class EditProfileForm extends React.Component {
+    renderField = ({ input, label, type, meta: { touched, error } }) => {
+        return (
+            <div>
+                <label>{label}</label>
+                <div>
+                    <input {...input} placeholder={label} type={type} />
+                    {touched && error && <span>{error}</span>}
+                </div>
+            </div>
+        );
+    };
+
+    render() {
+        const { handleSubmit, pristine, submitting, error } = this.props;
+        return (
+            <form onSubmit={handleSubmit(editProfile)}>
+                { submitting && <div>Loading gif</div> }
+                { error && <div>{ error }</div> }
+                <div>
+                    <Field name="firstName" label="First Name" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="lastName" label="Last Name" type="text" component={this.renderField} />
+                </div>
+                <div>
+                    <Field name="email" label="Email" type="text" component={this.renderField} />
+                </div>
+                <button type="submit" disabled={pristine || submitting}>Edit Profile</button>
+            </form>
+        );
+    }
+}
+EditProfileForm.propTypes = {
+    ...propTypes
+};
+let EditProfileReduxForm = reduxForm({ form: 'editProfileForm' })(EditProfileForm);
+export default EditProfileReduxForm = connect(
+  state => ({
+      initialValues: state.user
+  })
+)(EditProfileReduxForm);
 ```
 
-and the *src/pages/EditProfile.js* page:
+Notice that we're initializing the form with the user profile data in the store. Now, let's create the *src/pages/EditProfile.js* page:
 
 ```
+import React from 'react';
+import { connect } from 'react-redux';
+
+import EditProfileForm from '../forms/EditProfileForm';
+
+class EditProfile extends React.Component {
+    render() {
+        return (
+            <div>
+                <h1>Edit Profile</h1>
+                <EditProfileForm />
+            </div>
+        );
+    }
+}
+EditProfile.propTypes = {
+    user: React.PropTypes.object
+};
+const mapStateToProps = (state) => {
+    return {
+        user: state.user
+    };
+};
+export default connect(mapStateToProps)(EditProfile);
 ```
 
 That's all the hard work done. Now, we have just one small thing left to do: add these pages to our *src/pages/routes.js* file. First, add the Register and EditProfile pages in the `if development` block so hot reloading works:
@@ -248,7 +410,13 @@ childRoutes: [
 And that should do it! We've just added Registration and Edit Profile flows to our application.
 
 ## Milestone 4: Sign-Out Link and Protected Routes
-You may be asking - what about sign-out?! We'll add the sign-out now! Let's open our *src/pages/Container.js* component. We will want to add a button for sign-out whenever a user is connected. We'll need to connect it to the Redux store using `connect` from React-Redux. When the user clicks 'Sign Out', we'll call the 'CLEAR_USER_DATA' action we created. We'll also clear the user token and redirect the user to the home page. After all of this, the Container looks like this:
+You may be asking - what about sign-out?! How can we get to the register page?! How do we get to the edit profile page?
+
+Let's add those now! Let's open our *src/pages/Container.js* component.
+
+We will want to add a button for sign-out whenever a user is connected. We'll need to connect it to the Redux store using `connect` from React-Redux. When the user clicks 'Sign Out', we'll call the 'CLEAR_USER_DATA' action we created. We'll also clear the user token and redirect the user to the home page. We also want to add links for the Register and Edit Profile pages for signed-out users.
+
+After all of this, the Container looks like this:
 
 ```
 import React from 'react';
@@ -268,6 +436,7 @@ class Container extends React.Component {
                         <li><Link to="/">Home</Link></li>
                         { !user.role && <li><Link to="/signIn">Sign In</Link></li> }
                         { !user.role && <li><Link to="/register">Register</Link></li> }
+                        { user && user.role && <li><Link to="/editProfile">Edit Profile</Link></li> }
                         { user && user.role && <li><button onClick={this.props.signOut}>Sign Out</button></li> }
                     </ul>
                 </nav>
@@ -313,7 +482,7 @@ To fix this in our application, let's add an 'onEnter' check to our Edit Profile
 
 We can also fix this by using the **Reselect** library, which allows us access to this data from anywhere by calling a 'selector' function. A selector simply returns computed information from the store. We can always export the store from where we create it as well.
 
-We'll go the simpler route, but it's nice to know that there's another option.
+We'll go the simpler route, but it's nice to know that there are options.
 
 In our *AuthenticationService*, let's add an `isLoggedIn` function:
 
