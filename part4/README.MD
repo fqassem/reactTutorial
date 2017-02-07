@@ -263,7 +263,7 @@ class AuthenticationService {
 export default AuthenticationService;
 ```
 
-This service is simply an abstraction over the fetch APIs. You can store JWTs any number of ways (detailed [here](http://stackoverflow.com/a/40376819)). SessionStorage is a simple to understand and easy to implement way of storing your JWTs and should be the preferred method. However, because we don't have auto-login or store persistence, we'll simply store the token as a static variable in our AuthenticationService so it's removed from memory upon refresh. Of course, this isn't sufficient for a real application, but it's something to keep in mind when you create a production app.
+This service is simply an abstraction over the `fetch` API. It also provides a way to store the token we recieve from the server. You can store JWTs any number of ways (detailed [here](http://stackoverflow.com/a/40376819)). SessionStorage is a simple to understand and easy to implement way of storing your JWTs and should be the preferred method. However, because we don't have auto-login or store persistence, we'll simply store the token as a static variable in our AuthenticationService. This is so the token is removed from memory upon refresh just like the rest of the Redux state. Of course, this isn't sufficient for a real application, but it's something to keep in mind when you create a production app.
 
 ### Security
 Remember that communication is not secure over HTTP. In a real application, you must use **HTTPS** to secure your user's password and  token.
