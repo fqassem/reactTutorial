@@ -27,7 +27,7 @@ class Container extends React.Component {
 Container.propTypes = {
     children: React.PropTypes.node,
     user: React.PropTypes.object,
-    signOut: React.PropTypes.function
+    signOut: React.PropTypes.func
 };
 const mapStateToProps = (state) => {
     return {
