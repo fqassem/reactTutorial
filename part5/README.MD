@@ -1,9 +1,9 @@
 # Part 5: Protected Routes, Register, Sign-out, and Edit Profile
-In the last part, we added Redux to our application to manage state. We also added an Express.js API backend proxied through our development server. We also added Redux-Form to make creating and managing forms easy.
+In the last part, we added Redux to our application to manage state. We also added an Express.js API backend proxied through our development server and we used Redux-Form to make creating and managing forms easy.
 
 In this part, we will expand on our authentication flow by creating the APIs, actions, pages, and forms for the registration, sign-out, and 'edit profile' features. We will also protect certain application routes using React-Router so only logged in users can access them.
 
-While we don't add much to our framework in this section, we expand on our application's functionality.
+While we don't add much to our application *framework* in this section, we expand on our application's *functionality*.
 
 ## Milestone 1: Register, Sign-out, and Edit Profile APIs
 In the last part, we added the sign-in API. In this tutorial section, we will do the same for the rest of our auth flow APIs, starting with register.
@@ -52,14 +52,14 @@ router.post('/register', jsonParser, (req, res) => {
     });
 });
 ```
-We enforce that a user's username must be unique since that's they key of our 'users' map. We check if the info we care about exists and if the password is more than 5 characters. There are many more checks we should do here to verify the data is what we expect, but we'll leave that as an exercise for you to do. If the checks for the registration data pass, we hash the user's password and add them to our 'users' map! Open up a DHC client and register some users! Remember, since our data is stored in the server's RAM, any time we restart the server, our registered users will be lost!
+We enforce that a user's username must be unique since it's the key of our 'users' map. We check if the info we care about exists and if the password is more than 5 characters. There are many more checks we should do here to verify the data is what we expect, but this should demonstrate the concept. If the checks for the registration data pass, we hash the user's password and add them to our 'users' map! Open up a DHC client and register some users and test this API. Remember, since our data is stored in the server's RAM, any time we restart the server, our registered users will be lost!
 
 ### Sign-Out
 Sign-out with token-based authentication is a bit interesting. There are a few ways to do it, each with a certain level of complexity. The simplest way is to just delete the token on the client. Though this is the simplest way, it can cause security issues if the client becomes compromised and the token gets stolen. This is mostly (but not fully) mitigated by setting a short expiration time for our tokens and refreshing them when necessary. In our app, we're using very simple JWTs to get the concept across, so that's out of scope of this tutorial. There are standards that define a way to refresh tokens, like [OAuth](https://oauth.net/2/), but we won't go in-depth here.
 
-A second approach is to blacklist tokens for signed-out users. When the user signs out, they pass in their token to a 'signOut' REST call, and, on the server, we add it to a 'black-list'. Because our tokens have an expiry time, we can create a simple process to clear out expired tokens from the black list to prevent it from getting too large.
+A second approach is to blacklist tokens for signed-out users. When the user signs out, they pass in their token to a 'signOut' REST call, and, on the server, we add it to a blacklist. Because our tokens have an expiry time, we can create a simple process to clear out expired tokens from the black list to prevent it from getting too large.
 
-You can read more about the process [here](https://auth0.com/blog/blacklist-json-web-token-api-keys/) and [here](https://dadario.com.br/revoking-json-web-tokens/). There are some who don't think revoking token is worth the extra [complexity](https://www.dinochiesa.net/?p=1388). For our app, we'll keep things simple and just remove the token on the client-side, so we won't create an actual API for it. However, be aware of the options and their pros and cons.
+You can read more about the process [here](https://auth0.com/blog/blacklist-json-web-token-api-keys/) and [here](https://dadario.com.br/revoking-json-web-tokens/). There are some who don't think revoking token is worth the extra [complexity](https://www.dinochiesa.net/?p=1388). For our app, we'll keep things simple and just remove the token on the client-side, so we won't create an actual API for revoking it. However, be aware of the options and their pros and cons.
 
 ### Edit Profile
 The 'Edit Profile' call will look like a simplified version of our `register` call. We will accept multiple fields in the 'editProfile' API along with the users's token. We will validate the token is valid so we're sure the user attempting to edit their profile is who they say they are. We'll allow the user to change their firstName, lastName, and email address. Notice that we're using the JSON parser. The code for this API is as follows:
@@ -143,9 +143,9 @@ Now  let's create the Redux actions that call these APIs!
 In the same way we created the Sign In action, let's also create the other actions our user can perform. In *src/state/user/index.js*, let's add these actions one-by-one.
 
 ### Register
-Not a lot happens during registration. We simply call the 'register' API and handle any errors that might come back from the backend. If we receive a 200, we know our registration was successful. In the SignIn page, we listen for props to know when the user sign-in was successful and we forward the user to the home page. To demonstrate another way of redirecting the user, we will forward the user to the Sign-in page based on the result of the API call directly in the action. If you wanted, you could make this more generic by passing in a redirect url instead of hardcoding a URL. You can see how this can be useful if you want to redirect a user based on their previous location.
+During registration, we simply call the 'register' API and handle any errors that might come back from the backend. If we receive a 200, we know our registration was successful. In the SignIn page, we listen for props to know when the user sign-in was successful and we forward the user to the home page. To demonstrate another way of redirecting the user, we will forward the user to the Sign-in page based on the result of the API call directly in the action. If you wanted, you could make this more generic by passing in a redirect url instead of hardcoding a URL. You can see how this can be useful if you want to redirect a user based on their previous location.
 
-There isn't any explicit state modification being done here, only a call to the backend. If it fails, we throw an error so that Redux Form can display something went wrong.
+There isn't any explicit state modification being done here, only a call to the backend. If it fails, we throw an error so that Redux- Form can display something went wrong.
 
 ```
 import { browserHistory } from 'react-router';
@@ -185,7 +185,7 @@ export const editProfile = (values, dispatch) => {
 On sign-out, we'll need to reset the user data so that it's no longer stored in Redux. It's possible to do this by dispatching a SET_USER_DATA action with InitialUserState. Instead, let's create a CLEAR_USER_STATE action that explicitly does this. Note that we're not making a server call to clear any user tokens, so this is not an async action, but a plain Redux action. We'll need to add a constant, action creator, and add to the reducer:
 
 ```
-export const CLEAR_USER_DATA = 'SIGN_OUT';
+export const CLEAR_USER_DATA = 'CLEAR_USER_DATA';
 ...
 
 export const clearUserData = () => {
@@ -211,7 +211,7 @@ export default (state = InitialUserState, action) => {
 
 That completes the state management code. Now, let's create the forms that call these actions and allow the user to register, edit their profile, and sign out!
 
-##Milestone 3: Registration and Edit Profile Forms and Pages
+## Milestone 3: Registration and Edit Profile Forms and Pages
 Let's start by creating *src/forms/RegisterForm.js*. It'll be similar in structure to the *src/forms/SignInForm.js* that we created earlier, but with a few more fields.
 
 ```
@@ -399,7 +399,7 @@ childRoutes: [
     {
         path: 'editProfile',
         getComponent(location, cb) {
-            System.import('./editProfile')
+            System.import('./EditProfile')
             .then(loadRoute(cb, false))
             .catch(errorLoading);
         }
@@ -471,16 +471,16 @@ Finally, we'll protect the Edit Profile page from being accessed by unauthentica
 
 Remember, our routing is on the client side. That means the user can basically access any page they want to by modifying the JavaScript. The important part is that a malicious user won't be able to change user data on the server side because we've protected our 'editProfile' API with a token. **Any protected data *must* come from the server and *must* be protected by some sort of authentication.**
 
-As you can see, 'protecting' a route is essentially a gentleman's agreement. However, it's worth doing because it improves the user experience and prevents inadvertent page navigation. We can protect routes two ways: through React or through React-Router. In a small application, doing it through React is fine. However, in a larger application where the 'is signed in' logic is reused on multiple pages, React-Router allows you to reuse the logic. Let's examine these options:
+A 'protected' route can still be accessed by a malicious user because the code to protect it is client-side. However, it's worth doing because it improves the user experience and prevents inadvertent page navigation. We can protect routes two ways: through React or through React-Router. In a small application, doing it through React is fine. However, in a larger application where the 'is signed in' logic is reused on multiple pages, React-Router allows you to reuse the logic. Let's examine these options:
 
-1. Using React, we can check to see if the user is logged-in like we do for the conditional rendering logic in the *SignIn.js* and *Container* pages. Before the component mounts, we can check the user's state (using `componentWillMount`). If they're not logged in, we'll redirect the user to some page. If they are, then we let the page component mount as normal.
+1. Using React, we can check to see if the user is logged-in like we do for the conditional rendering logic in the *SignIn.js* and *Container* pages. Before the component mounts, we can check the user's state (using `componentWillMount`). If they're not signed in, we'll redirect the user to a page of our choosing. If they are, then we let the page component mount as normal.
 2. In React-Router, we have two options. We can define an 'onEnter' callback that can be defined on routes. When a route is requested, the onEnter callback is fired, and does some checks. If those checks don't pass, we can 'replace' the route with a fallback route, signifying the user is not authorized. [Here's](https://github.com/ReactTraining/react-router/tree/master/examples/auth-flow) an example of an app that does this.
 
-We can also do this by wrapping routes that need authentication a component like in this [example](https://medium.com/the-many/adding-login-and-authentication-sections-to-your-react-or-react-native-app-7767fd251bd1#.pyfrxelql).
+We can also do this by wrapping routes that need authentication a component like this [example](https://medium.com/the-many/adding-login-and-authentication-sections-to-your-react-or-react-native-app-7767fd251bd1#.pyfrxelql).
 
-To fix this in our application, let's add an 'onEnter' check to our Edit Profile route. How can we check if the user is logged? Our AuthenticationService is outside the scope of Redux. It's not a component we can connect to Redux. Lucky for us, we can simply check if a token is set for the user. If it's not, then we know the user is logged out.
+To add protected routes in our application, let's add an 'onEnter' check to our Edit Profile route. How can we check if the user is logged? Our AuthenticationService is outside the scope of Redux. It's not a component we want to connect to Redux. Lucky for us, we can simply check if a token is set for the user. If it's not, then we know the user is logged out. 
 
-We can also fix this by using the **Reselect** library, which allows us access to this data from anywhere by calling a 'selector' function. A selector simply returns computed information from the store. We can always export the store from where we create it as well.
+If we really needed access to the store, you can save the store to a globally accessible variable. However, that's generally not good practice. A better way of accessing the state for computing this kind of 'derived' data is through the [**Reselect**](https://github.com/reactjs/reselect) library, which allows us access to this data from anywhere in the application by calling a 'selector' function. A selector simply returns computed information from the store.
 
 We'll go the simpler route, but it's nice to know that there are options.
 
