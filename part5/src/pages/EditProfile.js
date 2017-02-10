@@ -1,6 +1,4 @@
 import React from 'react';
-import { connect } from 'react-redux';
-
 import EditProfileForm from '../forms/EditProfileForm';
 
 class EditProfile extends React.Component {
@@ -13,12 +11,4 @@ class EditProfile extends React.Component {
         );
     }
 }
-EditProfile.propTypes = {
-    user: React.PropTypes.object
-};
-const mapStateToProps = (state) => {
-    return {
-        user: state.user
-    };
-};
-export default connect(mapStateToProps)(EditProfile);
+export default EditProfile;

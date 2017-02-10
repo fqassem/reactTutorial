@@ -269,7 +269,6 @@ Now the form is created, let's add create the *src/pages/Register.js* page that 
 
 ```
 import React from 'react';
-import { connect } from 'react-redux';
 
 import RegisterForm from '../forms/RegisterForm';
 
@@ -283,15 +282,7 @@ class Register extends React.Component {
         );
     }
 }
-Register.propTypes = {
-    user: React.PropTypes.object
-};
-const mapStateToProps = (state) => {
-    return {
-        user: state.user
-    };
-};
-export default connect(mapStateToProps)(Register);
+export default Register;
 ```
 
 That completes the Registration flow. Now let's add the Edit Profile Flow. Let's add an *src/forms/EditProfileForm.js* to our application:
@@ -351,8 +342,6 @@ Notice that we're initializing the form with the user profile data in the store.
 
 ```
 import React from 'react';
-import { connect } from 'react-redux';
-
 import EditProfileForm from '../forms/EditProfileForm';
 
 class EditProfile extends React.Component {
@@ -365,15 +354,7 @@ class EditProfile extends React.Component {
         );
     }
 }
-EditProfile.propTypes = {
-    user: React.PropTypes.object
-};
-const mapStateToProps = (state) => {
-    return {
-        user: state.user
-    };
-};
-export default connect(mapStateToProps)(EditProfile);
+export default EditProfile;
 ```
 
 That's all the hard work done. Now, we have just one small thing left to do: add these pages to our *src/pages/routes.js* file. First, add the Register and EditProfile pages in the `if development` block so hot reloading works:
