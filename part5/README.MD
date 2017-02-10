@@ -436,8 +436,8 @@ class Container extends React.Component {
                         <li><Link to="/">Home</Link></li>
                         { !user.role && <li><Link to="/signIn">Sign In</Link></li> }
                         { !user.role && <li><Link to="/register">Register</Link></li> }
-                        { user && user.role && <li><Link to="/editProfile">Edit Profile</Link></li> }
-                        { user && user.role && <li><button onClick={this.props.signOut}>Sign Out</button></li> }
+                        { user.role && <li><Link to="/editProfile">Edit Profile</Link></li> }
+                        { user.role && <li><button onClick={this.props.signOut}>Sign Out</button></li> }
                     </ul>
                 </nav>
                 {this.props.children}
@@ -478,7 +478,7 @@ A 'protected' route can still be accessed by a malicious user because the code t
 
 We can also do this by wrapping routes that need authentication a component like this [example](https://medium.com/the-many/adding-login-and-authentication-sections-to-your-react-or-react-native-app-7767fd251bd1#.pyfrxelql).
 
-To add protected routes in our application, let's add an 'onEnter' check to our Edit Profile route. How can we check if the user is logged? Our AuthenticationService is outside the scope of Redux. It's not a component we want to connect to Redux. Lucky for us, we can simply check if a token is set for the user. If it's not, then we know the user is logged out. 
+To add protected routes in our application, let's add an 'onEnter' check to our Edit Profile route. How can we check if the user is logged? Our AuthenticationService is outside the scope of Redux. It's not a component we want to connect to Redux. Lucky for us, we can simply check if a token is set for the user. If it's not, then we know the user is logged out.
 
 If we really needed access to the store, you can save the store to a globally accessible variable. However, that's generally not good practice. A better way of accessing the state for computing this kind of 'derived' data is through the [**Reselect**](https://github.com/reactjs/reselect) library, which allows us access to this data from anywhere in the application by calling a 'selector' function. A selector simply returns computed information from the store.
 

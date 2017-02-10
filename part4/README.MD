@@ -651,7 +651,7 @@ class Home extends React.Component {
         return (
             <div>
                 <h1>Home</h1>
-                { user && user.role && <p>Welcome, {user.username}</p>}
+                { user.role && <p>Welcome, {user.username}</p> }
             </div>
         );
     }
@@ -667,7 +667,7 @@ const mapStateToProps = (state) => {
 export default connect(mapStateToProps)(Home);
 ```
 
-`{ user && user.role && <p>Welcome, {user.username}</p>}` is simply shorthand for saying: if there is a user and that user has a role (they are signed in), then display a 'Welcome, *username*' message to them.
+`{ user.role && <p>Welcome, {user.username}</p>}` is simply shorthand for saying: if a user has a role (they are signed in), then display a 'Welcome, *username*' message to them.
 
 ### Configuration updates
 Notice that we've added quite a few libraries as 'dependency's. We'll need to add them to *webpack.base.config.js* so that they are correctly bundled with the other vendor code. Let's add Redux, React-Redux, Redux-Thunk, and Redux-Form to our *vendor* bundle. If we don't add them, they will get bundled with the application code, and our caching becomes less efficient!
