@@ -495,7 +495,7 @@ static isLoggedIn() {
 Next, in *routes.js*, let's `import AuthenticationService from '../services/AuthenticationService';`. Next, we'll create the `onEnter` callback function that will be called when the 'editProfile' route is accessed:
 
 ```
-function isUserAuthenticated(nextState, replace) {
+function isLoggedIn(nextState, replace) {
     if(!AuthenticationService.isLoggedIn()) {
         replace('/');
     }
@@ -508,7 +508,7 @@ Finally, let's add this callback to the 'editProfile' route:
 ...
 {
     path: 'editProfile',
-    onEnter: isUserAuthenticated,
+    onEnter: isLoggedIn,
     getComponent(location, cb) {
         System.import('./EditProfile')
         .then(loadRoute(cb, false))
