@@ -1,0 +1,38 @@
+{
+    "extends": "airbnb",
+    "parser": "babel-eslint",
+    "env": { "browser": true },
+        "parserOptions": {
+            "ecmaVersion": 6,
+            "sourceType": "module",
+            "ecmaFeatures": {
+                "jsx": true,
+                "impliedStrict": true
+            }
+    },
+    "rules": {
+        "indent": [1, 4, {"SwitchCase": 1}],
+        "comma-dangle": [1, "never"],
+        "keyword-spacing": [1, {
+            "before": true, "after": false,
+            "overrides": {"try": {"after": true}, "const": {"after": true}, "else": {"after": true}, "from": {"after": true}, "import": {"after": true}, "export": {"after": true}, "return": {"after": true}}
+            }
+        ],
+        "no-unused-vars": [1],
+        "prefer-const": [1],
+        "max-len": [1, 140],
+        "arrow-body-style": [0],
+        "spaced-comment": [0],
+        "global-require": [0],
+        "import/no-extraneous-dependencies": [0],
+        "react/forbid-prop-types": [0],
+        "react/jsx-indent": [0],
+        "react/prefer-stateless-function": [0],
+        "react/jsx-filename-extension": [0],
+        "react/jsx-space-before-closing": [0],
+        "react/jsx-first-prop-new-line": [0],
+        "react/jsx-closing-bracket-location": [0],
+        "jsx-a11y/anchor-has-content": [0],
+        "jsx-a11y/label-has-for": [0]
+    }
+}
