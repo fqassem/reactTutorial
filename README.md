@@ -3,7 +3,7 @@ Throughout this tutorial, we will be creating a modern, single-page, progressive
 
 The application we build will be a simple, modern, progressive web application. It will have a home page and a sign-in page and barebones authentication.
 
-**Parts 5 - 7 are not yet complete **
+**Parts 6 - 8 are not yet complete **
 
 This tutorial will utilize the following libraries and features:
 
@@ -54,5 +54,8 @@ Navbar, Localization, SASS support, and Susy
 ## [Part 7](https://github.com/fqassem/reactTutorial/tree/master/part7)
 Progressive Web App Overview, Service Workers
 
-#Useful Links
+## [Part 8](https://github.com/fqassem/reactTutorial/tree/master/part8)
+The Future
+
+# Useful Links
 https://medium.com/@addyosmani/progressive-web-apps-with-react-js-part-i-introduction-50679aef2b12#.nnp1mnt10
