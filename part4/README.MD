@@ -244,7 +244,7 @@ Finally, let's make this API accessible on the client-side. In the *src* folder,
 const API_ENDPOINT = 'http://localhost:8001/api/';
 
 class AuthenticationService {
-    static TOKEN = null;
+    static token = null;
 
     static signIn(username, password) {
         return fetch(`${API_ENDPOINT}signIn`, {
