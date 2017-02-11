@@ -194,12 +194,12 @@ Our sign-in POST request will accept a username and a password in the body. Inte
 npm install body-parser --save-dev
 ```
 
-Next, in *apiServer.js*, we need to `import bodyParser from 'body-parser';`. Next, to support encoded request bodies, we define `const urlencodedParser = bodyParser.urlencoded({ extended: false });` near the top of our file. This is a parser that Express will use to process encoded request bodies. We'll add the parser as a parameter to the POST call we make for '/signIn'. We'll also need to add it as a parameter to any other POST requests we create. Why? [Security issues, mostly](https://fosterelli.co/dangerous-use-of-express-body-parser.html).
+Next, in *apiServer.js*, we need to `import bodyParser from 'body-parser';`. Next, to support JSON request bodies, we define `const jsonParser = bodyParser.json();` near the top of our file. This is a parser that Express will use to process JSON request bodies. We'll add the parser as a parameter to the POST call we make for '/signIn'. We'll also need to add it as a parameter to any other POST requests we create. Why not just use a body parser that handles both JSON and x-www-form-urlencoded bodies? [Security issues, mostly](https://fosterelli.co/dangerous-use-of-express-body-parser.html).
 
 Delete the 'testPost' and 'testGet' APIs - we'll no longer need them. Here is the '/signIn' POST request that we'll be using:
 
 ```
-router.post('/signIn', urlencodedParser, (req, res) => {
+router.post('/signIn', jsonParser, (req, res) => {
     const credentials = req.body;
 
     if(!credentials) {
