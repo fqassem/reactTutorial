@@ -19,7 +19,6 @@ const JWT_SECRET = 'SUPER_DUPER_SECURE_SECRET';
 
 const api = express();
 const router = express.Router();
-const urlencodedParser = bodyParser.urlencoded({ extended: true });
 const jsonParser = bodyParser.json();
 
 const generateToken = (user) => {
@@ -72,7 +71,7 @@ router.post('/editProfile', jsonParser, (req, res) => {
     });
 });
 
-router.post('/signIn', urlencodedParser, (req, res) => {
+router.post('/signIn', jsonParser, (req, res) => {
     const credentials = req.body;
 
     if(!credentials) {
