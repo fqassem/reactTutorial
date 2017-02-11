@@ -258,7 +258,7 @@ class AuthenticationService {
     static signIn(username, password) {
         return fetch(`${API_ENDPOINT}signIn`, {
             method: 'POST',
-            body: { username, password },
+            body: JSON.stringify({ username, password }),
             headers: {
                 'Content-Type': 'application/json'
             }
