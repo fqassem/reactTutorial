@@ -19,7 +19,7 @@ const JWT_SECRET = 'SUPER_DUPER_SECURE_SECRET';
 
 const api = express();
 const router = express.Router();
-const urlencodedParser = bodyParser.urlencoded({ extended: true });
+const jsonParser = bodyParser.json();
 
 const generateToken = (user) => {
     return jwt.sign(user, JWT_SECRET, {
@@ -27,16 +27,7 @@ const generateToken = (user) => {
     });
 };
 
-//Sample GET API
-router.get('/testGet', (req, res) => {
-    res.send('Hello!');
-});
-
-router.post('/testPost', (req, res) => {
-    res.send('Hello!');
-});
-
-router.post('/signIn', urlencodedParser, (req, res) => {
+router.post('/signIn', jsonParser, (req, res) => {
     const credentials = req.body;
 
     if(!credentials) {
