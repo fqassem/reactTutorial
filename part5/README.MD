@@ -9,12 +9,9 @@ While we don't add much to our application *framework* in this section, we expan
 In the last part, we added the sign-in API. In this tutorial section, we will do the same for the rest of our auth flow APIs, starting with register.
 
 ### Register
-In *server/apiServer.js*, let's add the register API. When we register a user, we'll send the backend a JSON object instead of a encoded url. We need to create the JSON parser which we'll use for both this API and the Edit Profile API:
+In *server/apiServer.js*, let's add the register API:
 
 ```
-const jsonParser = bodyParser.json();
-
-...
 router.post('/register', jsonParser, (req, res) => {
     const userInfo = req.body;
 
@@ -52,7 +49,8 @@ router.post('/register', jsonParser, (req, res) => {
     });
 });
 ```
-We enforce that a user's username must be unique since it's the key of our 'users' map. We check if the info we care about exists and if the password is more than 5 characters. There are many more checks we should do here to verify the data is what we expect, but this should demonstrate the concept. If the checks for the registration data pass, we hash the user's password and add them to our 'users' map! Open up a DHC client and register some users and test this API. Remember, since our data is stored in the server's RAM, any time we restart the server, our registered users will be lost!
+
+We check if the info we care about exists and if the password is more than 5 characters. We enforce that a user's username must be unique since it's the key of our 'users' map. We could do some more thorough checks, but this should demonstrate the concept. If the checks for the registration data pass, we hash the user's password and add them to our 'users' map! Open up a DHC client and register some users and test this API. Remember, since our data is stored in the server's RAM, any time we restart the server, our registered users will be lost!
 
 ### Sign-Out
 Sign-out with token-based authentication is a bit interesting. There are a few ways to do it, each with a certain level of complexity. The simplest way is to just delete the token on the client. Though this is the simplest way, it can cause security issues if the client becomes compromised and the token gets stolen. This is mostly (but not fully) mitigated by setting a short expiration time for our tokens and refreshing them when necessary. In our app, we're using very simple JWTs to get the concept across, so that's out of scope of this tutorial. There are standards that define a way to refresh tokens, like [OAuth](https://oauth.net/2/), but we won't go in-depth here.
