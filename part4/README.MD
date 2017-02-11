@@ -617,6 +617,12 @@ import { browserHistory } from 'react-router';
 import SignInForm from '../forms/SignInForm';
 
 class SignIn extends React.Component {
+    componentWillMount() {
+        if(this.props.user.role) {
+            browserHistory.push('/');
+        }
+    }
+    
     componentWillReceiveProps(nextProps) {
         if(nextProps.user && (nextProps.user.role === 'USER' || nextProps.user.role === 'ADMIN')) {
             browserHistory.push('/');
@@ -646,6 +652,8 @@ export default connect(mapStateToProps)(SignIn);
 In the `render` function, we define our *SignInForm* component.
 
 Notice that we've added a `componentWillReceiveProps` React function. When the 'signIn' action is dispatched and the reducer modifies the global state, all components that are both connected to the store and are 'listening' for the part of the state that was modified (ie those that called `mapStateToProps`) will receive new props. In *SignIn.js*, we will receive the 'user' state as a prop, which we check in `componentWillReceiveProps`. We make sure that the user exists and their role is now 'USER' or 'ADMIN'. If that's the case, we know they are signed in, and we forward them to the *Home* page ('/')!
+
+We also have a `componentWillMount` in this page. If the user is already signed in (meaning they have a role), we will forward them to the Home Page. This is so that signed-in users can't sign-in again.
 
 ### Adding 'hidden' content
 Now that we have a way to sign in, let's greet the signed-in user on the home page. Let's start with something simple to demonstrate the concept. In *Home.js* , let's connect the page to Redux so it knows about the application state. If the user is signed in, we'll display a welcome message containing their username. After adding the display username (if the user is signed in) and connecting our component to the Redux store (`connect`), our component looks like this:
