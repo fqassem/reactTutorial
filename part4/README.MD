@@ -258,9 +258,9 @@ class AuthenticationService {
     static signIn(username, password) {
         return fetch(`${API_ENDPOINT}signIn`, {
             method: 'POST',
-            body: `username=${username}&password=${password}`,
+            body: { username, password },
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/json'
             }
         });
     }
