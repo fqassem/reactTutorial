@@ -60,7 +60,7 @@ A second approach is to blacklist tokens for signed-out users. When the user sig
 You can read more about the process [here](https://auth0.com/blog/blacklist-json-web-token-api-keys/) and [here](https://dadario.com.br/revoking-json-web-tokens/). There are some who don't think revoking token is worth the extra [complexity](https://www.dinochiesa.net/?p=1388). For our app, we'll keep things simple and just remove the token on the client-side, so we won't create an actual API for revoking it. However, be aware of the options and their pros and cons.
 
 ### Edit Profile
-The 'Edit Profile' call will look like a simplified version of our `register` call. We will accept multiple fields in the 'editProfile' API along with the users's token. We will validate the token is valid so we're sure the user attempting to edit their profile is who they say they are. We'll allow the user to change their firstName, lastName, and email address. Notice that we're using the JSON parser. The code for this API is as follows:
+The 'Edit Profile' call will look like a simplified version of our `register` call. We will accept multiple fields in the 'editProfile' API along with the users's token. We will validate the token is valid so we're sure the user attempting to edit their profile is who they say they are. We'll allow the user to change their firstName, lastName, and email address. The code for this API is as follows:
 
 ```
 router.post('/editProfile', jsonParser, (req, res) => {
