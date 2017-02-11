@@ -194,7 +194,7 @@ Our sign-in POST request will accept a username and a password in the body. Inte
 npm install body-parser --save-dev
 ```
 
-Next, in *apiServer.js*, we need to `import bodyParser from 'body-parser';`. Next, to support JSON request bodies, we define `const jsonParser = bodyParser.json();` near the top of our file. This is a parser that Express will use to process JSON request bodies. We'll add the parser as a parameter to the POST call we make for '/signIn'. We'll also need to add it as a parameter to any other POST requests we create. Why not just use a body parser that handles both JSON and x-www-form-urlencoded bodies? [Security issues, mostly](https://fosterelli.co/dangerous-use-of-express-body-parser.html).
+Next, in *apiServer.js*, we need to `import bodyParser from 'body-parser';`. Next, to support JSON request bodies, we define `const jsonParser = bodyParser.json();` near the top of our file. This is a parser that Express will use to process JSON request bodies. We'll add the parser as a parameter to the POST call we make for '/signIn'. We'll also need to add it as a parameter to any other POST requests we create. Why not just use a catch-all body parser that handles both JSON and x-www-form-urlencoded bodies? [Security issues, mostly](https://fosterelli.co/dangerous-use-of-express-body-parser.html).
 
 Delete the 'testPost' and 'testGet' APIs - we'll no longer need them. Here is the '/signIn' POST request that we'll be using:
 
@@ -236,7 +236,16 @@ router.post('/signIn', jsonParser, (req, res) => {
 
 After we verify that the request contains what we expect (username and password), we call bcrypt's asynchronous `compare` to check that the password is valid. If `compare` succeeds, we return certain user information, along with a JWT token. This token is what the user will pass to the server to verify that they are who they say they are when they make restricted API calls.
 
-Run our application, open up a rest client, and make a POST request to 'localhost:8001/api/signIn' with 'username' of 'tomjones' and 'password' of 'password'. You should receive a 200 OK with a token and the information for user 'tomjones' in the response.
+Run our application, open up a rest client, and make a POST request to 'localhost:8001/api/signIn' with a `Content-Type: application/json` header and the follwing JSON body:
+
+```
+{
+  "username": "tomjones",
+  "password": "password"
+}
+```
+
+You should receive a 200 OK with a token and the information for user 'tomjones' in the response. Our signIn API is working!
 
 Finally, let's make this API accessible on the client-side. In the *src* folder, create a *services* folder with a file called *AuthenticationService.js* and the following contents:
 
