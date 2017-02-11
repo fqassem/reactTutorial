@@ -5,6 +5,12 @@ import { browserHistory } from 'react-router';
 import SignInForm from '../forms/SignInForm';
 
 class SignIn extends React.Component {
+    componentWillMount() {
+        if(this.props.user.role) {
+            browserHistory.push('/');
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         if(nextProps.user && (nextProps.user.role === 'USER' || nextProps.user.role === 'ADMIN')) {
             browserHistory.push('/');
