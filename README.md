@@ -49,7 +49,7 @@ Back-end, State Management, Forms, and Sign-in
 Protected Routes, Sign-out, Edit Profile, and Register
 
 ## [Part 6](https://github.com/fqassem/reactTutorial/tree/master/part6)
-Navbar, SASS, Susy, and Localization
+Styled-Components, Navbar, and Grids
 
 ## [Part 7](https://github.com/fqassem/reactTutorial/tree/master/part7)
 Progressive Web App Overview, Service Workers
