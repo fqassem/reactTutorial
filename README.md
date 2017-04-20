@@ -3,7 +3,7 @@ Throughout this tutorial, we will be creating a modern, single-page, progressive
 
 The application we build will be a simple, modern, progressive web application. It will have a home page and a sign-in page and barebones authentication.
 
-**Parts 6 - 8 are not yet complete **
+**Parts 7 and 8 are not yet complete **
 
 This tutorial will utilize the following libraries and features:
 
