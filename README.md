@@ -13,8 +13,7 @@ This tutorial will utilize the following libraries and features:
 * [React](https://facebook.github.io/react/) - component-based view library
 * [React-Router](https://github.com/ReactTraining/react-router) - app routing
 * [Redux](http://redux.js.org/) - predictable state management
-* [SASS](http://sass-lang.com/) - easier CSS
-* [Susy](http://susy.oddbird.net/) - SASS-based grid system
+* [Styled-Components](https://github.com/styled-components/styled-components) - Styled React components
 * [Express.js](http://expressjs.com/) - Node.js-based development server for hosting applications
 * [ESLint](http://eslint.org/) - better JavaScript linting for consistent code style
 * Testing using:
